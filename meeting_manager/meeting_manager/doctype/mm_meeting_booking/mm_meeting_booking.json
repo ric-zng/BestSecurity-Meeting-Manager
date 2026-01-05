@@ -39,13 +39,6 @@
   "customer_notes",
   "participants_section",
   "participants",
-  "approval_section",
-  "requires_approval",
-  "approval_status",
-  "column_break_qlwm",
-  "approved_by",
-  "approval_date",
-  "rejection_reason",
   "customer_self_service_section",
   "cancel_token",
   "reschedule_token",
@@ -84,7 +77,7 @@
    "reqd": 1
   },
   {
-   "default": "Pending",
+   "default": "Confirmed",
    "description": "Current status of the booking",
    "fieldname": "booking_status",
    "fieldtype": "Select",
@@ -259,53 +252,6 @@
    "options": "Video Call\nPhone Call\nPhysical Location\nCustom"
   },
   {
-   "fieldname": "approval_section",
-   "fieldtype": "Section Break",
-   "label": "Approval"
-  },
-  {
-   "default": "0",
-   "description": "Does this booking require manual approval",
-   "fieldname": "requires_approval",
-   "fieldtype": "Check",
-   "label": "Requires Approval"
-  },
-  {
-   "default": "Pending",
-   "depends_on": "doc.requires_approval==1;",
-   "fieldname": "approval_status",
-   "fieldtype": "Select",
-   "label": "Approval Status",
-   "options": "Pending\nApproved\nRejected"
-  },
-  {
-   "fieldname": "column_break_qlwm",
-   "fieldtype": "Column Break"
-  },
-  {
-   "depends_on": "doc.requires_approval==1;",
-   "description": "User who approved/rejected this booking",
-   "fieldname": "approved_by",
-   "fieldtype": "Link",
-   "label": "Approved By",
-   "options": "User",
-   "read_only": 1
-  },
-  {
-   "depends_on": "doc.requires_approval==1;",
-   "description": "When approval decision was made",
-   "fieldname": "approval_date",
-   "fieldtype": "Datetime",
-   "label": "Approval Date"
-  },
-  {
-   "depends_on": "doc.approval_status=='Rejected';",
-   "description": "Reason for rejection",
-   "fieldname": "rejection_reason",
-   "fieldtype": "Text",
-   "label": "Rejection Reason"
-  },
-  {
    "fieldname": "customer_self_service_section",
    "fieldtype": "Section Break",
    "label": "Customer Self-Service"
@@ -459,7 +405,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-17 16:01:08.474942",
+ "modified": "2025-12-29 16:47:34.894629",
  "modified_by": "Administrator",
  "module": "Meeting Manager",
  "name": "MM Meeting Booking",

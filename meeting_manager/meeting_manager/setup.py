@@ -25,6 +25,46 @@ def create_calendar_page():
 		print("ℹ️  Meeting Manager Calendar Page already exists")
 
 
+def create_self_book_page():
+	"""
+	Create the mm-self-book-meeting Page DocType if it doesn't exist
+	This is required for the workspace link to work
+	"""
+	if not frappe.db.exists("Page", "mm-self-book-meeting"):
+		print("Creating mm-self-book-meeting Page...")
+		page = frappe.new_doc("Page")
+		page.name = "mm-self-book-meeting"
+		page.title = "Self Book Meeting"
+		page.module = "Meeting Manager"
+		page.standard = "Yes"
+		page.page_name = "mm-self-book-meeting"
+		page.insert(ignore_permissions=True)
+		frappe.db.commit()
+		print("✅ Self Book Meeting Page created")
+	else:
+		print("ℹ️  Self Book Meeting Page already exists")
+
+
+def create_team_meeting_page():
+	"""
+	Create the mm-team-meeting Page DocType if it doesn't exist
+	This is required for the workspace link to work
+	"""
+	if not frappe.db.exists("Page", "mm-team-meeting"):
+		print("Creating mm-team-meeting Page...")
+		page = frappe.new_doc("Page")
+		page.name = "mm-team-meeting"
+		page.title = "Schedule Team Meeting"
+		page.module = "Meeting Manager"
+		page.standard = "Yes"
+		page.page_name = "mm-team-meeting"
+		page.insert(ignore_permissions=True)
+		frappe.db.commit()
+		print("✅ Team Meeting Page created")
+	else:
+		print("ℹ️  Team Meeting Page already exists")
+
+
 def after_install():
 	"""
 	Called automatically after app installation
@@ -33,6 +73,12 @@ def after_install():
 	try:
 		# Create calendar-view Page if it doesn't exist
 		create_calendar_page()
+
+		# Create self-book-meeting Page if it doesn't exist
+		create_self_book_page()
+
+		# Create team-meeting Page if it doesn't exist
+		create_team_meeting_page()
 
 		# Create workspace
 		setup_workspace()
@@ -59,7 +105,7 @@ def setup_workspace():
 	Create or update Meeting Manager workspace with proper Frappe v15 structure
 
 	Usage:
-		bench --site bestsecurity.local execute meeting_manager.meeting_manager.setup.setup_workspace
+		sh
 	"""
 
 	print("\n" + "="*60)
@@ -398,6 +444,26 @@ def setup_workspace():
 			"type": "Link",
 			"link_type": "Page",
 			"link_to": "mm-timeline-calendar",
+			"onboard": 0,
+			"hidden": 0,
+			"is_query_report": 0,
+			"link_count": 0
+		},
+		{
+			"label": "Self Book Meeting",
+			"type": "Link",
+			"link_type": "Page",
+			"link_to": "mm-self-book-meeting",
+			"onboard": 0,
+			"hidden": 0,
+			"is_query_report": 0,
+			"link_count": 0
+		},
+		{
+			"label": "Schedule Team Meeting",
+			"type": "Link",
+			"link_type": "Page",
+			"link_to": "mm-team-meeting",
 			"onboard": 0,
 			"hidden": 0,
 			"is_query_report": 0,

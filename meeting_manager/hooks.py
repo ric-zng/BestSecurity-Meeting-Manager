@@ -274,6 +274,6 @@ fixtures = [
 	},
 	{
 		"doctype": "Page",
-		"filters": [["name", "in", ["mm-calendar-view"]]]
+		"filters": [["name", "in", ["mm-calendar-view", "mm-self-book-meeting", "mm-team-meeting"]]]
 	}
 ]
