@@ -1,0 +1,75 @@
+2026-01-05 19:15:47,838 ERROR frappe Failed to capture exception
+Site: localhost
+Form Dict: {}
+Traceback (most recent call last):
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/apps/frappe/frappe/utils/sentry.py", line 117, in capture_exception
+    set_scope(scope)
+    ~~~~~~~~~^^^^^^^
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/apps/frappe/frappe/utils/sentry.py", line 70, in set_scope
+    path = frappe.request.path
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/env/lib/python3.13/site-packages/werkzeug/local.py", line 318, in __get__
+    obj = instance._get_current_object()
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/env/lib/python3.13/site-packages/werkzeug/local.py", line 501, in _get_current_object
+    raise RuntimeError(unbound_message) from None
+RuntimeError: object is not bound
+2026-01-05 19:16:10,759 ERROR frappe Failed to capture exception
+Site: localhost
+Form Dict: {}
+Traceback (most recent call last):
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/apps/frappe/frappe/utils/sentry.py", line 117, in capture_exception
+    set_scope(scope)
+    ~~~~~~~~~^^^^^^^
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/apps/frappe/frappe/utils/sentry.py", line 70, in set_scope
+    path = frappe.request.path
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/env/lib/python3.13/site-packages/werkzeug/local.py", line 318, in __get__
+    obj = instance._get_current_object()
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/env/lib/python3.13/site-packages/werkzeug/local.py", line 501, in _get_current_object
+    raise RuntimeError(unbound_message) from None
+RuntimeError: object is not bound
+2026-01-05 19:16:34,552 ERROR frappe Failed to capture exception
+Site: localhost
+Form Dict: {}
+Traceback (most recent call last):
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/apps/frappe/frappe/utils/sentry.py", line 117, in capture_exception
+    set_scope(scope)
+    ~~~~~~~~~^^^^^^^
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/apps/frappe/frappe/utils/sentry.py", line 70, in set_scope
+    path = frappe.request.path
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/env/lib/python3.13/site-packages/werkzeug/local.py", line 318, in __get__
+    obj = instance._get_current_object()
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/env/lib/python3.13/site-packages/werkzeug/local.py", line 501, in _get_current_object
+    raise RuntimeError(unbound_message) from None
+RuntimeError: object is not bound
+2026-01-05 19:16:53,287 ERROR frappe Failed to capture exception
+Site: localhost
+Form Dict: {}
+Traceback (most recent call last):
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/apps/frappe/frappe/utils/sentry.py", line 117, in capture_exception
+    set_scope(scope)
+    ~~~~~~~~~^^^^^^^
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/apps/frappe/frappe/utils/sentry.py", line 70, in set_scope
+    path = frappe.request.path
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/env/lib/python3.13/site-packages/werkzeug/local.py", line 318, in __get__
+    obj = instance._get_current_object()
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/env/lib/python3.13/site-packages/werkzeug/local.py", line 501, in _get_current_object
+    raise RuntimeError(unbound_message) from None
+RuntimeError: object is not bound
+2026-01-05 19:17:15,465 ERROR frappe Failed to capture exception
+Site: localhost
+Form Dict: {}
+Traceback (most recent call last):
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/apps/frappe/frappe/utils/sentry.py", line 117, in capture_exception
+    set_scope(scope)
+    ~~~~~~~~~^^^^^^^
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/apps/frappe/frappe/utils/sentry.py", line 70, in set_scope
+    path = frappe.request.path
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/env/lib/python3.13/site-packages/werkzeug/local.py", line 318, in __get__
+    obj = instance._get_current_object()
+  File "/Users/justus/Desktop/projects/zng/test/bestsecurity-bench/env/lib/python3.13/site-packages/werkzeug/local.py", line 501, in _get_current_object
+    raise RuntimeError(unbound_message) from None
+RuntimeError: object is not bound
