@@ -266,14 +266,14 @@ scheduler_events = {
 
 # Fixtures
 # --------
-# Export fixtures for workspaces and pages
+# Export fixtures for pages and roles (workspaces are auto-synced from the workspace folder)
 fixtures = [
 	{
-		"doctype": "Workspace",
-		"filters": [["name", "in", ["Meeting Manager"]]]
+		"doctype": "Page",
+		"filters": [["name", "in", ["mm-self-book-meeting", "mm-team-meeting", "mm-timeline-calendar", "mm-enhanced-calendar", "mm-meeting-view"]]]
 	},
 	{
-		"doctype": "Page",
-		"filters": [["name", "in", ["mm-calendar-view", "mm-self-book-meeting", "mm-team-meeting"]]]
+		"doctype": "Role",
+		"filters": [["name", "in", ["MM Department Leader", "MM Department Member"]]]
 	}
 ]

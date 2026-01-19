@@ -222,6 +222,10 @@
    "role": "MM Department Leader",
    "share": 1,
    "write": 1
+  },
+  {
+   "read": 1,
+   "role": "MM Department Member"
   }
  ],
  "row_format": "Dynamic",

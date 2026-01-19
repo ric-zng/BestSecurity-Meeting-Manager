@@ -72,6 +72,8 @@ Admin/Leader creates customer booking for specific member:
   - Email (required)
   - Phone (required)
   - Notes (optional)
+- ✅ **Automatic Customer Deduplication** - Finds or creates customer via MM Customer doctype
+- ✅ **Customer Link** - Booking links to MM Customer record, not inline fields
 - ✅ **Automatic Token Generation** for reschedule/cancel links
 - ✅ **Confirmation Emails** sent to customer and assigned member
 
@@ -290,6 +292,8 @@ frappe.call({
 });
 
 # Test Customer Booking for Member
+# Note: Customer is automatically found or created via customer_service.find_or_create_customer()
+# The booking will link to the MM Customer record, not store inline fields
 frappe.call({
     method: 'meeting_manager.meeting_manager.api.booking.create_customer_booking_for_member',
     args: {
@@ -307,6 +311,7 @@ frappe.call({
     },
     callback: function(r) {
         console.log(r.message);
+        // Result includes customer_id from MM Customer doctype
     }
 });
 
@@ -491,6 +496,14 @@ def get_dashboard_stats(department=None, date_range="this_month"):
 ---
 
 ## Version History
+
+- **v1.1** - 2026-01-13: Customer Management System
+  - Added MM Customer doctype for customer deduplication
+  - Added MM Customer Email and MM Customer Phone child tables
+  - Updated MM Meeting Booking to link to customers instead of inline fields
+  - Added customer_email_at_booking and customer_phone_at_booking cached fields
+  - Created customer_service.py for find_or_create_customer() logic
+  - Added migration patch for existing customer data
 
 - **v1.0** - 2025-12-15: Initial implementation
   - Calendar view with FullCalendar

@@ -296,6 +296,17 @@ def create_customer_booking(booking_data):
 		meeting_type.duration
 	)
 
+	# Find or create customer using customer service
+	from meeting_manager.meeting_manager.services.customer_service import find_or_create_customer
+
+	customer_result = find_or_create_customer(
+		email=booking_data["customer_email"],
+		phone=booking_data.get("customer_phone"),
+		name=booking_data.get("customer_name")
+	)
+
+	customer_id = customer_result["customer_id"]
+
 	# Generate security tokens for cancel/reschedule
 	cancel_token = secrets.token_urlsafe(32)
 	reschedule_token = secrets.token_urlsafe(32)
@@ -312,10 +323,8 @@ def create_customer_booking(booking_data):
 		"is_internal": 0,
 		"meeting_type": meeting_type.name,
 
-		# Customer information
-		"customer_name": booking_data["customer_name"],
-		"customer_email": booking_data["customer_email"],
-		"customer_phone": booking_data["customer_phone"],
+		# Customer link (new structure)
+		"customer": customer_id,
 		"customer_notes": booking_data.get("customer_notes"),
 
 		# Scheduling - using combined datetime fields
@@ -347,6 +356,10 @@ def create_customer_booking(booking_data):
 
 	# Insert booking (will trigger validation and notifications)
 	booking.insert(ignore_permissions=True)
+
+	# Update customer booking stats
+	from meeting_manager.meeting_manager.services.customer_service import update_customer_booking_stats
+	update_customer_booking_stats(customer_id)
 
 	# Send confirmation emails
 	try:

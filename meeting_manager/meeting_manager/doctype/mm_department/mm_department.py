@@ -13,6 +13,69 @@ class MMDepartment(Document):
 		self.validate_active_members()
 		self.validate_department_slug()
 		self.set_public_booking_url()
+
+	def before_save(self):
+		"""Store previous values for role sync comparison"""
+		if not self.is_new():
+			# Get previous leader from database
+			self._previous_leader = frappe.db.get_value(
+				"MM Department", self.name, "department_leader"
+			)
+			# Get previous active members from database
+			self._previous_active_members = set(
+				frappe.db.get_all(
+					"MM Department Member",
+					filters={"parent": self.name, "is_active": 1},
+					pluck="member"
+				)
+			)
+		else:
+			self._previous_leader = None
+			self._previous_active_members = set()
+
+	def on_update(self):
+		"""Sync roles after department is saved"""
+		self.sync_leader_role()
+		self.sync_member_roles()
+
+	def on_trash(self):
+		"""Revoke roles when department is deleted"""
+		self.revoke_all_roles_on_delete()
+
+	def sync_leader_role(self):
+		"""Assign/revoke leader role based on department_leader changes"""
+		from meeting_manager.meeting_manager.services.role_service import (
+			sync_leader_role_on_department_change
+		)
+
+		old_leader = getattr(self, "_previous_leader", None)
+		new_leader = self.department_leader
+
+		sync_leader_role_on_department_change(self.name, old_leader, new_leader)
+
+	def sync_member_roles(self):
+		"""Assign/revoke member roles based on department_members changes"""
+		from meeting_manager.meeting_manager.services.role_service import (
+			sync_member_roles_on_department_change
+		)
+
+		old_members = getattr(self, "_previous_active_members", set())
+		new_members = set(
+			m.member for m in self.department_members if m.is_active
+		)
+
+		sync_member_roles_on_department_change(self.name, old_members, new_members)
+
+	def revoke_all_roles_on_delete(self):
+		"""Revoke roles from leader and all members when department is deleted"""
+		from meeting_manager.meeting_manager.services.role_service import (
+			sync_all_roles_on_department_delete
+		)
+
+		leader = self.department_leader
+		members = [m.member for m in self.department_members]
+
+		sync_all_roles_on_department_delete(self.name, leader, members)
         
 
 	def validate_department_leader(self):

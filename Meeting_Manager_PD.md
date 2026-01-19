@@ -43,13 +43,14 @@
     - [Technology Stack](#technology-stack)
   - [Data Model Design](#data-model-design)
     - [DocTypes to Create](#doctypes-to-create)
-      - [1. MM Department](#1-mm-department)
-      - [2. MM User Settings](#2-mm-user-settings)
-      - [3. MM Availability Rule](#3-mm-user-availability-rule)
-      - [4. MM Calendar Integration](#4-mm-calendar-integration)
-      - [5. MM Department Meeting Type](#5-mm-department-meeting-type)
-      - [6. MM Meeting Booking](#6-mm-meeting-booking)
-      - [7. MM Calendar Event Sync](#7-mm-calendar-event-sync)
+      - [1. MM Customer](#1-mm-customer-new)
+      - [2. MM Department](#2-mm-department)
+      - [3. MM User Settings](#3-mm-user-settings)
+      - [4. MM Availability Rule](#4-mm-user-availability-rule)
+      - [5. MM Calendar Integration](#5-mm-calendar-integration)
+      - [6. MM Department Meeting Type](#6-mm-department-meeting-type)
+      - [7. MM Meeting Booking](#7-mm-meeting-booking)
+      - [8. MM Calendar Event Sync](#8-mm-calendar-event-sync)
   - [High-Level Implementation Strategy](#high-level-implementation-strategy)
     - [Phase 1: Foundation Setup (Week 1)](#phase-1-foundation-setup-week-1)
     - [Phase 2: Availability Engine & Calendar Sync (Week 2)](#phase-2-availability-engine--calendar-sync-week-2)
@@ -447,7 +448,37 @@ Sent after meeting end time:
 
 **Note**: All parent DocTypes use "MM" prefix (Meeting Manager) to prevent collision with existing Frappe/ERPNext DocTypes.
 
-#### 1. MM Department
+#### 1. MM Customer (NEW)
+Central DocType for managing customer records with deduplication support.
+
+**Fields**:
+- `customer_name` (Data, Required) - Customer's full name
+- `primary_email` (Data, Required, Unique) - Primary email used for identification
+- `is_active` (Check, Default: 1) - Whether customer is active
+- `email_addresses` (Table: MM Customer Email) - Multiple email addresses
+- `phone_numbers` (Table: MM Customer Phone) - Multiple phone numbers
+- `customer_notes` (Text) - General notes about the customer
+- `total_bookings` (Int, Read Only) - Auto-calculated booking count
+- `last_booking_date` (Date, Read Only) - Date of most recent booking
+
+**Child Table - MM Customer Email**:
+- `email_address` (Data, Required) - Email address
+- `email_type` (Select) - Primary, Work, Personal
+- `is_primary` (Check) - Only one per customer
+
+**Child Table - MM Customer Phone**:
+- `phone_number` (Data, Required) - Phone number
+- `phone_type` (Select) - Mobile, Work, Home
+- `is_primary` (Check) - Only one per customer
+
+**Customer Lookup Logic** (Email takes priority):
+1. Search by primary_email
+2. Search by email in email_addresses child table
+3. If email not found, search by phone
+4. If phone matches, add new email to existing customer
+5. If no match, create new customer
+
+#### 2. MM Department
 Central DocType for managing departments and their booking settings.
 
 **Fields**:
@@ -474,7 +505,7 @@ Central DocType for managing departments and their booking settings.
 - At least one active member required
 - Department slug must be unique and URL-safe
 
-#### 2. MM User Settings
+#### 3. MM User Settings
 Extends User doctype with calendar-specific settings.
 
 **Fields**:
@@ -499,7 +530,7 @@ Extends User doctype with calendar-specific settings.
 
 ---
 
-#### 3. MM User Availability Rule
+#### 4. MM User Availability Rule
 Define availability constraints and preferences for users.
 
 **Fields**:
@@ -522,7 +553,7 @@ Define availability constraints and preferences for users.
 
 ---
 
-#### 4. MM Calendar Integration
+#### 5. MM Calendar Integration
 Store OAuth credentials and sync settings for external calendars.
 
 **Fields**:
@@ -542,7 +573,7 @@ Store OAuth credentials and sync settings for external calendars.
 
 ---
 
-#### 5. MM Department Meeting Type
+#### 6. MM Department Meeting Type
 Meeting types offered by a specific department.
 
 **Fields**:
@@ -573,7 +604,7 @@ Meeting types offered by a specific department.
 
 ---
 
-#### 6. MM Meeting Booking
+#### 7. MM Meeting Booking
 The core booking record for all meetings (customer and internal).
 
 **Fields**:
@@ -584,11 +615,13 @@ The core booking record for all meetings (customer and internal).
 - `assigned_to` (Link to User, Required) - Current assigned host/member
 
 **Customer Information** (for customer bookings):
-- `customer_name` (Data, Required if booking_type=Customer Booking)
-- `customer_email` (Data, Required if booking_type=Customer Booking)
-- `customer_phone` (Data, Required if booking_type=Customer Booking)
+- `customer` (Link to MM Customer, Required if booking_type=Customer Booking) - Link to customer record
+- `customer_email_at_booking` (Data, Read Only) - Cached email at booking time (audit trail)
+- `customer_phone_at_booking` (Data, Read Only) - Cached phone at booking time (audit trail)
 - `customer_timezone` (Select) - Customer's timezone
 - `customer_notes` (Text) - Customer's notes/comments
+
+**Note**: Customer data is now stored in MM Customer doctype instead of inline. During public booking, the system automatically finds or creates a customer record using `find_or_create_customer()` service function. Email takes priority for customer matching.
 
 **Scheduling Information**:
 - `scheduled_date` (Date, Required)
@@ -668,7 +701,7 @@ The core booking record for all meetings (customer and internal).
 
 ---
 
-#### 7. MM Calendar Event Sync
+#### 8. MM Calendar Event Sync
 Track synced events from external calendars for availability computation.
 
 **Fields**:
@@ -1729,6 +1762,14 @@ The system's flexibility with meeting types, colors, drag-and-drop management, a
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: November 13, 2025  
+**Document Version**: 1.1
+**Last Updated**: January 13, 2026
 **Author**: Implementation Guide for bs-infra.dk Calendar Booking System
+
+### Changelog
+
+**v1.1 (January 13, 2026)**:
+- Added MM Customer doctype for customer management with deduplication
+- Added MM Customer Email and MM Customer Phone child tables
+- Updated MM Meeting Booking to use customer link instead of inline fields
+- Added customer_email_at_booking and customer_phone_at_booking cached fields
