@@ -5,26 +5,6 @@ import frappe
 import json
 
 
-def create_calendar_page():
-	"""
-	Create the mm-calendar-view Page DocType if it doesn't exist
-	This is required for the workspace link to work
-	"""
-	if not frappe.db.exists("Page", "mm-calendar-view"):
-		print("Creating mm-calendar-view Page...")
-		page = frappe.new_doc("Page")
-		page.name = "mm-calendar-view"
-		page.title = "Meeting Manager Calendar"
-		page.module = "Meeting Manager"
-		page.standard = "Yes"
-		page.page_name = "mm-calendar-view"
-		page.insert(ignore_permissions=True)
-		frappe.db.commit()
-		print("✅ Meeting Manager Calendar Page created")
-	else:
-		print("ℹ️  Meeting Manager Calendar Page already exists")
-
-
 def create_self_book_page():
 	"""
 	Create the mm-self-book-meeting Page DocType if it doesn't exist
@@ -68,11 +48,12 @@ def create_team_meeting_page():
 def after_install():
 	"""
 	Called automatically after app installation
-	Creates the Meeting Manager workspace and calendar-view Page
+	Creates the Meeting Manager workspace and pages
 	"""
 	try:
-		# Create calendar-view Page if it doesn't exist
-		create_calendar_page()
+		# Create MM roles first
+		from meeting_manager.meeting_manager.services.role_service import create_mm_roles
+		create_mm_roles()
 
 		# Create self-book-meeting Page if it doesn't exist
 		create_self_book_page()
@@ -400,17 +381,6 @@ def setup_workspace():
 	# Card Break creates sections, Link adds actual links within sections
 	# The "Card Break" label must match the card_name in content blocks
 	links_data = [
-		# Top-level Calendar link (appears directly under Meeting Manager)
-		{
-			"label": "Calendar",
-			"type": "Link",
-			"link_type": "Page",
-			"link_to": "mm-calendar-view",
-			"onboard": 0,
-			"hidden": 0,
-			"is_query_report": 0,
-			"link_count": 0
-		},
 		# Bookings Section
 		{
 			"label": "Bookings",
@@ -425,16 +395,6 @@ def setup_workspace():
 			"link_type": "DocType",
 			"link_to": "MM Meeting Booking",
 			"onboard": 1,
-			"hidden": 0,
-			"is_query_report": 0,
-			"link_count": 0
-		},
-		{
-			"label": "Calendar",
-			"type": "Link",
-			"link_type": "Page",
-			"link_to": "mm-calendar-view",
-			"onboard": 0,
 			"hidden": 0,
 			"is_query_report": 0,
 			"link_count": 0

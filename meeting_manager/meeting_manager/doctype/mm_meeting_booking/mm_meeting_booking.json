@@ -33,9 +33,10 @@
   "assigned_users",
   "assignment_history",
   "customer_details_section",
-  "customer_name",
-  "customer_email",
-  "customer_phone",
+  "customer",
+  "column_break_customer",
+  "customer_email_at_booking",
+  "customer_phone_at_booking",
   "customer_notes",
   "participants_section",
   "participants",
@@ -170,30 +171,42 @@
    "options": "MM Meeting Booking History"
   },
   {
+   "depends_on": "eval:!doc.is_internal",
    "fieldname": "customer_details_section",
    "fieldtype": "Section Break",
    "label": "Customer Details"
   },
   {
-   "description": "Customer full name",
-   "fieldname": "customer_name",
-   "fieldtype": "Data",
-   "label": "Customer Name"
+   "depends_on": "eval:!doc.is_internal",
+   "description": "Link to customer record",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer",
+   "mandatory_depends_on": "eval:!doc.is_internal",
+   "options": "MM Customer"
   },
   {
-   "description": "Customer email address",
-   "fieldname": "customer_email",
-   "fieldtype": "Data",
-   "label": "Customer Email"
+   "fieldname": "column_break_customer",
+   "fieldtype": "Column Break"
   },
   {
-   "description": "Customer phone number",
-   "fieldname": "customer_phone",
+   "description": "Customer email at the time of booking (for audit trail)",
+   "fieldname": "customer_email_at_booking",
    "fieldtype": "Data",
-   "label": "Customer Phone"
+   "label": "Customer Email (at booking)",
+   "read_only": 1
   },
   {
-   "description": "Customer's notes or special requests",
+   "description": "Customer phone at the time of booking (for audit trail)",
+   "fieldname": "customer_phone_at_booking",
+   "fieldtype": "Data",
+   "label": "Customer Phone (at booking)",
+   "read_only": 1
+  },
+  {
+   "description": "Customer's notes or special requests for this booking",
    "fieldname": "customer_notes",
    "fieldtype": "Text",
    "label": "Customer Notes"
@@ -433,6 +446,16 @@
    "report": 1,
    "role": "MM Department Leader",
    "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MM Department Member",
    "write": 1
   }
  ],

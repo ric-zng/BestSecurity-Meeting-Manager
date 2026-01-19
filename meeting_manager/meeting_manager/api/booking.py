@@ -690,13 +690,15 @@ def create_self_booking(booking_data):
 			"meeting_type": str (Meeting Type ID),
 			"scheduled_date": str (YYYY-MM-DD),
 			"scheduled_start_time": str (HH:MM),
-			"customer_name": str,
-			"customer_email": str,
+			"customer_id": str (optional - existing MM Customer ID),
+			"customer_name": str (required if no customer_id),
+			"customer_email": str (required if no customer_id),
 			"customer_phone": str (optional),
 			"customer_timezone": str (optional),
 			"customer_notes": str (optional),
 			"meeting_agenda": str (optional),
-			"send_email_notification": bool (optional, default True)
+			"service_type": str (optional - service type from dropdown),
+			"send_email_notification": bool (optional, default False)
 		}
 
 	Returns:
@@ -714,13 +716,20 @@ def create_self_booking(booking_data):
 	# Validate required fields
 	required_fields = [
 		"department", "meeting_type",
-		"scheduled_date", "scheduled_start_time",
-		"customer_name", "customer_email"
+		"scheduled_date", "scheduled_start_time"
 	]
 
 	for field in required_fields:
 		if not booking_data.get(field):
 			frappe.throw(_(f"Missing required field: {field}"))
+
+	# Validate customer info - either customer_id or customer_name+customer_email required
+	customer_id = booking_data.get("customer_id")
+	if not customer_id:
+		if not booking_data.get("customer_name"):
+			frappe.throw(_("Missing required field: customer_name"))
+		if not booking_data.get("customer_email"):
+			frappe.throw(_("Missing required field: customer_email"))
 
 	# Ensure user is logged in
 	if frappe.session.user == "Guest":
@@ -777,8 +786,66 @@ def create_self_booking(booking_data):
 	if not availability["available"]:
 		frappe.throw(_(f"You are not available at the selected time: {availability['reason']}"))
 
+	# Handle customer - either link existing or create new
+	customer_doc = None
+	customer_name_display = ""
+	customer_email_display = ""
+	customer_phone_display = ""
+
+	if customer_id:
+		# Use existing customer
+		customer_doc = frappe.get_doc("MM Customer", customer_id)
+		customer_name_display = customer_doc.customer_name
+		customer_email_display = customer_doc.primary_email
+		customer_phone_display = customer_doc.get_primary_phone() or ""
+
+		# Update CVR and company name if provided
+		customer_updated = False
+		if booking_data.get("customer_cvr") and customer_doc.cvr_number != booking_data.get("customer_cvr"):
+			customer_doc.cvr_number = booking_data.get("customer_cvr")
+			customer_updated = True
+		if booking_data.get("customer_company") and customer_doc.company_name != booking_data.get("customer_company"):
+			customer_doc.company_name = booking_data.get("customer_company")
+			customer_updated = True
+		if customer_updated:
+			customer_doc.save(ignore_permissions=True)
+	else:
+		# Check if customer already exists by email
+		from meeting_manager.meeting_manager.doctype.mm_customer.mm_customer import MMCustomer
+		existing_customer_id = MMCustomer.find_by_email(booking_data["customer_email"])
+
+		if existing_customer_id:
+			# Link to existing customer
+			customer_doc = frappe.get_doc("MM Customer", existing_customer_id)
+			customer_name_display = customer_doc.customer_name
+			customer_email_display = customer_doc.primary_email
+			customer_phone_display = customer_doc.get_primary_phone() or ""
+		else:
+			# Create new customer
+			new_customer = frappe.get_doc({
+				"doctype": "MM Customer",
+				"customer_name": booking_data["customer_name"],
+				"primary_email": booking_data["customer_email"],
+				"cvr_number": booking_data.get("customer_cvr"),
+				"company_name": booking_data.get("customer_company")
+			})
+
+			# Add phone if provided
+			if booking_data.get("customer_phone"):
+				new_customer.append("phone_numbers", {
+					"phone_number": booking_data["customer_phone"],
+					"phone_type": "Primary",
+					"is_primary": 1
+				})
+
+			new_customer.insert(ignore_permissions=True)
+			customer_doc = new_customer
+			customer_name_display = new_customer.customer_name
+			customer_email_display = new_customer.primary_email
+			customer_phone_display = booking_data.get("customer_phone", "")
+
 	# Generate meeting title
-	meeting_title = f"{meeting_type.meeting_name} with {booking_data['customer_name']}"
+	meeting_title = f"{meeting_type.meeting_name} with {customer_name_display}"
 
 	# Create booking
 	import secrets
@@ -786,38 +853,36 @@ def create_self_booking(booking_data):
 		"doctype": "MM Meeting Booking",
 		"booking_type": "Customer Booking",
 		"meeting_title": meeting_title,
-		"department": department.name,
 		"meeting_type": meeting_type.name,
-		"assigned_to": current_user,
 
-		# Customer information
-		"customer_name": booking_data["customer_name"],
-		"customer_email": booking_data["customer_email"],
-		"customer_phone": booking_data.get("customer_phone", ""),
-		"customer_timezone": booking_data.get("customer_timezone", department.timezone),
+		# Link to customer record
+		"customer": customer_doc.name,
+		"customer_email_at_booking": customer_email_display,
+		"customer_phone_at_booking": customer_phone_display,
 		"customer_notes": booking_data.get("customer_notes"),
 
 		# Scheduling
 		"start_datetime": start_datetime,
 		"end_datetime": end_datetime,
 		"duration": meeting_type.duration,
-		"timezone": department.timezone,
 
 		# Meeting details
 		"location_type": meeting_type.location_type,
-		"video_platform": meeting_type.video_platform,
-		"meeting_agenda": booking_data.get("meeting_agenda"),
+		"meeting_description": booking_data.get("meeting_agenda"),
+
+		# Service type (new field)
+		"select_mkru": booking_data.get("service_type"),
 
 		# Status
-		"status": "Confirmed",
-		"requires_approval": False,  # Self-created bookings don't need approval
-
-		# Assignment
-		"assignment_method": "Self-Booked",
+		"booking_status": "Confirmed",
+		"booking_source": "Internal System",
 
 		# Security tokens
 		"cancel_token": secrets.token_urlsafe(32),
-		"reschedule_token": secrets.token_urlsafe(32)
+		"reschedule_token": secrets.token_urlsafe(32),
+
+		# Created by
+		"created_by": current_user
 	})
 
 	# Add current user as primary assigned user
@@ -833,8 +898,12 @@ def create_self_booking(booking_data):
 	# Update member assignment tracking
 	update_member_assignment_tracking(department.name, current_user)
 
-	# Send email notification if requested (default True)
-	send_notification = booking_data.get("send_email_notification", True)
+	# Update customer booking stats
+	if customer_doc:
+		customer_doc.update_booking_stats()
+
+	# Send email notification if requested (default False for self-booking)
+	send_notification = booking_data.get("send_email_notification", False)
 	email_result = None
 
 	if send_notification:
@@ -849,7 +918,8 @@ def create_self_booking(booking_data):
 	return {
 		"success": True,
 		"booking_id": booking.name,
-		"message": _("Meeting booked successfully!" + (" Confirmation emails will be sent to you and the customer." if send_notification else "")),
+		"customer_id": customer_doc.name if customer_doc else None,
+		"message": _("Meeting booked successfully!" + (" Confirmation email will be sent to the customer." if send_notification else "")),
 		"email_sent": email_result.get("success") if email_result else False
 	}
 
@@ -984,9 +1054,10 @@ def get_user_available_slots(department, meeting_type, date):
 
 	# Parse date
 	check_date = getdate(date)
+	today = getdate()
 
 	# Generate time slots (9 AM to 5 PM in 30-minute intervals by default)
-	from datetime import time
+	from datetime import time, datetime
 	available_slots = []
 
 	# Start from 9:00 AM to 4:30 PM (last slot that can fit a meeting before 5 PM)
@@ -997,7 +1068,23 @@ def get_user_available_slots(department, meeting_type, date):
 	current_time = time(start_hour, 0)
 	end_time = time(end_hour - 1, 60 - interval_minutes)
 
+	# If the date is today, get current time to filter out past slots
+	now_time = None
+	if check_date == today:
+		now = datetime.now()
+		# Add buffer time (e.g., 30 minutes from now as minimum booking time)
+		buffer_minutes = 30
+		now_minutes = now.hour * 60 + now.minute + buffer_minutes
+		now_time = time(min(now_minutes // 60, 23), now_minutes % 60)
+
 	while current_time <= end_time:
+		# Skip past times if booking for today
+		if now_time and current_time < now_time:
+			# Move to next slot
+			minutes = current_time.hour * 60 + current_time.minute + interval_minutes
+			current_time = time(minutes // 60, minutes % 60)
+			continue
+
 		# Check availability for this slot
 		availability = check_member_availability(
 			current_user,
@@ -1206,9 +1293,10 @@ def get_team_available_slots(department, meeting_type, date, participants):
 
 	# Parse date
 	check_date = getdate(date)
+	today = getdate()
 
 	# Generate time slots (9 AM to 5 PM in 30-minute intervals)
-	from datetime import time
+	from datetime import time, datetime
 	available_slots = []
 
 	start_hour = 9
@@ -1218,7 +1306,22 @@ def get_team_available_slots(department, meeting_type, date, participants):
 	current_time = time(start_hour, 0)
 	end_time = time(end_hour - 1, 60 - interval_minutes)
 
+	# If the date is today, get current time to filter out past slots
+	now_time = None
+	if check_date == today:
+		now = datetime.now()
+		# Add buffer time (30 minutes from now as minimum booking time)
+		buffer_minutes = 30
+		now_minutes = now.hour * 60 + now.minute + buffer_minutes
+		now_time = time(min(now_minutes // 60, 23), now_minutes % 60)
+
 	while current_time <= end_time:
+		# Skip past times if booking for today
+		if now_time and current_time < now_time:
+			minutes = current_time.hour * 60 + current_time.minute + interval_minutes
+			current_time = time(minutes // 60, minutes % 60)
+			continue
+
 		# Check if ALL participants are available at this time slot (AND operation)
 		all_available = True
 		unavailable_participants = []
@@ -1261,6 +1364,100 @@ def get_team_available_slots(department, meeting_type, date, participants):
 
 
 @frappe.whitelist()
+def get_team_available_dates(department, meeting_type, month, year, participants):
+	"""
+	Get available dates where ALL selected participants have at least one available time slot.
+	Used by the Team Meeting page calendar.
+
+	Args:
+		department (str): Department ID
+		meeting_type (str): Meeting Type ID
+		month (int): Month (1-12)
+		year (int): Year
+		participants (str or list): JSON string or list of participant user IDs
+
+	Returns:
+		dict: {
+			"available_dates": list of date strings (YYYY-MM-DD),
+			"timezone": str,
+			"month": int,
+			"year": int,
+			"participants_count": int
+		}
+	"""
+	from meeting_manager.meeting_manager.api.availability import has_member_availability_on_date
+	import json
+
+	if frappe.session.user == "Guest":
+		frappe.throw(_("You must be logged in"))
+
+	# Parse participants
+	if isinstance(participants, str):
+		participants = json.loads(participants)
+
+	if not participants or len(participants) == 0:
+		frappe.throw(_("Please select at least one participant"))
+
+	# Verify user is leader of department or System Manager
+	if "System Manager" not in frappe.get_roles():
+		is_leader = frappe.db.exists(
+			"MM Department",
+			{"name": department, "department_leader": frappe.session.user}
+		)
+		if not is_leader:
+			frappe.throw(_("You are not the leader of this department"))
+
+	# Convert to int
+	month = int(month)
+	year = int(year)
+
+	# Get meeting type details
+	mt_doc = frappe.get_doc("MM Meeting Type", meeting_type)
+
+	# Get department timezone
+	dept_doc = frappe.get_doc("MM Department", department)
+	timezone = dept_doc.timezone or "UTC"
+
+	# Calculate date range for the month
+	start_date = getdate(f"{year}-{month:02d}-01")
+	if month == 12:
+		end_date = getdate(f"{year + 1}-01-01") - timedelta(days=1)
+	else:
+		end_date = getdate(f"{year}-{month + 1:02d}-01") - timedelta(days=1)
+
+	# Iterate through each date in the month
+	available_dates = []
+	current_date = start_date
+	today = getdate()
+
+	while current_date <= end_date:
+		# Skip dates in the past
+		if current_date < today:
+			current_date += timedelta(days=1)
+			continue
+
+		# Check if ALL participants have availability on this date (AND operation)
+		all_have_availability = True
+		for participant_id in participants:
+			if not has_member_availability_on_date(participant_id, current_date, mt_doc.duration):
+				all_have_availability = False
+				break
+
+		if all_have_availability:
+			available_dates.append(current_date.strftime("%Y-%m-%d"))
+
+		current_date += timedelta(days=1)
+
+	return {
+		"available_dates": available_dates,
+		"timezone": timezone,
+		"month": month,
+		"year": year,
+		"participants_count": len(participants)
+	}
+
+
+@frappe.whitelist()
 def create_team_meeting(meeting_data):
 	"""
 	Create an internal team meeting by a Department Leader
@@ -1276,10 +1473,13 @@ def create_team_meeting(meeting_data):
 			"scheduled_date": str (YYYY-MM-DD),
 			"scheduled_start_time": str (HH:MM),
 			"participants": list of user IDs,
+			"meeting_title": str (optional - custom meeting title),
+			"service_type": str (optional - service type from dropdown),
 			"meeting_agenda": str (optional),
 			"meeting_notes": str (optional),
+			"meeting_location": str (optional - physical location address),
 			"location_type": str (optional),
-			"meeting_link": str (optional),
+			"meeting_link": str (optional - video meeting URL),
 			"send_email_notification": bool (optional, default True)
 		}
 
@@ -1366,9 +1566,9 @@ def create_team_meeting(meeting_data):
 		reasons = ", ".join([f"{p['name']}: {p['reason']}" for p in unavailable_participants])
 		frappe.throw(_(f"Some participants are not available: {reasons}"))
 
-	# Generate meeting title
+	# Generate meeting title - use custom title if provided, else generate default
 	participant_count = len(participants)
-	meeting_title = f"{meeting_type.meeting_name} - Team Meeting ({participant_count} participants)"
+	meeting_title = meeting_data.get("meeting_title") or f"{meeting_type.meeting_name} - Team Meeting ({participant_count} participants)"
 
 	# Create booking with current user (leader) as the host
 	import secrets
@@ -1389,21 +1589,25 @@ def create_team_meeting(meeting_data):
 
 		# Meeting details
 		"location_type": meeting_data.get("location_type", meeting_type.location_type),
+		"meeting_location": meeting_data.get("meeting_location"),
 		"video_platform": meeting_type.video_platform,
-		"meeting_link": meeting_data.get("meeting_link"),
-		"meeting_agenda": meeting_data.get("meeting_agenda"),
-		"meeting_notes": meeting_data.get("meeting_notes"),
+		"video_meeting_url": meeting_data.get("meeting_link"),
+		"meeting_description": meeting_data.get("meeting_agenda"),
+
+		# Service type
+		"select_mkru": meeting_data.get("service_type"),
 
 		# Status
 		"status": "Confirmed",
-		"requires_approval": False,
-
-		# Assignment
-		"assignment_method": "Team Meeting (Leader)",
+		"booking_status": "Confirmed",
+		"booking_source": "Internal System",
 
 		# Security tokens
 		"cancel_token": secrets.token_urlsafe(32),
-		"reschedule_token": secrets.token_urlsafe(32)
+		"reschedule_token": secrets.token_urlsafe(32),
+
+		# Created by
+		"created_by": current_user
 	})
 
 	# Add all participants to the participants child table
@@ -1450,3 +1654,183 @@ def create_team_meeting(meeting_data):
 		"message": _("Team meeting created successfully!" + (" Notification emails will be sent to all participants." if send_notification else "")),
 		"email_sent": email_result.get("success") if email_result else False
 	}
+
+
+@frappe.whitelist()
+def get_user_available_dates(department, meeting_type, month, year):
+	"""
+	Get available dates for the CURRENT USER on a specific month.
+	Used by the Self Book Meeting page calendar.
+
+	Args:
+		department (str): Department ID
+		meeting_type (str): Meeting Type ID
+		month (int): Month (1-12)
+		year (int): Year
+
+	Returns:
+		dict: {
+			"available_dates": list of date strings (YYYY-MM-DD),
+			"timezone": str,
+			"month": int,
+			"year": int
+		}
+	"""
+	from meeting_manager.meeting_manager.api.availability import has_member_availability_on_date
+	from meeting_manager.meeting_manager.utils.validation import validate_advance_booking_window
+
+	if frappe.session.user == "Guest":
+		frappe.throw(_("You must be logged in"))
+
+	current_user = frappe.session.user
+
+	# Convert to int
+	month = int(month)
+	year = int(year)
+
+	# Verify user is member of department
+	is_member = frappe.db.exists(
+		"MM Department Member",
+		{
+			"parent": department,
+			"parenttype": "MM Department",
+			"member": current_user,
+			"is_active": 1
+		}
+	)
+
+	if not is_member:
+		frappe.throw(_("You are not a member of this department"))
+
+	# Get meeting type details
+	mt_doc = frappe.get_doc("MM Meeting Type", meeting_type)
+
+	# Get department timezone
+	dept_doc = frappe.get_doc("MM Department", department)
+	timezone = dept_doc.timezone or "UTC"
+
+	# Calculate date range for the month
+	start_date = getdate(f"{year}-{month:02d}-01")
+	if month == 12:
+		end_date = getdate(f"{year + 1}-01-01") - timedelta(days=1)
+	else:
+		end_date = getdate(f"{year}-{month + 1:02d}-01") - timedelta(days=1)
+
+	# Iterate through each date in the month
+	available_dates = []
+	current_date = start_date
+	today = getdate()
+
+	while current_date <= end_date:
+		# Skip dates in the past
+		if current_date < today:
+			current_date += timedelta(days=1)
+			continue
+
+		# Check advance booking window
+		advance_check = validate_advance_booking_window(current_user, current_date)
+		if not advance_check["valid"]:
+			current_date += timedelta(days=1)
+			continue
+
+		# Check if user has any availability on this date
+		if has_member_availability_on_date(current_user, current_date, mt_doc.duration):
+			available_dates.append(current_date.strftime("%Y-%m-%d"))
+
+		current_date += timedelta(days=1)
+
+	return {
+		"available_dates": available_dates,
+		"timezone": timezone,
+		"month": month,
+		"year": year
+	}
+
+
+@frappe.whitelist()
+def search_customers(query):
+	"""
+	Search customers by name, email, or phone.
+	Used by the Self Book Meeting page customer search.
+
+	Args:
+		query (str): Search query (min 2 characters)
+
+	Returns:
+		list: List of matching customers with id, name, email, phone
+	"""
+	if frappe.session.user == "Guest":
+		frappe.throw(_("You must be logged in"))
+
+	if not query or len(query) < 2:
+		return []
+
+	query_lower = query.lower()
+	query_pattern = f"%{query_lower}%"
+
+	# Search customers by name, primary_email, CVR, company, or in child tables
+	customers = frappe.db.sql("""
+		SELECT DISTINCT
+			c.name as id,
+			c.customer_name as name,
+			c.primary_email as email,
+			(SELECT cp.phone_number FROM `tabMM Customer Phone` cp
+			 WHERE cp.parent = c.name AND cp.is_primary = 1 LIMIT 1) as phone,
+			c.cvr_number,
+			c.company_name,
+			c.total_bookings
+		FROM `tabMM Customer` c
+		LEFT JOIN `tabMM Customer Email` ce ON ce.parent = c.name
+		LEFT JOIN `tabMM Customer Phone` cp ON cp.parent = c.name
+		WHERE
+			LOWER(c.customer_name) LIKE %(pattern)s
+			OR LOWER(c.primary_email) LIKE %(pattern)s
+			OR LOWER(ce.email_address) LIKE %(pattern)s
+			OR LOWER(c.cvr_number) LIKE %(pattern)s
+			OR LOWER(c.company_name) LIKE %(pattern)s
+			OR REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(cp.phone_number, ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') LIKE %(pattern)s
+		ORDER BY c.customer_name
+		LIMIT 10
+	""", {"pattern": query_pattern}, as_dict=True)
+
+	return customers
+
+
+@frappe.whitelist()
+def get_recent_customers(limit=10):
+	"""
+	Get recent customers for the Self Book Meeting page.
+	Returns customers sorted by last booking date or creation date.
+
+	Args:
+		limit (int): Maximum number of customers to return (default 10)
+
+	Returns:
+		list: List of recent customers with id, name, email, phone
+	"""
+	if frappe.session.user == "Guest":
+		frappe.throw(_("You must be logged in"))
+
+	limit = int(limit)
+
+	# Get recent customers ordered by last booking date, then creation
+	customers = frappe.db.sql("""
+		SELECT
+			c.name as id,
+			c.customer_name as name,
+			c.primary_email as email,
+			(SELECT cp.phone_number FROM `tabMM Customer Phone` cp
+			 WHERE cp.parent = c.name AND cp.is_primary = 1 LIMIT 1) as phone,
+			c.cvr_number,
+			c.company_name,
+			c.total_bookings,
+			c.last_booking_date
+		FROM `tabMM Customer` c
+		ORDER BY
+			CASE WHEN c.last_booking_date IS NULL THEN 1 ELSE 0 END,
+			c.last_booking_date DESC,
+			c.creation DESC
+		LIMIT %(limit)s
+	""", {"limit": limit}, as_dict=True)
+
+	return customers

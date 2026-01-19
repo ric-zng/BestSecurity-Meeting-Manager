@@ -172,6 +172,54 @@ frappe.pages['mm-timeline-calendar'].on_page_load = function(wrapper) {
 			overflow: visible !important;
 		}
 
+		/* Grey out non-business hours (unavailable time slots) */
+		#mm-timeline-calendar .fc-non-business {
+			background-color: rgba(128, 128, 128, 0.15) !important;
+			background-image: repeating-linear-gradient(
+				45deg,
+				transparent,
+				transparent 10px,
+				rgba(128, 128, 128, 0.05) 10px,
+				rgba(128, 128, 128, 0.05) 20px
+			) !important;
+		}
+
+		/* Dark theme non-business hours */
+		[data-theme="dark"] #mm-timeline-calendar .fc-non-business {
+			background-color: rgba(0, 0, 0, 0.3) !important;
+			background-image: repeating-linear-gradient(
+				45deg,
+				transparent,
+				transparent 10px,
+				rgba(0, 0, 0, 0.2) 10px,
+				rgba(0, 0, 0, 0.2) 20px
+			) !important;
+		}
+
+		/* Business hours (available time slots) remain white/normal */
+		#mm-timeline-calendar .fc-timegrid-col.fc-day:not(.fc-non-business) {
+			background-color: var(--fc-bg-color);
+		}
+
+		/* Date override background events - more visible with diagonal stripes */
+		#mm-timeline-calendar .fc-bg-event {
+			opacity: 1 !important;
+			border: 1px dashed rgba(156, 163, 175, 0.5);
+			background-image: repeating-linear-gradient(
+				-45deg,
+				transparent,
+				transparent 8px,
+				rgba(0, 0, 0, 0.08) 8px,
+				rgba(0, 0, 0, 0.08) 16px
+			) !important;
+		}
+
+		/* Prevent dragging/dropping on date override areas */
+		#mm-timeline-calendar .fc-bg-event {
+			pointer-events: none !important;
+			cursor: not-allowed !important;
+		}
+
 		/* Fix for week view - prevent shrinking */
 		#mm-timeline-calendar .fc-resourceTimeGridWeek-view .fc-timegrid-col {
 			min-width: 150px !important;
@@ -427,9 +475,60 @@ function initializeCalendar(wrapper) {
 		initialView: 'resourceTimeGridDay',
 		schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
 
+		// Custom buttons
+		customButtons: {
+			dateSelector: {
+				text: 'Jump to Date',
+				click: function() {
+					const currentView = wrapper.calendar.view.type;
+					let pickerType = 'date';
+					let dialogTitle = 'Select Date';
+
+					// Determine picker type based on current view
+					if (currentView.includes('Week')) {
+						pickerType = 'week';
+						dialogTitle = 'Select Week';
+					} else if (currentView.includes('Month')) {
+						pickerType = 'month';
+						dialogTitle = 'Select Month';
+					}
+
+					// Create date input field
+					const d = new frappe.ui.Dialog({
+						title: dialogTitle,
+						fields: [
+							{
+								fieldname: 'selected_date',
+								fieldtype: 'Date',
+								label: pickerType === 'month' ? 'Month' : (pickerType === 'week' ? 'Week' : 'Date'),
+								reqd: 1,
+								default: frappe.datetime.now_date()
+							}
+						],
+						primary_action_label: 'Jump',
+						primary_action: function(values) {
+							if (values.selected_date) {
+								// Navigate to the selected date
+								wrapper.calendar.gotoDate(values.selected_date);
+								d.hide();
+
+								// Show confirmation
+								frappe.show_alert({
+									message: `Jumped to ${frappe.datetime.str_to_user(values.selected_date)}`,
+									indicator: 'blue'
+								}, 2);
+							}
+						}
+					});
+
+					d.show();
+				}
+			}
+		},
+
 		// Header toolbar
 		headerToolbar: {
-			left: 'prev,next today',
+			left: 'prev,next today dateSelector',
 			center: 'title',
 			right: 'resourceTimeGridDay,resourceTimeGridWeek,dayGridMonth'
 		},
@@ -532,21 +631,146 @@ function initializeCalendar(wrapper) {
 					}, 3);
 					return false;
 				}
+
+				// Check if the target resource has date overrides that would block this time
+				const targetResourceId = dropInfo.resource.id;
+				const dropDate = dropInfo.start.toISOString().split('T')[0];
+				const dropTime = dropInfo.start.toTimeString().split(' ')[0].substring(0, 5); // HH:MM
+
+				// Helper function to normalize time format for comparison (HH:MM)
+				const normalizeTimeForComparison = (timeStr) => {
+					if (!timeStr) return null;
+					const parts = String(timeStr).split(':');
+					const hours = parts[0].padStart(2, '0');
+					const minutes = (parts[1] || '00').padStart(2, '0');
+					return `${hours}:${minutes}`; // Return HH:MM format
+				};
+
+				if (wrapper.resourcesWithOverrides) {
+					const targetResource = wrapper.resourcesWithOverrides.find(r => r.id === targetResourceId);
+
+					if (targetResource && targetResource.dateOverrides) {
+						for (const override of targetResource.dateOverrides) {
+							// Check if dropping on a date with overrides
+							if (override.date === dropDate) {
+								console.log(`[Date Override Check] Checking drop at ${dropTime} on ${dropDate}`);
+								console.log(`[Date Override] Override data:`, override);
+
+								// Case 1: Full day unavailable
+								if (!override.available) {
+									frappe.show_alert({
+										message: `New member is not available at this time: ${override.reason || 'No need'}`,
+										indicator: 'red'
+									}, 4);
+									return false;
+								}
+
+								// Case 2: Multiple available slots - check if drop time falls within ANY slot
+								if (override.available && override.availableSlots && override.availableSlots.length > 0) {
+									const normalizedDropTime = normalizeTimeForComparison(dropTime);
+
+									// Check if drop time is within ANY of the available slots
+									let withinAvailableSlot = false;
+									let availableSlotsStr = [];
+
+									for (const slot of override.availableSlots) {
+										const normalizedStartTime = normalizeTimeForComparison(slot.start);
+										const normalizedEndTime = normalizeTimeForComparison(slot.end);
+
+										availableSlotsStr.push(`${normalizedStartTime}-${normalizedEndTime}`);
+
+										// Check if drop time is within this slot
+										if (normalizedDropTime >= normalizedStartTime && normalizedDropTime < normalizedEndTime) {
+											withinAvailableSlot = true;
+											console.log(`[Time Check] ALLOWED: Drop time ${normalizedDropTime} within slot ${normalizedStartTime}-${normalizedEndTime}`);
+											break;
+										}
+									}
+
+									if (!withinAvailableSlot) {
+										console.log(`[Time Check] BLOCKED: Drop time ${normalizedDropTime} outside all available slots`);
+										frappe.show_alert({
+											message: `Member only available during: ${availableSlotsStr.join(', ')} on this date`,
+											indicator: 'orange'
+										}, 4);
+										return false;
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 
 			return true;
 		},
 
-		// Dynamic resource loading
+		// Dynamic resource loading with business hours
 		resources: function(info, successCallback, failureCallback) {
 			const department = document.getElementById('department-filter')?.value || null;
 
 			frappe.call({
 				method: 'meeting_manager.meeting_manager.page.mm_timeline_calendar.api.get_resources',
 				args: { department: department },
-				callback: (r) => {
+				callback: async (r) => {
 					if (r.message) {
-						successCallback(r.message);
+						const resources = r.message;
+
+						// Extract date range from info
+						const startDate = info.start ? info.start.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+						const endDate = info.end ? info.end.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+
+						// Fetch business hours for each resource
+						const resourcesWithBusinessHours = await Promise.all(
+							resources.map(async (resource) => {
+								try {
+									const businessHoursResult = await new Promise((resolve, reject) => {
+										frappe.call({
+											method: 'meeting_manager.meeting_manager.page.mm_timeline_calendar.api.get_resource_business_hours',
+											args: {
+												resource_id: resource.id,
+												start_date: startDate,
+												end_date: endDate
+											},
+											callback: (bhRes) => {
+												if (bhRes.message) {
+													resolve(bhRes.message);
+												} else {
+													resolve(null);
+												}
+											},
+											error: () => resolve(null)
+										});
+									});
+
+									// UPDATED: Handle new structure with business hours and date overrides
+									if (businessHoursResult) {
+										console.log(`[Business Hours API] Response for ${resource.id}:`, businessHoursResult);
+
+										// Attach regular business hours to resource
+										if (businessHoursResult.businessHours && businessHoursResult.businessHours.length > 0) {
+											resource.businessHours = businessHoursResult.businessHours;
+											console.log(`[Business Hours] Attached ${businessHoursResult.businessHours.length} business hour rules to ${resource.id}`);
+										}
+
+										// Store date overrides for later use (we'll add them as background events)
+										if (businessHoursResult.dateOverrides && businessHoursResult.dateOverrides.length > 0) {
+											resource.dateOverrides = businessHoursResult.dateOverrides;
+											console.log(`[Date Overrides] Attached ${businessHoursResult.dateOverrides.length} date overrides to ${resource.id}`);
+										}
+									}
+								} catch (error) {
+									console.error(`Error loading business hours for ${resource.id}:`, error);
+								}
+
+								return resource;
+							})
+						);
+
+						// Store resources with overrides in wrapper for use by events function
+						wrapper.resourcesWithOverrides = resourcesWithBusinessHours;
+
+						successCallback(resourcesWithBusinessHours);
 					} else {
 						failureCallback('Failed to load resources');
 					}
@@ -576,7 +800,293 @@ function initializeCalendar(wrapper) {
 				},
 				callback: (r) => {
 					if (r.message) {
-						successCallback(r.message);
+						const events = r.message;
+
+						console.log(`[Events Loaded] ${events.length} booking events from API`);
+						console.log(`[Resources Available] ${wrapper.resourcesWithOverrides ? wrapper.resourcesWithOverrides.length : 0} resources with overrides`);
+
+						// Add date override background events
+						// These will appear as gray blocked-out areas
+						if (wrapper.resourcesWithOverrides) {
+							console.log('[Processing Date Overrides] Starting...');
+							wrapper.resourcesWithOverrides.forEach(resource => {
+								console.log(`[Resource] ${resource.id} - Has overrides: ${!!resource.dateOverrides}`);
+								if (resource.dateOverrides) {
+									console.log(`[Resource ${resource.id}] ${resource.dateOverrides.length} date overrides found`);
+									resource.dateOverrides.forEach(override => {
+										console.log(`[Override] Date: ${override.date}, Available: ${override.available}, Slots: ${override.availableSlots ? override.availableSlots.length : 0}`);
+
+										// Case 1: Full day unavailable
+										if (!override.available && override.allDay) {
+											events.push({
+												id: `override-${resource.id}-${override.date}`,
+												resourceId: resource.id,
+												start: override.date,
+												end: override.date,
+												display: 'background',
+												backgroundColor: 'rgba(220, 38, 38, 0.2)', // Red tint
+												title: override.reason || 'Not available',
+												editable: false,
+												extendedProps: {
+													isDateOverride: true,
+													reason: override.reason
+												}
+											});
+										}
+
+										// Case 2: Multiple available time slots - intelligently handle extensions and restrictions
+										else if (override.available && override.availableSlots && override.availableSlots.length > 0) {
+											console.log(`[Raw Slots from API]:`, override.availableSlots);
+
+											// Normalize time format to HH:MM:SS
+											const normalizeTime = (timeStr) => {
+												const parts = String(timeStr).split(':');
+												const hours = parts[0].padStart(2, '0');
+												const minutes = (parts[1] || '00').padStart(2, '0');
+												const seconds = (parts[2] || '00').padStart(2, '0');
+												return `${hours}:${minutes}:${seconds}`;
+											};
+
+											// Get regular business hours for this specific date
+											const getRegularHoursForDate = (dateStr) => {
+												const date = new Date(dateStr + 'T00:00:00');
+												const fcDayOfWeek = date.getDay(); // Sun=0, Mon=1, Tue=2, etc.
+
+												if (!resource.businessHours) {
+													console.log(`[Regular Hours] No business hours defined for ${resource.id}`);
+													return null;
+												}
+
+												// Find business hours for this day of week
+												for (const bh of resource.businessHours) {
+													if (bh.daysOfWeek && bh.daysOfWeek.includes(fcDayOfWeek)) {
+														const regularHours = {
+															start: normalizeTime(bh.startTime),
+															end: normalizeTime(bh.endTime)
+														};
+														console.log(`[Regular Hours] ${dateStr} (day ${fcDayOfWeek}): ${regularHours.start} - ${regularHours.end}`);
+														return regularHours;
+													}
+												}
+
+												console.log(`[Regular Hours] No hours defined for day ${fcDayOfWeek}`);
+												return null;
+											};
+
+											// Sort slots by start time
+											const sortedSlots = override.availableSlots
+												.map(slot => ({
+													start: normalizeTime(slot.start),
+													end: normalizeTime(slot.end),
+													reason: slot.reason
+												}))
+												.sort((a, b) => a.start.localeCompare(b.start));
+
+											console.log(`[Date Override] ${resource.id} on ${override.date}: ${sortedSlots.length} available slot(s)`);
+											sortedSlots.forEach((slot, idx) => {
+												console.log(`  Slot ${idx + 1}: ${slot.start} - ${slot.end}`);
+											});
+
+											// Get regular hours for comparison
+											const regularHours = getRegularHoursForDate(override.date);
+
+											if (regularHours) {
+												// We have regular hours - compare slots against them
+												const firstSlot = sortedSlots[0];
+												const lastSlot = sortedSlots[sortedSlots.length - 1];
+
+												console.log(`[Comparison] Regular: ${regularHours.start} - ${regularHours.end}`);
+												console.log(`[Comparison] Override: ${firstSlot.start} - ${lastSlot.end}`);
+
+												// Calculate overall available range (union of regular hours and override slots)
+												const overallStart = firstSlot.start < regularHours.start ? firstSlot.start : regularHours.start;
+												const overallEnd = lastSlot.end > regularHours.end ? lastSlot.end : regularHours.end;
+
+												console.log(`[Overall Range] ${overallStart} - ${overallEnd} (WHITE - available)`);
+
+												// Handle time BEFORE first slot (within overall range)
+												if (firstSlot.start > regularHours.start) {
+													// Block from regular start to first slot (restriction within regular hours)
+													events.push({
+														id: `override-restrict-before-${resource.id}-${override.date}`,
+														resourceId: resource.id,
+														start: `${override.date}T${regularHours.start}`,
+														end: `${override.date}T${firstSlot.start}`,
+														display: 'background',
+														backgroundColor: 'rgba(220, 38, 38, 0.3)',
+														title: `Unavailable - Restricted from ${regularHours.start.substring(0, 5)}`,
+														editable: false,
+														extendedProps: {
+															isDateOverride: true,
+															blockType: 'restricted_before'
+														}
+													});
+													console.log(`  [Restricted Before] ${regularHours.start} to ${firstSlot.start} (RED)`);
+												}
+												// Note: If firstSlot.start < regularHours.start, we DON'T create any event
+												// This leaves that time as WHITE/available (extended hours)
+
+												// Block gaps between consecutive slots (always RED - these are unavailable)
+												for (let i = 0; i < sortedSlots.length - 1; i++) {
+													const currentSlot = sortedSlots[i];
+													const nextSlot = sortedSlots[i + 1];
+
+													events.push({
+														id: `override-gap-${i}-${resource.id}-${override.date}`,
+														resourceId: resource.id,
+														start: `${override.date}T${currentSlot.end}`,
+														end: `${override.date}T${nextSlot.start}`,
+														display: 'background',
+														backgroundColor: 'rgba(220, 38, 38, 0.3)',
+														title: `Unavailable - Gap ${currentSlot.end.substring(0, 5)} to ${nextSlot.start.substring(0, 5)}`,
+														editable: false,
+														extendedProps: {
+															isDateOverride: true,
+															blockType: 'gap'
+														}
+													});
+													console.log(`  [Gap Block] ${currentSlot.end} to ${nextSlot.start} (RED)`);
+												}
+
+												// Handle time AFTER last slot (within overall range)
+												if (lastSlot.end < regularHours.end) {
+													// Block from last slot to regular end (restriction within regular hours)
+													events.push({
+														id: `override-restrict-after-${resource.id}-${override.date}`,
+														resourceId: resource.id,
+														start: `${override.date}T${lastSlot.end}`,
+														end: `${override.date}T${regularHours.end}`,
+														display: 'background',
+														backgroundColor: 'rgba(220, 38, 38, 0.3)',
+														title: `Unavailable - Restricted to ${lastSlot.end.substring(0, 5)}`,
+														editable: false,
+														extendedProps: {
+															isDateOverride: true,
+															blockType: 'restricted_after'
+														}
+													});
+													console.log(`  [Restricted After] ${lastSlot.end} to ${regularHours.end} (RED)`);
+												}
+												// Note: If lastSlot.end > regularHours.end, we DON'T create any event
+												// This leaves that time as WHITE/available (extended hours)
+
+												// Block times OUTSIDE the overall range
+												// Block before overall start (00:00 to earliest available time)
+												if (overallStart > '00:00:00') {
+													events.push({
+														id: `override-block-before-all-${resource.id}-${override.date}`,
+														resourceId: resource.id,
+														start: `${override.date}T00:00:00`,
+														end: `${override.date}T${overallStart}`,
+														display: 'background',
+														backgroundColor: 'rgba(220, 38, 38, 0.3)',
+														title: `Unavailable`,
+														editable: false,
+														extendedProps: {
+															isDateOverride: true,
+															blockType: 'outside_hours'
+														}
+													});
+													console.log(`  [Block Outside] 00:00:00 to ${overallStart} (RED)`);
+												}
+
+												// Block after overall end (latest available time to 23:59)
+												if (overallEnd < '23:59:59') {
+													events.push({
+														id: `override-block-after-all-${resource.id}-${override.date}`,
+														resourceId: resource.id,
+														start: `${override.date}T${overallEnd}`,
+														end: `${override.date}T23:59:59`,
+														display: 'background',
+														backgroundColor: 'rgba(220, 38, 38, 0.3)',
+														title: `Unavailable`,
+														editable: false,
+														extendedProps: {
+															isDateOverride: true,
+															blockType: 'outside_hours'
+														}
+													});
+													console.log(`  [Block Outside] ${overallEnd} to 23:59:59 (RED)`);
+												}
+
+												// Log extended hours for clarity
+												if (firstSlot.start < regularHours.start) {
+													console.log(`  [Extended Before] ${firstSlot.start} to ${regularHours.start} (WHITE - no event needed)`);
+												}
+												if (lastSlot.end > regularHours.end) {
+													console.log(`  [Extended After] ${regularHours.end} to ${lastSlot.end} (WHITE - no event needed)`);
+												}
+
+											} else {
+												// No regular hours defined - use old logic (block all gaps)
+												console.log(`[Fallback] No regular hours, blocking all gaps`);
+
+												const firstSlot = sortedSlots[0];
+												const lastSlot = sortedSlots[sortedSlots.length - 1];
+
+												// Block from 00:00 to first slot start
+												events.push({
+													id: `override-before-${resource.id}-${override.date}`,
+													resourceId: resource.id,
+													start: `${override.date}T00:00:00`,
+													end: `${override.date}T${firstSlot.start}`,
+													display: 'background',
+													backgroundColor: 'rgba(220, 38, 38, 0.3)',
+													title: `Unavailable - Before ${firstSlot.start.substring(0, 5)}`,
+													editable: false,
+													extendedProps: {
+														isDateOverride: true,
+														blockType: 'before_hours'
+													}
+												});
+												console.log(`  [Block] 00:00:00 to ${firstSlot.start}`);
+
+												// Block gaps between consecutive slots
+												for (let i = 0; i < sortedSlots.length - 1; i++) {
+													const currentSlot = sortedSlots[i];
+													const nextSlot = sortedSlots[i + 1];
+
+													events.push({
+														id: `override-gap-${i}-${resource.id}-${override.date}`,
+														resourceId: resource.id,
+														start: `${override.date}T${currentSlot.end}`,
+														end: `${override.date}T${nextSlot.start}`,
+														display: 'background',
+														backgroundColor: 'rgba(220, 38, 38, 0.3)',
+														title: `Unavailable - Gap ${currentSlot.end.substring(0, 5)} to ${nextSlot.start.substring(0, 5)}`,
+														editable: false,
+														extendedProps: {
+															isDateOverride: true,
+															blockType: 'gap'
+														}
+													});
+													console.log(`  [Block Gap] ${currentSlot.end} to ${nextSlot.start}`);
+												}
+
+												// Block from last slot end to 23:59
+												events.push({
+													id: `override-after-${resource.id}-${override.date}`,
+													resourceId: resource.id,
+													start: `${override.date}T${lastSlot.end}`,
+													end: `${override.date}T23:59:59`,
+													display: 'background',
+													backgroundColor: 'rgba(220, 38, 38, 0.3)',
+													title: `Unavailable - After ${lastSlot.end.substring(0, 5)}`,
+													editable: false,
+													extendedProps: {
+														isDateOverride: true,
+														blockType: 'after_hours'
+													}
+												});
+												console.log(`  [Block] ${lastSlot.end} to 23:59:59`);
+											}
+										}
+									});
+								}
+							});
+						}
+
+						successCallback(events);
 					} else {
 						failureCallback('Failed to load events');
 					}
@@ -596,9 +1106,18 @@ function initializeCalendar(wrapper) {
 			const event = arg.event;
 			const props = event.extendedProps;
 
+			// Skip custom rendering for background events (date overrides)
+			if (props.isDateOverride || arg.event.display === 'background') {
+				return; // Use default rendering for background events
+			}
+
 			const title = arg?.event?.title;
-			
-			// Format times
+
+			// Format times (only for regular events)
+			if (!event.start || !event.end) {
+				return; // Skip if no valid dates
+			}
+
 			const startTime = event.start.toLocaleTimeString('en-US', {
 				hour: 'numeric',
 				minute: '2-digit',
@@ -636,12 +1155,19 @@ function initializeCalendar(wrapper) {
 		},
 
 		eventDidMount: function(info) {
-			// Add tooltip with event details
+			// Skip tooltips for background events (date overrides)
 			const props = info.event.extendedProps;
+			if (props.isDateOverride || info.event.display === 'background') {
+				return; // No tooltip needed for background events
+			}
 
 			const event = info.event;
 
-			// Format times
+			// Format times (only for regular events)
+			if (!event.start || !event.end) {
+				return; // Skip if no valid dates
+			}
+
 			const startTime = event.start.toLocaleTimeString('en-US', {
 				hour: 'numeric',
 				minute: '2-digit',
@@ -686,6 +1212,21 @@ function initializeCalendar(wrapper) {
 	});
 
 	wrapper.calendar.render();
+
+	// CRITICAL FIX: Refetch resources when date range changes
+	// This ensures date overrides are loaded for the visible date range
+	wrapper.calendar.on('datesSet', function(dateInfo) {
+		console.log(`[Calendar Date Changed] Visible range: ${dateInfo.startStr} to ${dateInfo.endStr}`);
+		// Refetch resources with new date range
+		wrapper.calendar.refetchResources();
+
+		// IMPORTANT: Refetch events AFTER resources are updated
+		// This ensures background events are created with the new date overrides
+		setTimeout(() => {
+			console.log('[Refetching Events] After resources update');
+			wrapper.calendar.refetchEvents();
+		}, 500); // Small delay to ensure resources finish loading
+	});
 
 	// Set dynamic tooltips for buttons after render
 	setTimeout(() => {
@@ -935,6 +1476,8 @@ function updateBooking(event, newResource, resourceChanged, timeChanged, info, w
 	if (timeChanged) {
 		updateData.start_datetime = event.start.toISOString();
 		updateData.end_datetime = event.end.toISOString();
+		// Send browser timezone so backend can convert correctly
+		updateData.browser_timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 	}
 
 	if (resourceChanged && newResource) {

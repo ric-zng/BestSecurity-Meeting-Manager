@@ -96,12 +96,18 @@ Three levels of history tracking:
 - **Assignment History**: All assignment changes (assigned, unassigned, primary changed)
 - **Status Changes**: Tracked via before_save hook with descriptions
 
-### 10. **Customer Details**
+### 10. **Customer Management**
 For external bookings (`is_internal = 0`):
-- **Customer Name**: Full name (required)
-- **Customer Email**: Email address with validation (required)
-- **Customer Phone**: Phone number with format validation
-- **Customer Notes**: Special requests, accessibility needs, etc.
+- **Customer Link**: Links to MM Customer doctype (required for external bookings)
+- **Customer Email (at booking)**: Cached email for audit trail (read-only)
+- **Customer Phone (at booking)**: Cached phone for audit trail (read-only)
+- **Customer Notes**: Booking-specific notes and special requests
+
+The new Customer Management System provides:
+- **Automatic Deduplication**: Customers are identified by email (primary) or phone
+- **Multiple Contacts**: Each customer can have multiple emails and phone numbers
+- **Booking History**: Track all bookings per customer
+- **Audit Trail**: Cached fields preserve customer contact info at booking time
 
 ---
 
@@ -149,12 +155,21 @@ For external bookings (`is_internal = 0`):
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `customer_name` | Data | Conditional* | Customer full name |
-| `customer_email` | Data | Conditional* | Customer email address (validated) |
-| `customer_phone` | Data | No | Customer phone number (validated) |
+| `customer` | Link (MM Customer) | Conditional* | Link to customer record |
+| `customer_email_at_booking` | Data | Auto | Customer email at time of booking (read-only, cached for audit trail) |
+| `customer_phone_at_booking` | Data | Auto | Customer phone at time of booking (read-only, cached for audit trail) |
 | `customer_notes` | Text | No | Customer's notes or special requests |
 
 *Required when `is_internal = 0`
+
+**Customer Management System**:
+The booking now links to a separate `MM Customer` doctype instead of storing customer data inline. This provides:
+- **Automatic Deduplication**: Customers are identified by email (primary) or phone during public booking
+- **Multiple Contacts**: Each customer can have multiple emails and phone numbers via child tables
+- **Booking History**: Track all bookings per customer from the MM Customer record
+- **Audit Trail**: Cached fields (`customer_email_at_booking`, `customer_phone_at_booking`) preserve contact info at booking time even if customer updates their details later
+
+See [MM Customer](../mm_customer/README.md) for full customer doctype documentation.
 
 ### Participants Section
 
@@ -280,7 +295,18 @@ Complete audit log of all booking events and changes.
 **Scenario**: John Doe (customer) books a 30-minute support call through the public booking page.
 
 ```python
-# System creates booking (public booking API)
+# The public booking API handles customer management automatically
+from meeting_manager.meeting_manager.services.customer_service import find_or_create_customer
+
+# Step 1: Find or create customer (handled by public API)
+customer_result = find_or_create_customer(
+    email="john@customer.com",
+    phone="+1-555-123-4567",
+    name="John Doe"
+)
+# Returns: {"customer_id": "MC-0042", "created": True, "customer": <Document>}
+
+# Step 2: System creates booking with customer link
 booking = frappe.get_doc({
     "doctype": "MM Meeting Booking",
     "meeting_type": "MM-MT-support-30-min-call",
@@ -294,10 +320,8 @@ booking = frappe.get_doc({
     "location_type": "Video Call",
     "video_meeting_url": "https://meet.google.com/abc-defg-hij",
 
-    # Customer details
-    "customer_name": "John Doe",
-    "customer_email": "john@customer.com",
-    "customer_phone": "+1-555-123-4567",
+    # Customer link (NEW: Links to MM Customer instead of inline fields)
+    "customer": customer_result["customer_id"],  # e.g., "MC-0042"
     "customer_notes": "Prefer email follow-up after call",
 
     # Assignment (auto-assigned by system using round-robin)
@@ -313,25 +337,29 @@ booking.insert()
 # 1. Generates booking_reference: "BK-A7F92K1X"
 # 2. Sets booking_date to today
 # 3. Calculates duration: 30 minutes
-# 4. Validates customer email format
-# 5. Checks Sarah's availability
-# 6. Sets created_by to system user (API)
-# 7. Adds "Created" entry to booking_history
-# 8. Triggers calendar sync to Sarah's Google Calendar
-# 9. Sends confirmation emails to John and Sarah
+# 4. Validates customer link exists
+# 5. Caches customer_email_at_booking and customer_phone_at_booking
+# 6. Checks Sarah's availability
+# 7. Sets created_by to system user (API)
+# 8. Adds "Created" entry to booking_history
+# 9. Triggers calendar sync to Sarah's Google Calendar
+# 10. Sends confirmation emails to John and Sarah
 
 print(f"Booking created: {booking.name}")
 print(f"Reference: {booking.booking_reference}")
-print(f"Status: {booking.booking_status}")
+print(f"Customer: {booking.customer}")
+print(f"Email (cached): {booking.customer_email_at_booking}")
 ```
 
 **Result**:
 - Booking: `MM-MB-MM-MT-support-30-min-call-0042`
 - Reference: `BK-A7F92K1X`
+- Customer: `MC-0042` (linked MM Customer record)
 - Sarah receives email with customer details
 - John receives email with booking details and meeting link
 - Event created in Sarah's Google Calendar
 - Booking appears in department dashboard
+- Customer record tracks this booking in their history
 
 ### Use Case 2: Internal Team Meeting Creation
 
@@ -633,21 +661,26 @@ The DocType includes **15 validation methods** ensuring comprehensive data integ
 ### 4. Customer Details Validation (`validate_customer_details`)
 
 **Validates** (only for external bookings, `is_internal = 0`):
-- `customer_name` is provided
-- `customer_email` is provided and valid email format
-- `customer_phone` has valid format (if provided):
-  - At least 7 digits after removing formatting characters
-  - Only digits allowed (after removing spaces, dashes, parentheses, plus)
+- `customer` link is provided (required for external bookings)
+- Linked MM Customer record exists in the database
+- Automatically caches customer contact info at booking time:
+  - `customer_email_at_booking` is populated from customer's `primary_email`
+  - `customer_phone_at_booking` is populated from customer's primary phone number
+
+**For internal bookings** (`is_internal = 1`):
+- Customer fields are automatically cleared (set to None)
 
 **Error Messages**:
-- `"Customer Name is required for external bookings."`
-- `"Customer Email is required for external bookings."`
-- `"Invalid email format for Customer Email: '{email}'"`
-- `"Invalid phone number format. Please provide a valid phone number."`
+- `"Customer is required for external bookings."`
+- `"Customer '{name}' does not exist."`
 
-**Example Phone Validation**:
-- ✅ Valid: "+1-555-123-4567", "(555) 123-4567", "555-123-4567", "+44 20 7123 4567"
-- ❌ Invalid: "123-456" (< 7 digits), "call me" (not numeric)
+**Customer Lookup During Public Booking**:
+When a customer submits a booking via the public interface, the system automatically:
+1. Searches for existing customer by email (primary identifier)
+2. If not found by email, searches by phone number
+3. If phone matches existing customer, adds the new email to their record
+4. If no match found, creates a new MM Customer record
+5. Links the booking to the found or created customer
 
 ### 5. Assigned Users Validation (`validate_assigned_users`)
 
@@ -1599,6 +1632,9 @@ CREATE INDEX idx_participant_email ON `tabMM Meeting Booking Participant` (email
 
 ## See Also
 
+- [MM Customer](../mm_customer/README.md) - Customer management and deduplication
+- [MM Customer Email](../mm_customer_email/README.md) - Customer email addresses (child table)
+- [MM Customer Phone](../mm_customer_phone/README.md) - Customer phone numbers (child table)
 - [MM Meeting Type](../mm_meeting_type/README.md) - Meeting type configuration
 - [MM Department](../mm_department/README.md) - Department management and assignment algorithms
 - [MM Calendar Event Sync](../mm_calendar_event_sync/README.md) - Calendar synchronization
@@ -1645,6 +1681,15 @@ When modifying this DocType:
 
 ---
 
-**Last Updated**: 2025-12-08
-**Version**: 1.0
+**Last Updated**: 2026-01-13
+**Version**: 1.1
 **Maintainer**: Best Security Development Team
+
+### Changelog
+
+**v1.1 (2026-01-13)**:
+- Refactored Customer Management: Customer data now stored in separate `MM Customer` doctype
+- Added `customer` link field replacing inline `customer_name`, `customer_email`, `customer_phone` fields
+- Added `customer_email_at_booking` and `customer_phone_at_booking` cached fields for audit trail
+- Updated validation to check customer link existence instead of inline field validation
+- Added customer deduplication logic via `customer_service.py`

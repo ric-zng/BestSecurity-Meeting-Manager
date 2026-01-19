@@ -10,6 +10,15 @@ import string
 
 
 class MMMeetingBooking(Document):
+	def _ensure_naive_datetime(self, dt):
+		"""Ensure datetime is timezone-naive for consistent comparisons"""
+		if dt is None:
+			return None
+		parsed = get_datetime(dt)
+		if hasattr(parsed, 'tzinfo') and parsed.tzinfo is not None:
+			return parsed.replace(tzinfo=None)
+		return parsed
+
 	def validate(self):
 		"""Validate meeting booking before saving"""
 		self.set_created_by()
@@ -19,7 +28,6 @@ class MMMeetingBooking(Document):
 		self.validate_customer_details()
 		self.validate_assigned_users()
 		self.validate_participants()
-		self.validate_approval_workflow()
 		self.validate_calendar_sync()
 		self.validate_location_settings()
 		self.validate_booking_status()
@@ -83,10 +91,10 @@ class MMMeetingBooking(Document):
 		if not self.end_datetime:
 			frappe.throw("End DateTime is required.")
 
-		# Convert to datetime objects for comparison
+		# Convert to datetime objects for comparison (ensure timezone-naive)
 		try:
-			start_dt = get_datetime(self.start_datetime)
-			end_dt = get_datetime(self.end_datetime)
+			start_dt = self._ensure_naive_datetime(self.start_datetime)
+			end_dt = self._ensure_naive_datetime(self.end_datetime)
 		except:
 			frappe.throw("Invalid datetime format for Start or End DateTime.")
 
@@ -134,8 +142,8 @@ class MMMeetingBooking(Document):
 		if not self.start_datetime or not self.end_datetime:
 			return
 
-		start_dt = get_datetime(self.start_datetime)
-		end_dt = get_datetime(self.end_datetime)
+		start_dt = self._ensure_naive_datetime(self.start_datetime)
+		end_dt = self._ensure_naive_datetime(self.end_datetime)
 
 		duration_seconds = (end_dt - start_dt).total_seconds()
 		self.duration = int(duration_seconds / 60)
@@ -143,26 +151,38 @@ class MMMeetingBooking(Document):
 	def validate_customer_details(self):
 		"""Validate customer details for non-internal bookings"""
 		if self.is_internal:
+			# Clear customer fields for internal bookings
+			self.customer = None
+			self.customer_email_at_booking = None
+			self.customer_phone_at_booking = None
 			return
 
-		# Validate customer_name
-		if not self.customer_name:
-			frappe.throw("Customer Name is required for external bookings.")
+		# Validate customer link exists
+		if not self.customer:
+			frappe.throw("Customer is required for external bookings.")
 
-		# Validate customer_email
-		if not self.customer_email:
-			frappe.throw("Customer Email is required for external bookings.")
+		# Validate customer record exists
+		if not frappe.db.exists("MM Customer", self.customer):
+			frappe.throw(f"Customer '{self.customer}' does not exist.")
 
-		email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
-		if not email_pattern.match(self.customer_email):
-			frappe.throw(f"Invalid email format for Customer Email: '{self.customer_email}'")
+		# Cache customer email and phone at booking time for audit trail
+		customer_doc = frappe.get_doc("MM Customer", self.customer)
 
-		# Validate customer_phone format if provided
-		if self.customer_phone:
-			# Remove common phone formatting characters
-			phone_digits = re.sub(r'[\s\-\(\)\+]', '', self.customer_phone)
-			if not phone_digits.isdigit() or len(phone_digits) < 7:
-				frappe.throw("Invalid phone number format. Please provide a valid phone number.")
+		# Cache primary email
+		self.customer_email_at_booking = customer_doc.primary_email
+
+		# Get and cache primary phone
+		primary_phone = customer_doc.get_primary_phone() if hasattr(customer_doc, 'get_primary_phone') else None
+		if not primary_phone and customer_doc.phone_numbers:
+			for phone in customer_doc.phone_numbers:
+				if phone.is_primary:
+					primary_phone = phone.phone_number
+					break
+			# If no primary, use first phone
+			if not primary_phone and customer_doc.phone_numbers:
+				primary_phone = customer_doc.phone_numbers[0].phone_number
+
+		self.customer_phone_at_booking = primary_phone or ""
 
 	def validate_assigned_users(self):
 		"""Validate assigned users and ensure at least one primary host"""
@@ -239,35 +259,6 @@ class MMMeetingBooking(Document):
 				indicator="orange"
 			)
 
-	def validate_approval_workflow(self):
-		"""Validate approval workflow logic"""
-		if not self.requires_approval:
-			# If approval not required, clear approval fields
-			self.approval_status = "Pending"
-			return
-
-		# Validate approval_status is set
-		if not self.approval_status:
-			self.approval_status = "Pending"
-
-		# Validate approved_by and approval_date are set for approved/rejected bookings
-		if self.approval_status in ["Approved", "Rejected"]:
-			if not self.approved_by:
-				self.approved_by = frappe.session.user
-			if not self.approval_date:
-				self.approval_date = now_datetime()
-
-			# Update booking_status based on approval_status
-			if self.approval_status == "Approved" and self.booking_status == "Pending":
-				self.booking_status = "Confirmed"
-
-			if self.approval_status == "Rejected" and self.booking_status != "Cancelled":
-				self.booking_status = "Cancelled"
-
-		# Validate rejection_reason is provided for rejected bookings
-		if self.approval_status == "Rejected" and not self.rejection_reason:
-			frappe.throw("Rejection Reason is required when rejecting a booking.")
-
 	def validate_calendar_sync(self):
 		"""Validate calendar sync settings"""
 		if self.calendar_event_synced and not self.calendar_event:
@@ -325,7 +316,7 @@ class MMMeetingBooking(Document):
 		# Validate no-show and completed status are only for past bookings
 		if self.booking_status in ["No-Show", "Completed"]:
 			if self.start_datetime:
-				start_dt = get_datetime(self.start_datetime)
+				start_dt = self._ensure_naive_datetime(self.start_datetime)
 				current_dt = now_datetime()
 				if start_dt > current_dt:
 					frappe.throw(

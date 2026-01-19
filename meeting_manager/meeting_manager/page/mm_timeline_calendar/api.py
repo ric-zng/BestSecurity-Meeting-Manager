@@ -329,7 +329,195 @@ def get_events(start, end, department=None, status=None, meeting_type=None, serv
 
 
 @frappe.whitelist()
-def update_booking(booking_id, start_datetime=None, end_datetime=None, new_host=None, department=None):
+def get_resource_business_hours(resource_id, start_date, end_date):
+	"""
+	Get business hours (available time ranges) for a resource (user) for FullCalendar
+
+	IMPORTANT: This function now returns BOTH:
+	1. Regular working hours (recurring weekly pattern)
+	2. Date-specific overrides that REPLACE regular hours for specific dates
+
+	Date overrides take FULL PRIORITY - they can extend or restrict hours beyond regular schedule.
+
+	Args:
+		resource_id (str): User ID
+		start_date (str): Start date (YYYY-MM-DD)
+		end_date (str): End date (YYYY-MM-DD)
+
+	Returns:
+		dict: {
+			"businessHours": [...],  # Regular working hours + date-specific overrides
+			"dateOverrides": [...]    # For frontend validation only
+		}
+	"""
+	try:
+		import json
+		from frappe.utils import getdate
+		from datetime import datetime, timedelta
+
+		# Get user's working hours from MM User Settings
+		user_settings = frappe.get_value(
+			"MM User Settings",
+			{"user": resource_id},
+			["working_hours_json"],
+			as_dict=True
+		)
+
+		business_hours = []
+
+		if not user_settings or not user_settings.working_hours_json:
+			# No working hours defined - return 24/7 availability
+			business_hours = [{
+				"daysOfWeek": [0, 1, 2, 3, 4, 5, 6],  # All days
+				"startTime": "00:00",
+				"endTime": "23:59"
+			}]
+		else:
+			try:
+				working_hours = json.loads(user_settings.working_hours_json)
+			except (json.JSONDecodeError, TypeError):
+				# Invalid JSON - return 24/7 availability
+				business_hours = [{
+					"daysOfWeek": [0, 1, 2, 3, 4, 5, 6],
+					"startTime": "00:00",
+					"endTime": "23:59"
+				}]
+			else:
+				# Convert working hours to FullCalendar businessHours format
+				day_mapping = {
+					"monday": 1,
+					"tuesday": 2,
+					"wednesday": 3,
+					"thursday": 4,
+					"friday": 5,
+					"saturday": 6,
+					"sunday": 0
+				}
+
+				# Group days by their working hours
+				hours_groups = {}
+				for day_name, day_config in working_hours.items():
+					if day_name in day_mapping and day_config.get("enabled", False):
+						start_time = day_config.get("start", "09:00")
+						end_time = day_config.get("end", "17:00")
+						hours_key = f"{start_time}-{end_time}"
+
+						if hours_key not in hours_groups:
+							hours_groups[hours_key] = []
+						hours_groups[hours_key].append(day_mapping[day_name])
+
+				# Convert to FullCalendar format
+				for hours_key, days in hours_groups.items():
+					start_time, end_time = hours_key.split("-")
+					business_hours.append({
+						"daysOfWeek": days,
+						"startTime": start_time,
+						"endTime": end_time
+					})
+
+		# Now fetch date-specific overrides
+		date_overrides = []
+
+		# Get user's availability rules
+		availability_rules = frappe.get_all(
+			"MM User Availability Rule",
+			filters={"user": resource_id},
+			fields=["name"]
+		)
+
+		if availability_rules:
+			# Parse date range
+			start_dt = getdate(start_date)
+			end_dt = getdate(end_date)
+
+			# Collect all overrides, grouped by date
+			overrides_by_date = {}
+
+			# Get all date overrides in the range
+			for rule in availability_rules:
+				overrides = frappe.get_all(
+					"MM User Date Overrides",
+					filters={
+						"parent": rule.name,
+						"parenttype": "MM User Availability Rule",
+						"date": ["between", [start_dt, end_dt]]
+					},
+					fields=["date", "available", "custom_hours_start", "custom_hours_end", "reason"],
+					order_by="date, custom_hours_start"  # Sort by date and start time
+				)
+
+				for override in overrides:
+					date_str = str(override.date)
+
+					if date_str not in overrides_by_date:
+						overrides_by_date[date_str] = []
+
+					overrides_by_date[date_str].append(override)
+
+			# Process each date's overrides
+			for date_str, day_overrides in overrides_by_date.items():
+				# Case 1: If ANY override marks the day as unavailable, entire day is blocked
+				if any(not o.available for o in day_overrides):
+					date_overrides.append({
+						"date": date_str,
+						"available": False,
+						"reason": "Not available",
+						"allDay": True
+					})
+					continue
+
+				# Case 2: Collect all available time slots for this date
+				# These can EXTEND or RESTRICT regular working hours
+				available_slots = []
+				for override in day_overrides:
+					if override.available and override.custom_hours_start and override.custom_hours_end:
+						available_slots.append({
+							"start": str(override.custom_hours_start),
+							"end": str(override.custom_hours_end),
+							"reason": override.reason or "Custom hours"
+						})
+
+				# Store override info - frontend will handle visualization
+				# If slots extend beyond regular hours, frontend creates white background events
+				# If slots restrict regular hours, frontend creates red background blocks
+				if available_slots:
+					date_overrides.append({
+						"date": date_str,
+						"available": True,
+						"availableSlots": available_slots,
+						"allDay": False
+					})
+
+					# CRITICAL: Add date-specific business hours to prevent gray-out
+					# This makes extended hours appear WHITE instead of gray non-business hours
+					# FullCalendar will render these times as available (white background)
+					# Using groupId to indicate these are date-specific overrides
+					for i, slot in enumerate(available_slots):
+						business_hours.append({
+							"groupId": f"override-{date_str}",
+							"daysOfWeek": [getdate(date_str).weekday() if getdate(date_str).weekday() != 6 else 0],  # Convert to FC format
+							"startTime": slot["start"],
+							"endTime": slot["end"],
+							"startRecur": date_str,
+							"endRecur": date_str
+						})
+
+		return {
+			"businessHours": business_hours,
+			"dateOverrides": date_overrides
+		}
+
+	except Exception as e:
+		frappe.log_error(f"Error fetching business hours for {resource_id}: {str(e)}", "Timeline Calendar API")
+		# Return empty structure on error
+		return {
+			"businessHours": [],
+			"dateOverrides": []
+		}
+
+
+@frappe.whitelist()
+def update_booking(booking_id, start_datetime=None, end_datetime=None, new_host=None, department=None, browser_timezone=None):
 	"""
 	Update booking via drag-and-drop
 	Handles both rescheduling (time change) and reassignment (host change)
@@ -413,17 +601,39 @@ def update_booking(booking_id, start_datetime=None, end_datetime=None, new_host=
 
 		# CASE 2: RESCHEDULING (time change)
 		if is_rescheduling:
-			# Parse ISO datetime
-			# Handle formats: '2026-01-02T04:30:00.000Z', '2026-01-02T04:30:00Z', '2026-01-02T04:30:00'
-			start_dt = dt.fromisoformat(start_datetime.replace('Z', '+00:00').replace('.000', ''))
-			end_dt = dt.fromisoformat(end_datetime.replace('Z', '+00:00').replace('.000', ''))
+			# CRITICAL INSIGHT: The issue is that we're trying to match three different timezones:
+			# 1. Browser timezone (e.g., Africa/Nairobi = UTC+3) - what the user sees in FullCalendar
+			# 2. FullCalendar's UTC conversion via toISOString() - what we receive
+			# 3. MM User Settings timezone (e.g., Copenhagen = UTC+1) - where working hours are defined
+			#
+			# THE SOLUTION: Convert from UTC (what FullCalendar sends) back to the browser timezone
+			# (what the user actually saw and clicked), then use that for scheduling!
+			import pytz
+			from frappe.utils import get_datetime, get_system_timezone
 
-			# Extract date and time components
-			new_date = start_dt.strftime('%Y-%m-%d')
-			new_time = start_dt.strftime('%H:%M')
+			# Parse UTC datetime from FullCalendar (already in UTC after toISOString())
+			start_dt_utc = dt.fromisoformat(start_datetime.replace('Z', '+00:00').replace('.000', ''))
+			end_dt_utc = dt.fromisoformat(end_datetime.replace('Z', '+00:00').replace('.000', ''))
+
+			# Use browser timezone if provided, otherwise fall back to system timezone
+			if browser_timezone:
+				target_tz_str = browser_timezone
+			else:
+				target_tz_str = get_system_timezone()
+
+			target_tz = pytz.timezone(target_tz_str)
+
+			# Convert UTC to target timezone (browser's timezone)
+			start_dt_local = start_dt_utc.astimezone(target_tz)
+			end_dt_local = end_dt_utc.astimezone(target_tz)
+
+			# Extract date and time components in target timezone
+			# This is the time the user actually saw in the calendar!
+			new_date = start_dt_local.strftime('%Y-%m-%d')
+			new_time = start_dt_local.strftime('%H:%M')
 
 			# Verify duration hasn't changed (drag-and-drop should maintain duration)
-			new_duration = int((end_dt - start_dt).total_seconds() / 60)
+			new_duration = int((end_dt_utc - start_dt_utc).total_seconds() / 60)
 			if new_duration != booking.duration:
 				frappe.msgprint(
 					f"Warning: Duration changed from {booking.duration} to {new_duration} minutes",
