@@ -60,24 +60,23 @@
         }
 
         return fetch(url, fetchOpts)
-        .then(response => {
+        .then(function(response) {
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                throw new Error('HTTP ' + response.status + ': ' + response.statusText);
             }
             return response.json();
         })
-        .then(data => {
+        .then(function(data) {
             if (opts.callback) {
                 opts.callback(data);
             }
             return data;
         })
-        .catch(error => {
+        .catch(function(error) {
             console.error('frappe.call error:', error);
             if (opts.error) {
                 opts.error(error);
             }
-            throw error;
         });
     };
 
@@ -87,6 +86,29 @@
 {% endblock %}
 
 {% block page_content %}
+<!-- Skip to main content link for accessibility -->
+<a href="#main-content" class="skip-to-content">Skip to main content</a>
+<style>
+.skip-to-content {
+	position: absolute;
+	top: -40px;
+	left: 0;
+	background: #e19800;
+	color: white;
+	padding: 8px 16px;
+	z-index: 9999;
+	text-decoration: none;
+	font-weight: 600;
+	border-radius: 0 0 4px 0;
+	transition: top 0.2s;
+}
+.skip-to-content:focus {
+	top: 0;
+	outline: 2px solid #0f172a;
+	outline-offset: 2px;
+}
+</style>
+<main id="main-content">
 <script>
 // Double-check frappe.call exists before rendering page content
 if (typeof frappe === 'undefined' || typeof frappe.call === 'undefined') {
@@ -139,4 +161,5 @@ if (typeof frappe === 'undefined' || typeof frappe.call === 'undefined') {
 	{# Step 5: Customer Form #}
 	{% include "templates/meeting-booking/step5_customer_form.html" %}
 {% endif %}
+</main>
 {% endblock %}

@@ -1,80 +1,102 @@
-
-
 <div class="booking-container">
 	<!-- Progress Steps -->
-	<div class="booking-progress">
-		<div class="progress-steps">
-			<div class="progress-step completed">
-				<div class="step-number">✓</div>
-				<div class="step-label">Department</div>
-			</div>
-			<div class="progress-step completed">
-				<div class="step-number">✓</div>
-				<div class="step-label">Meeting Type</div>
-			</div>
-			<div class="progress-step active">
-				<div class="step-number">3</div>
-				<div class="step-label">Date</div>
-			</div>
-			<div class="progress-step">
-				<div class="step-number">4</div>
-				<div class="step-label">Time</div>
-			</div>
-			<div class="progress-step">
-				<div class="step-number">5</div>
-				<div class="step-label">Details</div>
-			</div>
-			<div class="progress-step">
-				<div class="step-number">6</div>
-				<div class="step-label">Confirm</div>
-			</div>
-		</div>
-	</div>
+	{% include "templates/meeting-booking/_stepper.html" %}
 
 	<!-- Breadcrumb -->
 	<div class="breadcrumb-nav">
-		<a href="/meeting-booking/{{ department.department_slug }}" class="breadcrumb-link">← Back to Meeting Types</a>
+		<a href="/meeting-booking/{{ department.department_slug }}" class="breadcrumb-link"
+			>← Back to Meeting Types</a
+		>
 	</div>
 
 	<!-- Page Header -->
 	<div class="booking-header">
 		<h1>Select a Date</h1>
-		<p class="text-muted">{{ meeting_type.meeting_name }} with {{ department.department_name }}</p>
+		<p class="text-muted">
+			{{ meeting_type.meeting_name }} with {{ department.department_name }}
+		</p>
 		<p class="timezone-info">
-			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+			<svg
+				width="16"
+				height="16"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+			>
 				<circle cx="12" cy="12" r="10"></circle>
 				<line x1="2" y1="12" x2="22" y2="12"></line>
-				<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+				<path
+					d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+				></path>
 			</svg>
 			Timezone: {{ department.timezone }}
 		</p>
 	</div>
 
 	<!-- Calendar Container -->
-	<div class="calendar-container">
+	<div class="calendar-container" role="application" aria-label="Date picker calendar">
 		<!-- Calendar Navigation -->
 		<div class="calendar-header">
-			<button id="prev-month" class="month-nav-btn">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+			<button id="prev-month" class="month-nav-btn" aria-label="Go to previous month">
+				<svg
+					width="20"
+					height="20"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					aria-hidden="true"
+				>
 					<polyline points="15 18 9 12 15 6"></polyline>
 				</svg>
 			</button>
-			<h2 id="month-year"></h2>
-			<button id="next-month" class="month-nav-btn">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+			<h2 id="month-year" aria-live="polite"></h2>
+			<button id="next-month" class="month-nav-btn" aria-label="Go to next month">
+				<svg
+					width="20"
+					height="20"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					aria-hidden="true"
+				>
 					<polyline points="9 18 15 12 9 6"></polyline>
 				</svg>
 			</button>
 		</div>
 
-		<!-- Loading State -->
-		<div id="calendar-loading" class="loading-state">
-			<div class="spinner"></div>
-			<p>Loading available dates...</p>
+		<!-- Loading State with Skeleton -->
+		<div id="calendar-loading" class="loading-state" role="status" aria-live="polite">
+			<p style="margin-bottom: 1rem; color: var(--muted);">Loading available dates...</p>
+			<div class="skeleton-calendar" aria-hidden="true">
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+				<div class="skeleton skeleton-day"></div>
+			</div>
 		</div>
 
 		<!-- Calendar Grid -->
-		<div id="calendar-grid" class="calendar-grid" style="display: none;">
+		<div id="calendar-grid" class="calendar-grid" style="display: none" role="grid" aria-label="Available dates">
 			<div class="day-label">Sun</div>
 			<div class="day-label">Mon</div>
 			<div class="day-label">Tue</div>
@@ -86,8 +108,15 @@
 		</div>
 
 		<!-- Error State -->
-		<div id="calendar-error" class="error-state" style="display: none;">
-			<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+		<div id="calendar-error" class="error-state" style="display: none">
+			<svg
+				width="48"
+				height="48"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+			>
 				<circle cx="12" cy="12" r="10"></circle>
 				<line x1="12" y1="8" x2="12" y2="12"></line>
 				<line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -98,128 +127,23 @@
 	</div>
 
 	<!-- Hidden data for JavaScript -->
-	<div style="display: none;">
-		<input type="hidden" id="department-slug" value="{{ department.department_slug }}">
-		<input type="hidden" id="meeting-type-slug" value="{{ meeting_type.meeting_slug }}">
-		<input type="hidden" id="current-month" value="{{ current_month }}">
-		<input type="hidden" id="current-year" value="{{ current_year }}">
+	<div style="display: none">
+		<input type="hidden" id="department-slug" value="{{ department.department_slug }}" />
+		<input type="hidden" id="meeting-type-slug" value="{{ meeting_type.meeting_slug }}" />
+		<input type="hidden" id="current-month" value="{{ current_month }}" />
+		<input type="hidden" id="current-year" value="{{ current_year }}" />
 	</div>
 </div>
 
-
-
 <style>
-	.booking-container {
-		max-width: 800px;
-		margin: 0 auto;
-		padding: 2rem 1rem;
-	}
-
-	/* Progress Steps */
-	.booking-progress {
-		margin-bottom: 2rem;
-		padding-bottom: 2rem;
-		border-bottom: 1px solid #e5e7eb;
-	}
-
-	.progress-steps {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-
-	.progress-step {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		flex: 1;
-	}
-
-	.step-number {
-		width: 40px;
-		height: 40px;
-		border-radius: 50%;
-		background: #e5e7eb;
-		color: #6b7280;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-weight: 600;
-		margin-bottom: 0.5rem;
-	}
-
-	.progress-step.active .step-number {
-		background: #3b82f6;
-		color: white;
-	}
-
-	.progress-step.completed .step-number {
-		background: #10b981;
-		color: white;
-	}
-
-	.step-label {
-		font-size: 0.75rem;
-		color: #6b7280;
-	}
-
-	.progress-step.active .step-label,
-	.progress-step.completed .step-label {
-		color: #1f2937;
-		font-weight: 600;
-	}
-
-	/* Breadcrumb */
-	.breadcrumb-nav {
-		margin-bottom: 1.5rem;
-	}
-
-	.breadcrumb-link {
-		color: #6b7280;
-		text-decoration: none;
-		font-size: 0.9rem;
-		transition: color 0.2s;
-	}
-
-	.breadcrumb-link:hover {
-		color: #3b82f6;
-	}
-
-	/* Header */
-	.booking-header {
-		text-align: center;
-		margin-bottom: 2.5rem;
-	}
-
-	.booking-header h1 {
-		font-size: 2rem;
-		font-weight: 700;
-		color: #1f2937;
-		margin-bottom: 0.5rem;
-	}
-
-	.booking-header .text-muted {
-		color: #6b7280;
-		font-size: 1rem;
-		margin-bottom: 0.5rem;
-	}
-
-	.timezone-info {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.5rem;
-		color: #6b7280;
-		font-size: 0.875rem;
-		margin-top: 0.5rem;
-	}
-
 	/* Calendar Container */
 	.calendar-container {
-		background: white;
-		border: 2px solid #e5e7eb;
-		border-radius: 12px;
+		background: var(--card);
+		border: 2px solid var(--border);
+		border-radius: 20px;
 		padding: 2rem;
 		min-height: 400px;
+		box-shadow: 0 40px 80px rgba(15, 23, 42, 0.1);
 	}
 
 	.calendar-header {
@@ -232,23 +156,24 @@
 	.calendar-header h2 {
 		font-size: 1.5rem;
 		font-weight: 600;
-		color: #1f2937;
+		color: var(--text);
 		margin: 0;
 	}
 
 	.month-nav-btn {
-		background: #f3f4f6;
-		border: 1px solid #e5e7eb;
+		background: #fff8e8;
+		border: 2px solid #ffe8b3;
 		border-radius: 8px;
 		padding: 0.5rem;
 		cursor: pointer;
 		transition: all 0.2s;
-		color: #6b7280;
+		color: #e19800;
+		font-weight: 600;
 	}
 
 	.month-nav-btn:hover {
-		background: #e5e7eb;
-		color: #1f2937;
+		background: #ffe8b3;
+		color: #e19800;
 	}
 
 	/* Calendar Grid */
@@ -261,14 +186,14 @@
 	.day-label {
 		text-align: center;
 		font-weight: 600;
-		color: #6b7280;
+		color: var(--muted);
 		font-size: 0.875rem;
 		padding: 0.5rem;
 	}
 
 	.day-cell {
 		aspect-ratio: 1;
-		border: 2px solid #e5e7eb;
+		border: 2px solid var(--border);
 		border-radius: 8px;
 		display: flex;
 		align-items: center;
@@ -277,6 +202,7 @@
 		cursor: pointer;
 		transition: all 0.2s;
 		background: white;
+		color: var(--text);
 	}
 
 	.day-cell.empty {
@@ -291,16 +217,16 @@
 	}
 
 	.day-cell.available {
-		border-color: #10b981;
-		color: #059669;
-		background: #f0fdf4;
+		border-color: #e19800 !important;
+		color: #e19800 !important;
+		background: #fff8e8 !important;
 	}
 
 	.day-cell.available:hover {
-		background: #10b981;
-		color: white;
+		background: #e19800 !important;
+		color: white !important;
 		transform: translateY(-2px);
-		box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+		box-shadow: 0 4px 12px rgba(225, 152, 0, 0.3);
 	}
 
 	/* Loading State */
@@ -312,19 +238,21 @@
 	.spinner {
 		width: 50px;
 		height: 50px;
-		border: 4px solid #e5e7eb;
-		border-top-color: #3b82f6;
+		border: 4px solid var(--border);
+		border-top-color: var(--primary);
 		border-radius: 50%;
 		animation: spin 1s linear infinite;
 		margin: 0 auto 1rem;
 	}
 
 	@keyframes spin {
-		to { transform: rotate(360deg); }
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
 	.loading-state p {
-		color: #6b7280;
+		color: var(--muted);
 		font-size: 1rem;
 	}
 
@@ -340,13 +268,13 @@
 	}
 
 	.error-state p {
-		color: #6b7280;
+		color: var(--muted);
 		font-size: 1rem;
 		margin-bottom: 1.5rem;
 	}
 
 	.retry-btn {
-		background: #3b82f6;
+		background: var(--primary);
 		color: white;
 		border: none;
 		padding: 0.75rem 1.5rem;
@@ -357,16 +285,13 @@
 	}
 
 	.retry-btn:hover {
-		background: #2563eb;
+		background: #c17a00;
 		transform: translateY(-1px);
+		box-shadow: 0 4px 12px rgba(225, 152, 0, 0.2);
 	}
 
-	/* Responsive */
+	/* Mobile */
 	@media (max-width: 768px) {
-		.booking-header h1 {
-			font-size: 1.5rem;
-		}
-
 		.calendar-container {
 			padding: 1.5rem;
 		}
@@ -374,48 +299,49 @@
 		.day-cell {
 			font-size: 0.875rem;
 		}
-
-		.step-label {
-			font-size: 0.65rem;
-		}
-
-		.step-number {
-			width: 32px;
-			height: 32px;
-			font-size: 0.875rem;
-		}
 	}
 </style>
 
-
 <script>
 	// Get hidden values
-	const departmentSlug = document.getElementById('department-slug').value;
-	const meetingTypeSlug = document.getElementById('meeting-type-slug').value;
-	let currentMonth = parseInt(document.getElementById('current-month').value);
-	let currentYear = parseInt(document.getElementById('current-year').value);
+	const departmentSlug = document.getElementById("department-slug").value;
+	const meetingTypeSlug = document.getElementById("meeting-type-slug").value;
+	let currentMonth = parseInt(document.getElementById("current-month").value);
+	let currentYear = parseInt(document.getElementById("current-year").value);
 
 	// Elements
-	const monthYearDisplay = document.getElementById('month-year');
-	const calendarGrid = document.getElementById('calendar-grid');
-	const calendarLoading = document.getElementById('calendar-loading');
-	const calendarError = document.getElementById('calendar-error');
-	const errorMessage = document.getElementById('error-message');
-	const prevMonthBtn = document.getElementById('prev-month');
-	const nextMonthBtn = document.getElementById('next-month');
+	const monthYearDisplay = document.getElementById("month-year");
+	const calendarGrid = document.getElementById("calendar-grid");
+	const calendarLoading = document.getElementById("calendar-loading");
+	const calendarError = document.getElementById("calendar-error");
+	const errorMessage = document.getElementById("error-message");
+	const prevMonthBtn = document.getElementById("prev-month");
+	const nextMonthBtn = document.getElementById("next-month");
 
 	// Available dates from API
 	let availableDates = [];
 
 	// Month names
-	const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-		'July', 'August', 'September', 'October', 'November', 'December'];
+	const monthNames = [
+		"January",
+		"February",
+		"March",
+		"April",
+		"May",
+		"June",
+		"July",
+		"August",
+		"September",
+		"October",
+		"November",
+		"December",
+	];
 
 	// Initialize
 	loadAvailableDates();
 
 	// Event listeners
-	prevMonthBtn.addEventListener('click', () => {
+	prevMonthBtn.addEventListener("click", () => {
 		currentMonth--;
 		if (currentMonth < 1) {
 			currentMonth = 12;
@@ -424,7 +350,7 @@
 		loadAvailableDates();
 	});
 
-	nextMonthBtn.addEventListener('click', () => {
+	nextMonthBtn.addEventListener("click", () => {
 		currentMonth++;
 		if (currentMonth > 12) {
 			currentMonth = 1;
@@ -436,30 +362,30 @@
 	// Load available dates from API
 	function loadAvailableDates() {
 		// Show loading state
-		calendarLoading.style.display = 'block';
-		calendarGrid.style.display = 'none';
-		calendarError.style.display = 'none';
+		calendarLoading.style.display = "block";
+		calendarGrid.style.display = "none";
+		calendarError.style.display = "none";
 
 		frappe.call({
-			method: 'meeting_manager.meeting_manager.api.public.get_available_dates',
+			method: "meeting_manager.meeting_manager.api.public.get_available_dates",
 			args: {
 				department_slug: departmentSlug,
 				meeting_type_slug: meetingTypeSlug,
 				month: currentMonth,
-				year: currentYear
+				year: currentYear,
 			},
-			callback: function(r) {
+			callback: function (r) {
 				if (r.message && r.message.success) {
 					availableDates = r.message.available_dates || [];
 					renderCalendar();
 				} else {
-					showError(r.message?.message || 'Failed to load available dates');
+					showError(r.message?.message || "Failed to load available dates");
 				}
 			},
-			error: function(err) {
-				console.error('Error loading dates:', err);
-				showError('An error occurred while loading available dates');
-			}
+			error: function (err) {
+				console.error("Error loading dates:", err);
+				showError("An error occurred while loading available dates");
+			},
 		});
 	}
 
@@ -469,9 +395,9 @@
 		monthYearDisplay.textContent = `${monthNames[currentMonth - 1]} ${currentYear}`;
 
 		// Clear existing days (keep day labels)
-		const dayLabels = calendarGrid.querySelectorAll('.day-label');
-		calendarGrid.innerHTML = '';
-		dayLabels.forEach(label => calendarGrid.appendChild(label));
+		const dayLabels = calendarGrid.querySelectorAll(".day-label");
+		calendarGrid.innerHTML = "";
+		dayLabels.forEach((label) => calendarGrid.appendChild(label));
 
 		// Get first day of month and number of days
 		const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay();
@@ -479,8 +405,8 @@
 
 		// Add empty cells for days before month starts
 		for (let i = 0; i < firstDay; i++) {
-			const emptyCell = document.createElement('div');
-			emptyCell.className = 'day-cell empty';
+			const emptyCell = document.createElement("div");
+			emptyCell.className = "day-cell empty";
 			calendarGrid.appendChild(emptyCell);
 		}
 
@@ -489,42 +415,94 @@
 		today.setHours(0, 0, 0, 0);
 
 		for (let day = 1; day <= daysInMonth; day++) {
-			const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+			const dateStr = `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(
+				day
+			).padStart(2, "0")}`;
 			const cellDate = new Date(currentYear, currentMonth - 1, day);
 			cellDate.setHours(0, 0, 0, 0);
 
-			const dayCell = document.createElement('div');
-			dayCell.className = 'day-cell';
+			const dayCell = document.createElement("div");
+			dayCell.className = "day-cell";
 			dayCell.textContent = day;
+			dayCell.setAttribute("role", "gridcell");
+			dayCell.setAttribute("data-date", dateStr);
 
 			// Check if date is in the past
 			if (cellDate < today) {
-				dayCell.classList.add('disabled');
+				dayCell.classList.add("disabled");
+				dayCell.setAttribute("aria-disabled", "true");
 			}
 			// Check if date is available
 			else if (availableDates.includes(dateStr)) {
-				dayCell.classList.add('available');
-				dayCell.addEventListener('click', () => {
+				dayCell.classList.add("available");
+				dayCell.setAttribute("tabindex", "0");
+				dayCell.setAttribute("aria-label", `Select ${monthNames[currentMonth - 1]} ${day}, ${currentYear}`);
+				dayCell.addEventListener("click", () => {
 					window.location.href = `/meeting-booking/${departmentSlug}/${meetingTypeSlug}/${dateStr}`;
 				});
+				// Keyboard support
+				dayCell.addEventListener("keydown", (e) => {
+					if (e.key === "Enter" || e.key === " ") {
+						e.preventDefault();
+						window.location.href = `/meeting-booking/${departmentSlug}/${meetingTypeSlug}/${dateStr}`;
+					}
+				});
 			} else {
-				dayCell.classList.add('disabled');
+				dayCell.classList.add("disabled");
+				dayCell.setAttribute("aria-disabled", "true");
 			}
 
 			calendarGrid.appendChild(dayCell);
 		}
 
 		// Show calendar
-		calendarLoading.style.display = 'none';
-		calendarGrid.style.display = 'grid';
+		calendarLoading.style.display = "none";
+		calendarGrid.style.display = "grid";
+
+		// Add arrow key navigation
+		setupArrowKeyNavigation();
+	}
+
+	// Arrow key navigation for calendar
+	function setupArrowKeyNavigation() {
+		const availableCells = calendarGrid.querySelectorAll(".day-cell.available");
+		if (availableCells.length === 0) return;
+
+		availableCells.forEach((cell, index) => {
+			cell.addEventListener("keydown", (e) => {
+				let targetIndex = index;
+				const cols = 7; // 7 days per week
+
+				switch (e.key) {
+					case "ArrowRight":
+						targetIndex = Math.min(index + 1, availableCells.length - 1);
+						break;
+					case "ArrowLeft":
+						targetIndex = Math.max(index - 1, 0);
+						break;
+					case "ArrowDown":
+						targetIndex = Math.min(index + cols, availableCells.length - 1);
+						break;
+					case "ArrowUp":
+						targetIndex = Math.max(index - cols, 0);
+						break;
+					default:
+						return;
+				}
+
+				if (targetIndex !== index) {
+					e.preventDefault();
+					availableCells[targetIndex].focus();
+				}
+			});
+		});
 	}
 
 	// Show error
 	function showError(message) {
 		errorMessage.textContent = message;
-		calendarLoading.style.display = 'none';
-		calendarGrid.style.display = 'none';
-		calendarError.style.display = 'block';
+		calendarLoading.style.display = "none";
+		calendarGrid.style.display = "none";
+		calendarError.style.display = "block";
 	}
 </script>
-

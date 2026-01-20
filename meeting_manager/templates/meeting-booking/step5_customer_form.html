@@ -1,39 +1,13 @@
-
-
 <div class="booking-container">
 	<!-- Progress Steps -->
-	<div class="booking-progress">
-		<div class="progress-steps">
-			<div class="progress-step completed">
-				<div class="step-number">✓</div>
-				<div class="step-label">Department</div>
-			</div>
-			<div class="progress-step completed">
-				<div class="step-number">✓</div>
-				<div class="step-label">Meeting Type</div>
-			</div>
-			<div class="progress-step completed">
-				<div class="step-number">✓</div>
-				<div class="step-label">Date</div>
-			</div>
-			<div class="progress-step completed">
-				<div class="step-number">✓</div>
-				<div class="step-label">Time</div>
-			</div>
-			<div class="progress-step active">
-				<div class="step-number">5</div>
-				<div class="step-label">Details</div>
-			</div>
-			<div class="progress-step">
-				<div class="step-number">6</div>
-				<div class="step-label">Confirm</div>
-			</div>
-		</div>
-	</div>
+	{% include "templates/meeting-booking/_stepper.html" %}
 
 	<!-- Breadcrumb -->
 	<div class="breadcrumb-nav">
-		<a href="/meeting-booking/{{ department.department_slug }}/{{ meeting_type.meeting_slug }}/{{ selected_date }}" class="breadcrumb-link">
+		<a
+			href="/meeting-booking/{{ department.department_slug }}/{{ meeting_type.meeting_slug }}/{{ selected_date }}"
+			class="breadcrumb-link"
+		>
 			← Back to Time Slots
 		</a>
 	</div>
@@ -50,7 +24,14 @@
 		<div class="booking-summary">
 			<h3>Booking Summary</h3>
 			<div class="summary-item">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<svg
+					width="20"
+					height="20"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+				>
 					<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
 					<line x1="16" y1="2" x2="16" y2="6"></line>
 					<line x1="8" y1="2" x2="8" y2="6"></line>
@@ -62,7 +43,14 @@
 				</div>
 			</div>
 			<div class="summary-item">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<svg
+					width="20"
+					height="20"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+				>
 					<circle cx="12" cy="12" r="10"></circle>
 					<polyline points="12 6 12 12 16 14"></polyline>
 				</svg>
@@ -72,7 +60,14 @@
 				</div>
 			</div>
 			<div class="summary-item">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<svg
+					width="20"
+					height="20"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+				>
 					<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
 					<circle cx="9" cy="7" r="4"></circle>
 					<path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -85,7 +80,7 @@
 		</div>
 
 		<!-- Customer Form -->
-		<form id="booking-form" class="customer-form">
+		<form id="booking-form" class="customer-form" novalidate>
 			<div class="form-group">
 				<label for="customer_name">Full Name <span class="required">*</span></label>
 				<input
@@ -94,8 +89,11 @@
 					name="customer_name"
 					class="form-control"
 					placeholder="John Doe"
-					required
-				>
+					autocomplete="name"
+					aria-describedby="customer_name-error"
+					aria-required="true"
+				/>
+				<span class="field-error" id="customer_name-error" role="alert"></span>
 			</div>
 
 			<div class="form-group">
@@ -106,8 +104,10 @@
 					name="customer_email"
 					class="form-control"
 					placeholder="john@example.com"
-					required
-				>
+					autocomplete="email"
+					aria-describedby="customer_email-error"
+				/>
+				<span class="field-error" id="customer_email-error" role="alert"></span>
 			</div>
 
 			<div class="form-group">
@@ -117,9 +117,12 @@
 					id="customer_phone"
 					name="customer_phone"
 					class="form-control"
-					placeholder="+1 (555) 123-4567"
-					required
-				>
+					placeholder="+254 712 345678"
+					autocomplete="tel"
+					aria-describedby="customer_phone-error"
+					aria-required="true"
+				/>
+				<span class="field-error" id="customer_phone-error" role="alert"></span>
 			</div>
 
 			<div class="form-group">
@@ -134,8 +137,15 @@
 			</div>
 
 			<!-- Error Message -->
-			<div class="alert alert-danger" id="error-message" style="display: none;">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+			<div class="alert alert-danger" id="error-message" style="display: none">
+				<svg
+					width="20"
+					height="20"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+				>
 					<circle cx="12" cy="12" r="10"></circle>
 					<line x1="12" y1="8" x2="12" y2="12"></line>
 					<line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -146,7 +156,7 @@
 			<!-- Submit Button -->
 			<button type="submit" class="btn-submit" id="submit-btn">
 				<span class="btn-text">Confirm Booking</span>
-				<span class="btn-spinner" style="display: none;">
+				<span class="btn-spinner" style="display: none">
 					<div class="spinner-small"></div>
 					Processing...
 				</span>
@@ -159,111 +169,15 @@
 	</div>
 
 	<!-- Hidden data for JavaScript -->
-	<div style="display: none;">
-		<input type="hidden" id="department-slug" value="{{ department.department_slug }}">
-		<input type="hidden" id="meeting-type-slug" value="{{ meeting_type.meeting_slug }}">
-		<input type="hidden" id="selected-date" value="{{ selected_date }}">
-		<input type="hidden" id="selected-time" value="{{ selected_time }}">
+	<div style="display: none">
+		<input type="hidden" id="department-slug" value="{{ department.department_slug }}" />
+		<input type="hidden" id="meeting-type-slug" value="{{ meeting_type.meeting_slug }}" />
+		<input type="hidden" id="selected-date" value="{{ selected_date }}" />
+		<input type="hidden" id="selected-time" value="{{ selected_time }}" />
 	</div>
 </div>
 
-
-
 <style>
-	.booking-container {
-		max-width: 900px;
-		margin: 0 auto;
-		padding: 2rem 1rem;
-	}
-
-	/* Progress Steps */
-	.booking-progress {
-		margin-bottom: 2rem;
-		padding-bottom: 2rem;
-		border-bottom: 1px solid #e5e7eb;
-	}
-
-	.progress-steps {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-
-	.progress-step {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		flex: 1;
-	}
-
-	.step-number {
-		width: 40px;
-		height: 40px;
-		border-radius: 50%;
-		background: #e5e7eb;
-		color: #6b7280;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-weight: 600;
-		margin-bottom: 0.5rem;
-	}
-
-	.progress-step.active .step-number {
-		background: #3b82f6;
-		color: white;
-	}
-
-	.progress-step.completed .step-number {
-		background: #10b981;
-		color: white;
-	}
-
-	.step-label {
-		font-size: 0.75rem;
-		color: #6b7280;
-	}
-
-	.progress-step.active .step-label,
-	.progress-step.completed .step-label {
-		color: #1f2937;
-		font-weight: 600;
-	}
-
-	/* Breadcrumb */
-	.breadcrumb-nav {
-		margin-bottom: 1.5rem;
-	}
-
-	.breadcrumb-link {
-		color: #6b7280;
-		text-decoration: none;
-		font-size: 0.9rem;
-		transition: color 0.2s;
-	}
-
-	.breadcrumb-link:hover {
-		color: #3b82f6;
-	}
-
-	/* Header */
-	.booking-header {
-		text-align: center;
-		margin-bottom: 2.5rem;
-	}
-
-	.booking-header h1 {
-		font-size: 2rem;
-		font-weight: 700;
-		color: #1f2937;
-		margin-bottom: 0.5rem;
-	}
-
-	.booking-header .text-muted {
-		color: #6b7280;
-		font-size: 1rem;
-	}
-
 	/* Form Container */
 	.form-container {
 		display: grid;
@@ -273,17 +187,18 @@
 
 	/* Booking Summary */
 	.booking-summary {
-		background: #f9fafb;
-		border: 2px solid #e5e7eb;
-		border-radius: 12px;
+		background: var(--primary-soft);
+		border: 2px solid var(--border);
+		border-radius: 20px;
 		padding: 1.5rem;
 		height: fit-content;
+		box-shadow: 0 40px 80px rgba(15, 23, 42, 0.1);
 	}
 
 	.booking-summary h3 {
 		font-size: 1.125rem;
 		font-weight: 600;
-		color: #1f2937;
+		color: var(--text);
 		margin-bottom: 1.25rem;
 	}
 
@@ -291,7 +206,7 @@
 		display: flex;
 		gap: 1rem;
 		padding: 1rem 0;
-		border-bottom: 1px solid #e5e7eb;
+		border-bottom: 1px solid var(--border);
 	}
 
 	.summary-item:last-child {
@@ -300,26 +215,27 @@
 
 	.summary-item svg {
 		flex-shrink: 0;
-		color: #6b7280;
+		color: var(--primary);
 	}
 
 	.summary-item strong {
 		display: block;
-		color: #1f2937;
+		color: var(--text);
 		margin-bottom: 0.25rem;
 	}
 
 	.summary-item .text-muted {
-		color: #6b7280;
+		color: var(--muted);
 		font-size: 0.875rem;
 	}
 
 	/* Customer Form */
 	.customer-form {
-		background: white;
-		border: 2px solid #e5e7eb;
-		border-radius: 12px;
+		background: var(--card);
+		border: 2px solid var(--border);
+		border-radius: 20px;
 		padding: 2rem;
+		box-shadow: 0 40px 80px rgba(15, 23, 42, 0.1);
 	}
 
 	.form-group {
@@ -329,7 +245,7 @@
 	.form-group label {
 		display: block;
 		font-weight: 500;
-		color: #1f2937;
+		color: var(--text);
 		margin-bottom: 0.5rem;
 		font-size: 0.9rem;
 	}
@@ -340,18 +256,47 @@
 
 	.form-control {
 		width: 100%;
-		padding: 0.75rem 1rem;
-		border: 2px solid #e5e7eb;
+		padding: 1rem 1rem;
+		border: 2px solid var(--border);
 		border-radius: 8px;
 		font-size: 1rem;
 		transition: all 0.2s;
 		font-family: inherit;
+		background: white;
+		color: var(--text);
 	}
 
 	.form-control:focus {
 		outline: none;
-		border-color: #3b82f6;
-		box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+		border-color: var(--primary);
+		box-shadow: 0 0 0 3px rgba(225, 152, 0, 0.1);
+	}
+
+	/* Validation States */
+	.form-control.valid {
+		border-color: #22c55e;
+	}
+
+	.form-control.valid:focus {
+		border-color: #22c55e;
+		box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+	}
+
+	.form-control.invalid {
+		border-color: #ef4444;
+	}
+
+	.form-control.invalid:focus {
+		border-color: #ef4444;
+		box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+	}
+
+	.field-error {
+		display: block;
+		color: #ef4444;
+		font-size: 0.8rem;
+		margin-top: 0.375rem;
+		min-height: 1.2em;
 	}
 
 	textarea.form-control {
@@ -384,7 +329,7 @@
 	.btn-submit {
 		width: 100%;
 		padding: 1rem 2rem;
-		background: #3b82f6;
+		background: var(--primary);
 		color: white;
 		border: none;
 		border-radius: 8px;
@@ -396,9 +341,9 @@
 	}
 
 	.btn-submit:hover:not(:disabled) {
-		background: #2563eb;
+		background: #c17a00;
 		transform: translateY(-1px);
-		box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+		box-shadow: 0 4px 12px rgba(225, 152, 0, 0.2);
 	}
 
 	.btn-submit:disabled {
@@ -423,18 +368,20 @@
 	}
 
 	@keyframes spin {
-		to { transform: rotate(360deg); }
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
 	.form-note {
 		text-align: center;
-		color: #6b7280;
+		color: var(--muted);
 		font-size: 0.875rem;
 		margin-top: 1rem;
 		margin-bottom: 0;
 	}
 
-	/* Responsive */
+	/* Mobile */
 	@media (max-width: 768px) {
 		.form-container {
 			grid-template-columns: 1fr;
@@ -449,13 +396,26 @@
 			padding: 1.5rem;
 		}
 
+		.progress-steps {
+			flex-direction: column;
+			gap: 2rem;
+		}
+
+		.progress-steps::before {
+			display: none;
+		}
+
+		.progress-step {
+			width: auto;
+		}
+
 		.step-label {
-			font-size: 0.65rem;
+			font-size: 0.75rem;
 		}
 
 		.step-number {
-			width: 32px;
-			height: 32px;
+			width: 40px;
+			height: 40px;
 			font-size: 0.875rem;
 		}
 
@@ -465,37 +425,194 @@
 	}
 </style>
 
-
 <script>
 	// Get hidden values
-	const departmentSlug = document.getElementById('department-slug').value;
-	const meetingTypeSlug = document.getElementById('meeting-type-slug').value;
-	const selectedDate = document.getElementById('selected-date').value;
-	const selectedTime = document.getElementById('selected-time').value;
+	const departmentSlug = document.getElementById("department-slug").value;
+	const meetingTypeSlug = document.getElementById("meeting-type-slug").value;
+	const selectedDate = document.getElementById("selected-date").value;
+	const selectedTime = document.getElementById("selected-time").value;
 
 	// Elements
-	const bookingForm = document.getElementById('booking-form');
-	const submitBtn = document.getElementById('submit-btn');
-	const btnText = submitBtn.querySelector('.btn-text');
-	const btnSpinner = submitBtn.querySelector('.btn-spinner');
-	const errorMessage = document.getElementById('error-message');
-	const errorText = document.getElementById('error-text');
+	const bookingForm = document.getElementById("booking-form");
+	const submitBtn = document.getElementById("submit-btn");
+	const btnText = submitBtn.querySelector(".btn-text");
+	const btnSpinner = submitBtn.querySelector(".btn-spinner");
+	const errorMessage = document.getElementById("error-message");
+	const errorText = document.getElementById("error-text");
+
+	// Form fields
+	const nameInput = document.getElementById("customer_name");
+	const emailInput = document.getElementById("customer_email");
+	const phoneInput = document.getElementById("customer_phone");
+
+	// Validation patterns
+	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	const phoneRegex = /^[\d\s\-\+\(\)]{7,20}$/;
 
 	// Detect visitor timezone
-	let visitorTimezone = 'UTC';
+	let visitorTimezone = "UTC";
 	try {
 		visitorTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 	} catch (e) {
-		console.error('Could not detect timezone:', e);
+		console.error("Could not detect timezone:", e);
+	}
+
+	// Pre-fill form from URL parameters (e.g., from Support Dashboard)
+	function prefillFromURLParams() {
+		const urlParams = new URLSearchParams(window.location.search);
+
+		if (urlParams.has('customer_name')) {
+			const name = urlParams.get('customer_name');
+			if (name) {
+				nameInput.value = name;
+			}
+		}
+
+		if (urlParams.has('customer_email')) {
+			const email = urlParams.get('customer_email');
+			if (email) {
+				emailInput.value = email;
+			}
+		}
+
+		if (urlParams.has('customer_phone')) {
+			const phone = urlParams.get('customer_phone');
+			if (phone) {
+				phoneInput.value = phone;
+			}
+		}
+	}
+
+	// Run pre-fill on page load
+	prefillFromURLParams();
+
+	// Validation functions
+	function validateName(value) {
+		const trimmed = value.trim();
+		if (!trimmed) {
+			return { valid: false, message: "Full name is required" };
+		}
+		if (trimmed.length < 2) {
+			return { valid: false, message: "Name must be at least 2 characters" };
+		}
+		if (trimmed.length > 100) {
+			return { valid: false, message: "Name must be less than 100 characters" };
+		}
+		return { valid: true, message: "" };
+	}
+
+	function validateEmail(value) {
+		const trimmed = value.trim();
+		if (!trimmed) {
+			return { valid: false, message: "Email address is required" };
+		}
+		if (!emailRegex.test(trimmed)) {
+			return { valid: false, message: "Please enter a valid email address" };
+		}
+		return { valid: true, message: "" };
+	}
+
+	function validatePhone(value) {
+		const trimmed = value.trim();
+		if (!trimmed) {
+			return { valid: false, message: "Phone number is required" };
+		}
+		if (!phoneRegex.test(trimmed)) {
+			return { valid: false, message: "Please enter a valid phone number" };
+		}
+		return { valid: true, message: "" };
+	}
+
+	// Update field state
+	function updateFieldState(input, result) {
+		const errorSpan = document.getElementById(`${input.id}-error`);
+
+		input.classList.remove("valid", "invalid");
+
+		if (result.valid) {
+			input.classList.add("valid");
+			errorSpan.textContent = "";
+		} else {
+			input.classList.add("invalid");
+			errorSpan.textContent = result.message;
+		}
+
+		return result.valid;
+	}
+
+	// Clear field state (for when field is empty and hasn't been touched)
+	function clearFieldState(input) {
+		const errorSpan = document.getElementById(`${input.id}-error`);
+		input.classList.remove("valid", "invalid");
+		errorSpan.textContent = "";
+	}
+
+	// Track if fields have been touched
+	const touched = {
+		customer_name: false,
+		customer_email: false,
+		customer_phone: false
+	};
+
+	// Add event listeners for real-time validation
+	nameInput.addEventListener("blur", function() {
+		touched.customer_name = true;
+		updateFieldState(nameInput, validateName(nameInput.value));
+	});
+
+	nameInput.addEventListener("input", function() {
+		if (touched.customer_name) {
+			updateFieldState(nameInput, validateName(nameInput.value));
+		}
+	});
+
+	emailInput.addEventListener("blur", function() {
+		touched.customer_email = true;
+		updateFieldState(emailInput, validateEmail(emailInput.value));
+	});
+
+	emailInput.addEventListener("input", function() {
+		if (touched.customer_email) {
+			updateFieldState(emailInput, validateEmail(emailInput.value));
+		}
+	});
+
+	phoneInput.addEventListener("blur", function() {
+		touched.customer_phone = true;
+		updateFieldState(phoneInput, validatePhone(phoneInput.value));
+	});
+
+	phoneInput.addEventListener("input", function() {
+		if (touched.customer_phone) {
+			updateFieldState(phoneInput, validatePhone(phoneInput.value));
+		}
+	});
+
+	// Validate all fields
+	function validateAll() {
+		// Mark all as touched
+		touched.customer_name = true;
+		touched.customer_email = true;
+		touched.customer_phone = true;
+
+		const nameValid = updateFieldState(nameInput, validateName(nameInput.value));
+		const emailValid = updateFieldState(emailInput, validateEmail(emailInput.value));
+		const phoneValid = updateFieldState(phoneInput, validatePhone(phoneInput.value));
+
+		return nameValid && emailValid && phoneValid;
 	}
 
 	// Handle form submission
-	bookingForm.addEventListener('submit', function(e) {
+	bookingForm.addEventListener("submit", function (e) {
 		e.preventDefault();
 
-		// Validate form
-		if (!bookingForm.checkValidity()) {
-			bookingForm.reportValidity();
+		// Validate all fields
+		if (!validateAll()) {
+			// Focus first invalid field
+			const firstInvalid = bookingForm.querySelector(".form-control.invalid");
+			if (firstInvalid) {
+				firstInvalid.focus();
+			}
 			return;
 		}
 
@@ -505,53 +622,52 @@
 			meeting_type_slug: meetingTypeSlug,
 			scheduled_date: selectedDate,
 			scheduled_start_time: selectedTime,
-			customer_name: document.getElementById('customer_name').value.trim(),
-			customer_email: document.getElementById('customer_email').value.trim(),
-			customer_phone: document.getElementById('customer_phone').value.trim(),
-			customer_notes: document.getElementById('customer_notes').value.trim(),
-			visitor_timezone: visitorTimezone
+			customer_name: nameInput.value.trim(),
+			customer_email: emailInput.value.trim(),
+			customer_phone: phoneInput.value.trim(),
+			customer_notes: document.getElementById("customer_notes").value.trim(),
+			visitor_timezone: visitorTimezone,
 		};
 
 		// Show loading state
 		submitBtn.disabled = true;
-		btnText.style.display = 'none';
-		btnSpinner.style.display = 'flex';
-		errorMessage.style.display = 'none';
+		btnText.style.display = "none";
+		btnSpinner.style.display = "flex";
+		errorMessage.style.display = "none";
 
 		// Submit booking
 		frappe.call({
-			method: 'meeting_manager.meeting_manager.api.public.create_customer_booking',
-			type: 'POST',
+			method: "meeting_manager.meeting_manager.api.public.create_customer_booking",
+			type: "POST",
 			args: {
-				booking_data: formData
+				booking_data: formData,
 			},
-			callback: function(r) {
+			callback: function (r) {
 				if (r.message && r.message.success) {
 					// Success! Redirect to confirmation page
 					window.location.href = `/booking-confirmation?booking_id=${r.message.booking_id}`;
 				} else {
 					// Show error
-					showError(r.message?.message || 'Failed to create booking. Please try again.');
+					showError(r.message?.message || "Failed to create booking. Please try again.");
 					submitBtn.disabled = false;
-					btnText.style.display = 'inline';
-					btnSpinner.style.display = 'none';
+					btnText.style.display = "inline";
+					btnSpinner.style.display = "none";
 				}
 			},
-			error: function(err) {
-				console.error('Booking error:', err);
-				showError(err.message || 'An error occurred. Please try again.');
+			error: function (err) {
+				console.error("Booking error:", err);
+				showError(err.message || "An error occurred. Please try again.");
 				submitBtn.disabled = false;
-				btnText.style.display = 'inline';
-				btnSpinner.style.display = 'none';
-			}
+				btnText.style.display = "inline";
+				btnSpinner.style.display = "none";
+			},
 		});
 	});
 
 	// Show error message
 	function showError(message) {
 		errorText.textContent = message;
-		errorMessage.style.display = 'flex';
-		errorMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+		errorMessage.style.display = "flex";
+		errorMessage.scrollIntoView({ behavior: "smooth", block: "nearest" });
 	}
 </script>
-
