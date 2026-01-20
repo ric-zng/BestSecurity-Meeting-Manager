@@ -308,9 +308,8 @@ def get_calendar_events(start, end, departments=None, focus_department=None,
     # Add status filter
     if statuses:
         filters["booking_status"] = ["in", statuses]
-    else:
-        # Default: exclude cancelled
-        filters["booking_status"] = ["!=", "Cancelled"]
+    # Note: No default filter - show all statuses. Old statuses from before migration
+    # will still be shown until the migration patch runs.
 
     # Add service filter
     if services:
@@ -341,12 +340,29 @@ def get_calendar_events(start, end, departments=None, focus_department=None,
 
     # Color mapping based on status
     color_map = {
-        "Confirmed": "#10b981",   # Green
-        "Pending": "#f59e0b",     # Yellow/Orange
-        "Cancelled": "#ef4444",   # Red
-        "Completed": "#3b82f6",   # Blue
-        "No-Show": "#6b7280",     # Gray
-        "Rescheduled": "#8b5cf6"  # Purple
+        # New statuses
+        "New Appointment": "#ec4899",        # Pink/Purple
+        "New Booking": "#1e40af",            # Dark Blue
+        "Booking Started": "#60a5fa",        # Light Blue
+        "Sale Approved": "#22c55e",          # Green
+        "Booking Approved Not Sale": "#ef4444",  # Red
+        "Call Customer About Sale": "#f97316",   # Orange
+        "No Answer 1-3": "#9ca3af",          # Grey
+        "No Answer 4-5": "#a3a33a",          # Light Brown/Olive
+        "Customer Unsure": "#7dd3fc",        # Baby Blue
+        "No Contact About Offer": "#b91c1c", # Dark Red
+        "Cancelled": "#d1d5db",              # Light Grey
+        "Optimising Not Possible": "#fbbf24", # Yellow
+        "Not Possible": "#dc2626",           # Another Red
+        "Rebook": "#a855f7",                 # Purple
+        "Rebook Earlier": "#9333ea",         # Darker Purple
+        "Consent Sent Awaiting": "#3b82f6",  # Another Blue
+        # Legacy statuses (for backwards compatibility until migration runs)
+        "Confirmed": "#10b981",              # Green
+        "Pending": "#f59e0b",                # Yellow/Orange
+        "Completed": "#3b82f6",              # Blue
+        "No-Show": "#6b7280",                # Gray
+        "Rescheduled": "#8b5cf6"             # Purple
     }
 
     # Build events list
@@ -449,8 +465,10 @@ def get_calendar_events(start, end, departments=None, focus_department=None,
 
         # Create event for each assigned user (host) resource
         for assigned_user in assigned_users:
-            # Cancelled or Completed meetings cannot be modified
-            if meeting.booking_status in ("Cancelled", "Completed"):
+            # Finalized bookings cannot be modified (Cancelled, Sale Approved, Not Possible, etc.)
+            # Include legacy statuses for backwards compatibility
+            finalized_statuses = ("Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed")
+            if meeting.booking_status in finalized_statuses:
                 can_reschedule = False
                 can_reassign = False
             else:
@@ -620,12 +638,29 @@ def check_can_reassign_event(department, current_user, role_level, led_dept_name
 def get_status_color(status):
     """Get color for booking status."""
     colors = {
-        "Confirmed": "#10b981",  # Green
-        "Pending": "#f59e0b",    # Amber
-        "Completed": "#6b7280",  # Gray
-        "Cancelled": "#ef4444",  # Red
-        "No-Show": "#dc2626",    # Dark red
-        "Rescheduled": "#3b82f6" # Blue
+        # New statuses
+        "New Appointment": "#ec4899",        # Pink/Purple
+        "New Booking": "#1e40af",            # Dark Blue
+        "Booking Started": "#60a5fa",        # Light Blue
+        "Sale Approved": "#22c55e",          # Green
+        "Booking Approved Not Sale": "#ef4444",  # Red
+        "Call Customer About Sale": "#f97316",   # Orange
+        "No Answer 1-3": "#9ca3af",          # Grey
+        "No Answer 4-5": "#a3a33a",          # Light Brown/Olive
+        "Customer Unsure": "#7dd3fc",        # Baby Blue
+        "No Contact About Offer": "#b91c1c", # Dark Red
+        "Cancelled": "#d1d5db",              # Light Grey
+        "Optimising Not Possible": "#fbbf24", # Yellow
+        "Not Possible": "#dc2626",           # Another Red
+        "Rebook": "#a855f7",                 # Purple
+        "Rebook Earlier": "#9333ea",         # Darker Purple
+        "Consent Sent Awaiting": "#3b82f6",  # Another Blue
+        # Legacy statuses (for backwards compatibility)
+        "Confirmed": "#10b981",              # Green
+        "Pending": "#f59e0b",                # Yellow/Orange
+        "Completed": "#3b82f6",              # Blue
+        "No-Show": "#6b7280",                # Gray
+        "Rescheduled": "#8b5cf6"             # Purple
     }
     return colors.get(status, "#6b7280")
 
@@ -744,12 +779,13 @@ def update_calendar_booking(booking_id, start_datetime=None, end_datetime=None,
 
     booking = frappe.get_doc("MM Meeting Booking", booking_id)
 
-    # Prevent modifications to Cancelled or Completed meetings
-    if booking.booking_status in ("Cancelled", "Completed"):
+    # Prevent modifications to finalized bookings
+    finalized_statuses = ("Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed")
+    if booking.booking_status in finalized_statuses:
         return {
             "success": False,
-            "message": _("Cannot modify a {0} meeting. Only Confirmed or Pending meetings can be rescheduled, extended, or reassigned.").format(
-                booking.booking_status.lower()
+            "message": _("Cannot modify a '{0}' booking. Only active bookings can be rescheduled, extended, or reassigned.").format(
+                booking.booking_status
             )
         }
 
@@ -989,12 +1025,13 @@ def check_booking_permission(booking_id, action="view"):
 
     booking = frappe.get_doc("MM Meeting Booking", booking_id)
 
-    # Cancelled or Completed meetings cannot be modified (but can be viewed)
-    if action in ("reschedule", "reassign", "extend") and booking.booking_status in ("Cancelled", "Completed"):
+    # Finalized bookings cannot be modified (but can be viewed)
+    finalized_statuses = ("Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed")
+    if action in ("reschedule", "reassign", "extend") and booking.booking_status in finalized_statuses:
         return {
             "allowed": False,
-            "reason": _("Cannot modify a {0} meeting. Only Confirmed or Pending meetings can be modified.").format(
-                booking.booking_status.lower()
+            "reason": _("Cannot modify a '{0}' booking. Only active bookings can be modified.").format(
+                booking.booking_status
             )
         }
 
@@ -1100,12 +1137,22 @@ def get_filter_options():
         }
     """
     statuses = [
-        {"value": "Confirmed", "label": "Confirmed"},
-        {"value": "Pending", "label": "Pending"},
-        {"value": "Completed", "label": "Completed"},
-        {"value": "Cancelled", "label": "Cancelled"},
-        {"value": "No-Show", "label": "No-Show"},
-        {"value": "Rescheduled", "label": "Rescheduled"}
+        {"value": "New Appointment", "label": "New Appointment", "color": "#ec4899"},
+        {"value": "New Booking", "label": "New Booking", "color": "#1e40af"},
+        {"value": "Booking Started", "label": "Booking Started", "color": "#60a5fa"},
+        {"value": "Sale Approved", "label": "Sale Approved", "color": "#22c55e"},
+        {"value": "Booking Approved Not Sale", "label": "Booking Approved Not Sale", "color": "#ef4444"},
+        {"value": "Call Customer About Sale", "label": "Call Customer About Sale", "color": "#f97316"},
+        {"value": "No Answer 1-3", "label": "No Answer 1-3", "color": "#9ca3af"},
+        {"value": "No Answer 4-5", "label": "No Answer 4-5", "color": "#a3a33a"},
+        {"value": "Customer Unsure", "label": "Customer Unsure", "color": "#7dd3fc"},
+        {"value": "No Contact About Offer", "label": "No Contact About Offer", "color": "#b91c1c"},
+        {"value": "Cancelled", "label": "Cancelled", "color": "#d1d5db"},
+        {"value": "Optimising Not Possible", "label": "Optimising Not Possible", "color": "#fbbf24"},
+        {"value": "Not Possible", "label": "Not Possible", "color": "#dc2626"},
+        {"value": "Rebook", "label": "Rebook", "color": "#a855f7"},
+        {"value": "Rebook Earlier", "label": "Rebook Earlier", "color": "#9333ea"},
+        {"value": "Consent Sent Awaiting", "label": "Consent Sent Awaiting", "color": "#3b82f6"}
     ]
 
     services = [
@@ -1448,8 +1495,9 @@ def get_booking_details(booking_id):
     can_reassign = False
     can_cancel = False
 
-    # Cannot modify cancelled/completed meetings
-    if booking.booking_status not in ("Cancelled", "Completed"):
+    # Finalized bookings cannot be modified
+    finalized_statuses = ("Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed")
+    if booking.booking_status not in finalized_statuses:
         if role_level == "system_manager":
             can_edit = True
             can_reschedule = True
@@ -1735,7 +1783,7 @@ def create_slot_booking(booking_data):
             "start_datetime": start_dt,
             "end_datetime": end_dt,
             "duration": duration_minutes,
-            "booking_status": "Confirmed",
+            "booking_status": "New Booking",
             "select_mkru": service_type,
             "meeting_title": f"{customer_name_display} - {mt_info.meeting_name}",
             "meeting_description": meeting_agenda,

@@ -312,9 +312,10 @@ def reassign_booking(booking_id, new_assigned_to, reason=None):
 	if not has_permission_to_manage_booking(booking):
 		frappe.throw(_("You don't have permission to reassign this booking"))
 
-	# Use booking_status (actual field name)
-	if booking.booking_status in ["Cancelled", "Completed"]:
-		frappe.throw(_(f"Cannot reassign {booking.booking_status.lower()} bookings"))
+	# Finalized bookings cannot be reassigned
+	finalized_statuses = ["Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed"]
+	if booking.booking_status in finalized_statuses:
+		frappe.throw(_(f"Cannot reassign '{booking.booking_status}' bookings"))
 
 	# Get department from meeting type if not directly on booking
 	# The 'department' parameter passed from frontend takes precedence
@@ -444,9 +445,10 @@ def reschedule_booking_internal(booking_id, new_date, new_time, reason=None):
 	if not has_permission_to_manage_booking(booking):
 		frappe.throw(_("You don't have permission to reschedule this booking"))
 
-	# Use booking_status (actual field name in schema)
-	if booking.booking_status in ["Cancelled", "Completed"]:
-		frappe.throw(_(f"Cannot reschedule {booking.booking_status.lower()} bookings"))
+	# Finalized bookings cannot be rescheduled
+	finalized_statuses = ["Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed"]
+	if booking.booking_status in finalized_statuses:
+		frappe.throw(_(f"Cannot reschedule '{booking.booking_status}' bookings"))
 
 	# Validate new date and time
 	new_scheduled_date = getdate(new_date)
@@ -874,7 +876,7 @@ def create_self_booking(booking_data):
 		"select_mkru": booking_data.get("service_type"),
 
 		# Status
-		"booking_status": "Confirmed",
+		"booking_status": "New Booking",
 		"booking_source": "Internal System",
 
 		# Security tokens
@@ -1094,11 +1096,11 @@ def get_user_available_slots(department, meeting_type, date):
 		)
 
 		if availability["available"]:
-			# Format time as HH:MM
+			# Format time as HH:MM (24-hour format)
 			time_str = current_time.strftime("%H:%M")
 			available_slots.append({
 				"time": time_str,
-				"display": current_time.strftime("%I:%M %p")
+				"display": time_str
 			})
 
 		# Move to next slot
@@ -1347,7 +1349,7 @@ def get_team_available_slots(department, meeting_type, date, participants):
 			time_str = current_time.strftime("%H:%M")
 			available_slots.append({
 				"time": time_str,
-				"display": current_time.strftime("%I:%M %p")
+				"display": time_str
 			})
 
 		# Move to next slot
@@ -1598,8 +1600,8 @@ def create_team_meeting(meeting_data):
 		"select_mkru": meeting_data.get("service_type"),
 
 		# Status
-		"status": "Confirmed",
-		"booking_status": "Confirmed",
+		"status": "New Booking",
+		"booking_status": "New Booking",
 		"booking_source": "Internal System",
 
 		# Security tokens

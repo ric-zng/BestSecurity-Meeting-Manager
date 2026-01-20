@@ -19,7 +19,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Event Type",
-   "options": "Created\nConfirmed\nRescheduled\nCancelled\nCompleted\nNo-Show\nApproved\nRejected\nReminder Sent\nCalendar Synced\nAssignment Changed\nCustomer Updated",
+   "options": "Created\nStatus Changed\nRescheduled\nCancelled\nApproved\nRejected\nReminder Sent\nCalendar Synced\nAssignment Changed\nCustomer Updated",
    "reqd": 1
   },
   {

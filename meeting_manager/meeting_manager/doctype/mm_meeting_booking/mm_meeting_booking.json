@@ -78,13 +78,13 @@
    "reqd": 1
   },
   {
-   "default": "Confirmed",
+   "default": "New Booking",
    "description": "Current status of the booking",
    "fieldname": "booking_status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Booking Status",
-   "options": "Pending\nConfirmed\nCancelled\nCompleted\nNo-Show\nRescheduled",
+   "options": "New Appointment\nNew Booking\nBooking Started\nSale Approved\nBooking Approved Not Sale\nCall Customer About Sale\nNo Answer 1-3\nNo Answer 4-5\nCustomer Unsure\nNo Contact About Offer\nCancelled\nOptimising Not Possible\nNot Possible\nRebook\nRebook Earlier\nConsent Sent Awaiting",
    "reqd": 1
   },
   {
