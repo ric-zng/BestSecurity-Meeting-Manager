@@ -6,3 +6,4 @@
 # Patches added in this section will be executed after doctypes are migrated
 meeting_manager.meeting_manager.patches.migrate_customers
 meeting_manager.meeting_manager.patches.sync_department_roles
+meeting_manager.meeting_manager.patches.migrate_booking_statuses

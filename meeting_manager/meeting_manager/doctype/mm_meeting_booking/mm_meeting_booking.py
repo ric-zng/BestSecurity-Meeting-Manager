@@ -40,8 +40,8 @@ class MMMeetingBooking(Document):
 			old_doc = self.get_doc_before_save()
 			if old_doc and old_doc.booking_status != self.booking_status:
 				self.add_history_entry(
-					event_type=self.booking_status,
-					description=f"Booking status changed from {old_doc.booking_status} to {self.booking_status}"
+					event_type="Status Changed",
+					description=f"Booking status changed from '{old_doc.booking_status}' to '{self.booking_status}'"
 				)
 
 	def set_created_by(self):
@@ -313,8 +313,9 @@ class MMMeetingBooking(Document):
 					indicator="orange"
 				)
 
-		# Validate no-show and completed status are only for past bookings
-		if self.booking_status in ["No-Show", "Completed"]:
+		# Statuses that indicate the booking/sale is complete (past only)
+		past_only_statuses = ["Sale Approved", "Booking Approved Not Sale", "Not Possible"]
+		if self.booking_status in past_only_statuses:
 			if self.start_datetime:
 				start_dt = self._ensure_naive_datetime(self.start_datetime)
 				current_dt = now_datetime()

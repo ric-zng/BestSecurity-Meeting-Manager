@@ -38,12 +38,20 @@ class EnhancedCalendarController {
         // State
         this.userContext = null;
         this.calendar = null;
+        // All available statuses - select all by default
+        this.allStatuses = [
+            'New Booking', 'New Appointment', 'Booking Started', 'Sale Approved',
+            'Booking Approved Not Sale', 'Call Customer About Sale', 'No Answer 1-3',
+            'No Answer 4-5', 'Customer Unsure', 'No Contact About Offer', 'Cancelled',
+            'Optimising Not Possible', 'Not Possible', 'Rebook', 'Rebook Earlier',
+            'Consent Sent Awaiting'
+        ];
         this.filterState = {
             mode: 'multi',
             departments: [],
             focusDepartment: null,
             meetingTypes: [],
-            statuses: ['Confirmed', 'Pending'],
+            statuses: [...this.allStatuses], // Select all statuses by default
             services: []
         };
         this.resources = [];
@@ -244,25 +252,69 @@ class EnhancedCalendarController {
                             <div class="ec-filter-item">
                                 <label class="ec-label">${__('Status')}</label>
                                 <div class="ec-status-toggles" id="ec-status-toggles">
-                                    <button class="ec-status-btn active" data-status="Confirmed">
-                                        <span class="ec-status-dot ec-status-confirmed"></span>
-                                        ${__('Confirmed')}
+                                    <button class="ec-status-btn active" data-status="New Booking" style="--status-color: #1e40af;">
+                                        <span class="ec-status-dot" style="background-color: #1e40af;"></span>
+                                        ${__('New Booking')}
                                     </button>
-                                    <button class="ec-status-btn active" data-status="Pending">
-                                        <span class="ec-status-dot ec-status-pending"></span>
-                                        ${__('Pending')}
+                                    <button class="ec-status-btn active" data-status="New Appointment" style="--status-color: #ec4899;">
+                                        <span class="ec-status-dot" style="background-color: #ec4899;"></span>
+                                        ${__('New Appointment')}
                                     </button>
-                                    <button class="ec-status-btn" data-status="Completed">
-                                        <span class="ec-status-dot ec-status-completed"></span>
-                                        ${__('Completed')}
+                                    <button class="ec-status-btn active" data-status="Booking Started" style="--status-color: #60a5fa;">
+                                        <span class="ec-status-dot" style="background-color: #60a5fa;"></span>
+                                        ${__('Booking Started')}
                                     </button>
-                                    <button class="ec-status-btn" data-status="Cancelled">
-                                        <span class="ec-status-dot ec-status-cancelled"></span>
+                                    <button class="ec-status-btn active" data-status="Sale Approved" style="--status-color: #22c55e;">
+                                        <span class="ec-status-dot" style="background-color: #22c55e;"></span>
+                                        ${__('Sale Approved')}
+                                    </button>
+                                    <button class="ec-status-btn active" data-status="Booking Approved Not Sale" style="--status-color: #ef4444;">
+                                        <span class="ec-status-dot" style="background-color: #ef4444;"></span>
+                                        ${__('Approved (No Sale)')}
+                                    </button>
+                                    <button class="ec-status-btn active" data-status="Call Customer About Sale" style="--status-color: #f97316;">
+                                        <span class="ec-status-dot" style="background-color: #f97316;"></span>
+                                        ${__('Call Customer')}
+                                    </button>
+                                    <button class="ec-status-btn active" data-status="No Answer 1-3" style="--status-color: #9ca3af;">
+                                        <span class="ec-status-dot" style="background-color: #9ca3af;"></span>
+                                        ${__('No Answer 1-3')}
+                                    </button>
+                                    <button class="ec-status-btn active" data-status="No Answer 4-5" style="--status-color: #a3a33a;">
+                                        <span class="ec-status-dot" style="background-color: #a3a33a;"></span>
+                                        ${__('No Answer 4-5')}
+                                    </button>
+                                    <button class="ec-status-btn active" data-status="Customer Unsure" style="--status-color: #7dd3fc;">
+                                        <span class="ec-status-dot" style="background-color: #7dd3fc;"></span>
+                                        ${__('Customer Unsure')}
+                                    </button>
+                                    <button class="ec-status-btn active" data-status="No Contact About Offer" style="--status-color: #b91c1c;">
+                                        <span class="ec-status-dot" style="background-color: #b91c1c;"></span>
+                                        ${__('No Contact Offer')}
+                                    </button>
+                                    <button class="ec-status-btn active" data-status="Cancelled" style="--status-color: #d1d5db;">
+                                        <span class="ec-status-dot" style="background-color: #d1d5db;"></span>
                                         ${__('Cancelled')}
                                     </button>
-                                    <button class="ec-status-btn" data-status="No-Show">
-                                        <span class="ec-status-dot ec-status-noshow"></span>
-                                        ${__('No-Show')}
+                                    <button class="ec-status-btn active" data-status="Optimising Not Possible" style="--status-color: #fbbf24;">
+                                        <span class="ec-status-dot" style="background-color: #fbbf24;"></span>
+                                        ${__('Optimising N/P')}
+                                    </button>
+                                    <button class="ec-status-btn active" data-status="Not Possible" style="--status-color: #dc2626;">
+                                        <span class="ec-status-dot" style="background-color: #dc2626;"></span>
+                                        ${__('Not Possible')}
+                                    </button>
+                                    <button class="ec-status-btn active" data-status="Rebook" style="--status-color: #a855f7;">
+                                        <span class="ec-status-dot" style="background-color: #a855f7;"></span>
+                                        ${__('Rebook')}
+                                    </button>
+                                    <button class="ec-status-btn active" data-status="Rebook Earlier" style="--status-color: #9333ea;">
+                                        <span class="ec-status-dot" style="background-color: #9333ea;"></span>
+                                        ${__('Rebook Earlier')}
+                                    </button>
+                                    <button class="ec-status-btn active" data-status="Consent Sent Awaiting" style="--status-color: #3b82f6;">
+                                        <span class="ec-status-dot" style="background-color: #3b82f6;"></span>
+                                        ${__('Consent Awaiting')}
                                     </button>
                                 </div>
                             </div>
@@ -436,7 +488,7 @@ class EnhancedCalendarController {
             .ec-dept-name {
                 font-size: 13px;
                 font-weight: 500;
-                color: #1e293b;
+                color: #141414;
             }
             .ec-dept-check {
                 width: 22px;
@@ -521,7 +573,7 @@ class EnhancedCalendarController {
                 border: 1px solid #e2e8f0;
                 border-radius: 8px;
                 font-size: 13px;
-                color: #1e293b;
+                color: #141414;
                 appearance: none;
                 cursor: pointer;
                 transition: all 0.2s;
@@ -571,18 +623,17 @@ class EnhancedCalendarController {
             .ec-status-btn.active {
                 background: #f8fafc;
                 border-color: #3b82f6;
-                color: #1e293b;
+                color: #141414;
             }
             .ec-status-dot {
                 width: 8px;
                 height: 8px;
                 border-radius: 50%;
+                flex-shrink: 0;
             }
-            .ec-status-dot.ec-status-confirmed { background: #10b981; }
-            .ec-status-dot.ec-status-pending { background: #f59e0b; }
-            .ec-status-dot.ec-status-completed { background: #6b7280; }
-            .ec-status-dot.ec-status-cancelled { background: #ef4444; }
-            .ec-status-dot.ec-status-noshow { background: #dc2626; }
+            .ec-status-btn {
+                white-space: nowrap;
+            }
 
             /* Meeting Types Row */
             .ec-row-meeting-types {
@@ -1353,12 +1404,353 @@ class EnhancedCalendarController {
             .ec-slot-info-value {
                 flex: 1;
                 font-size: 14px;
-                color: #1e293b;
+                color: #141414;
             }
 
             /* Cursor for selectable areas */
             .fc-timeline-lane:not(.ec-nonworking-block):not(.ec-unavailable-block):not(.ec-dayoff-block) {
                 cursor: pointer;
+            }
+
+            /* ===== DARK MODE SUPPORT ===== */
+            [data-theme="dark"] .ec-page {
+                background: #0a0a0a;
+            }
+
+            /* Dark mode - Filter Panel */
+            [data-theme="dark"] .ec-filter-panel {
+                background: #111111;
+                border-bottom-color: #222222;
+            }
+
+            [data-theme="dark"] .ec-filter-group {
+                background: #0a0a0a;
+                border-color: #222222;
+            }
+
+            [data-theme="dark"] .ec-filter-title {
+                color: #94a3b8;
+            }
+
+            [data-theme="dark"] .ec-select-all-btn {
+                color: #60a5fa;
+            }
+
+            [data-theme="dark"] .ec-select-all-btn:hover {
+                background: rgba(59, 130, 246, 0.15);
+            }
+
+            /* Dark mode - Department Cards */
+            [data-theme="dark"] .ec-dept-card {
+                background: #0a0a0a;
+                border-color: #222222;
+            }
+
+            [data-theme="dark"] .ec-dept-card:hover {
+                border-color: #475569;
+            }
+
+            [data-theme="dark"] .ec-dept-card:has(input:checked) {
+                border-color: #3b82f6;
+                background: rgba(59, 130, 246, 0.15);
+            }
+
+            [data-theme="dark"] .ec-dept-name {
+                color: #e2e8f0;
+            }
+
+            /* Dark mode - Buttons */
+            [data-theme="dark"] .ec-btn-reload {
+                background: #0a0a0a;
+                color: #94a3b8;
+                border-color: #222222;
+            }
+
+            [data-theme="dark"] .ec-btn-reload:hover {
+                background: #222222;
+                border-color: #3b82f6;
+                color: #60a5fa;
+            }
+
+            /* Dark mode - Filter Items */
+            [data-theme="dark"] .ec-label {
+                color: #94a3b8;
+            }
+
+            [data-theme="dark"] .ec-hint {
+                color: #64748b;
+            }
+
+            [data-theme="dark"] .ec-row-filters {
+                border-top-color: #222222;
+            }
+
+            /* Dark mode - Custom Select */
+            [data-theme="dark"] .ec-select {
+                background: #0a0a0a;
+                border-color: #222222;
+                color: #e2e8f0;
+            }
+
+            [data-theme="dark"] .ec-select:hover {
+                border-color: #475569;
+            }
+
+            [data-theme="dark"] .ec-select:focus {
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            }
+
+            [data-theme="dark"] .ec-select-arrow {
+                stroke: #94a3b8;
+            }
+
+            /* Dark mode - Status Toggles */
+            [data-theme="dark"] .ec-status-btn {
+                background: #0a0a0a;
+                border-color: #222222;
+                color: #94a3b8;
+            }
+
+            [data-theme="dark"] .ec-status-btn:hover {
+                border-color: #475569;
+            }
+
+            [data-theme="dark"] .ec-status-btn.active {
+                background: rgba(59, 130, 246, 0.15);
+                border-color: #3b82f6;
+                color: #e2e8f0;
+            }
+
+            /* Dark mode - Meeting Type Chips */
+            [data-theme="dark"] .ec-row-meeting-types {
+                border-top-color: #222222;
+            }
+
+            [data-theme="dark"] .ec-mt-chip {
+                background: #0a0a0a;
+                border-color: #222222;
+                color: #94a3b8;
+            }
+
+            [data-theme="dark"] .ec-mt-chip:hover {
+                background: #222222;
+            }
+
+            [data-theme="dark"] .ec-mt-chip.active {
+                background: #3b82f6;
+                border-color: #3b82f6;
+                color: #ffffff;
+            }
+
+            /* Dark mode - Calendar Container */
+            [data-theme="dark"] .ec-calendar-container {
+                background: #111111;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            }
+
+            /* Dark mode - FullCalendar */
+            [data-theme="dark"] .ec-calendar-container .fc-button {
+                background-color: #0a0a0a;
+                border-color: #222222;
+                color: #e2e8f0;
+            }
+
+            [data-theme="dark"] .ec-calendar-container .fc-button:hover {
+                background-color: #222222;
+                border-color: #475569;
+            }
+
+            [data-theme="dark"] .ec-calendar-container .fc-button-active {
+                background-color: #3b82f6 !important;
+                color: white !important;
+                border-color: #3b82f6 !important;
+            }
+
+            [data-theme="dark"] .ec-calendar-container .fc-toolbar-title {
+                color: #e2e8f0;
+            }
+
+            /* Dark mode - FullCalendar Grid */
+            [data-theme="dark"] .ec-calendar-container .fc-theme-standard td,
+            [data-theme="dark"] .ec-calendar-container .fc-theme-standard th {
+                border-color: #222222;
+            }
+
+            [data-theme="dark"] .ec-calendar-container .fc-theme-standard .fc-scrollgrid {
+                border-color: #222222;
+            }
+
+            [data-theme="dark"] .ec-calendar-container .fc-col-header-cell {
+                background: #0a0a0a;
+            }
+
+            [data-theme="dark"] .ec-calendar-container .fc-col-header-cell-cushion {
+                color: #94a3b8;
+            }
+
+            [data-theme="dark"] .ec-calendar-container .fc-datagrid-cell {
+                background: #111111;
+            }
+
+            [data-theme="dark"] .ec-calendar-container .fc-datagrid-cell-cushion {
+                color: #e2e8f0;
+            }
+
+            [data-theme="dark"] .ec-calendar-container .fc-timeline-slot {
+                background: #111111;
+            }
+
+            [data-theme="dark"] .ec-calendar-container .fc-timeline-slot-cushion {
+                color: #94a3b8;
+            }
+
+            [data-theme="dark"] .ec-calendar-container .fc-resource-timeline-divider {
+                background: #222222;
+            }
+
+            /* Dark mode - Non-working/unavailable blocks */
+            [data-theme="dark"] .fc-timeline-event.ec-nonworking-block {
+                background-color: #374151 !important;
+            }
+
+            [data-theme="dark"] .fc-timeline-event.ec-dayoff-block {
+                background-color: #1f2937 !important;
+            }
+
+            [data-theme="dark"] .fc-timeline-event.ec-unavailable-block {
+                background-color: #7f1d1d !important;
+            }
+
+            /* Dark mode - Tooltip */
+            [data-theme="dark"] .ec-tooltip {
+                background: #141414;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 4px 10px rgba(0, 0, 0, 0.3);
+            }
+
+            [data-theme="dark"] .ec-tooltip-header {
+                border-bottom-color: rgba(255, 255, 255, 0.1);
+            }
+
+            /* Dark mode - Confirmation Dialog */
+            [data-theme="dark"] .ec-confirmation-dialog .modal-content {
+                background: #111111;
+            }
+
+            [data-theme="dark"] .ec-confirmation-dialog .modal-header {
+                background: #0a0a0a;
+                border-bottom-color: #222222;
+            }
+
+            [data-theme="dark"] .ec-confirmation-dialog .modal-title {
+                color: #e2e8f0;
+            }
+
+            [data-theme="dark"] .ec-confirmation-dialog .modal-footer {
+                background: #0a0a0a;
+                border-top-color: #222222;
+            }
+
+            [data-theme="dark"] .ec-confirm-header {
+                background: linear-gradient(135deg, #0a0a0a 0%, #111111 100%);
+            }
+
+            [data-theme="dark"] .ec-confirm-icon {
+                background: #222222;
+            }
+
+            [data-theme="dark"] .ec-confirm-header-text p {
+                color: #94a3b8;
+            }
+
+            [data-theme="dark"] .ec-confirm-section {
+                border-bottom-color: #222222;
+            }
+
+            [data-theme="dark"] .ec-confirm-section-header {
+                color: #e2e8f0;
+            }
+
+            [data-theme="dark"] .ec-confirm-section-header svg {
+                color: #94a3b8;
+            }
+
+            [data-theme="dark"] .ec-confirm-section-body {
+                background: #0a0a0a;
+            }
+
+            [data-theme="dark"] .ec-confirm-row {
+                border-bottom-color: #222222;
+            }
+
+            [data-theme="dark"] .ec-confirm-label {
+                color: #94a3b8;
+            }
+
+            [data-theme="dark"] .ec-confirm-value {
+                color: #e2e8f0;
+            }
+
+            [data-theme="dark"] .ec-confirm-change-box {
+                background: #0a0a0a;
+                border-color: #222222;
+            }
+
+            [data-theme="dark"] .ec-confirm-change-label {
+                color: #94a3b8;
+            }
+
+            [data-theme="dark"] .ec-confirm-change-content.to {
+                background: #111111;
+                border-top-color: #222222;
+            }
+
+            [data-theme="dark"] .ec-confirm-change-date {
+                color: #e2e8f0;
+            }
+
+            [data-theme="dark"] .ec-confirm-change-time {
+                color: #cbd5e1;
+            }
+
+            [data-theme="dark"] .ec-confirm-change-duration {
+                color: #94a3b8;
+            }
+
+            [data-theme="dark"] .ec-confirm-change-host {
+                color: #cbd5e1;
+            }
+
+            [data-theme="dark"] .ec-confirm-change-host svg {
+                color: #94a3b8;
+            }
+
+            /* Dark mode - Slot Info Card */
+            [data-theme="dark"] .ec-slot-info-card {
+                background: linear-gradient(135deg, #0a0a0a 0%, #111111 100%);
+                border-color: #222222;
+            }
+
+            [data-theme="dark"] .ec-slot-info-header {
+                color: #60a5fa;
+            }
+
+            [data-theme="dark"] .ec-slot-info-header svg {
+                stroke: #60a5fa;
+            }
+
+            [data-theme="dark"] .ec-slot-info-label {
+                color: #94a3b8;
+            }
+
+            [data-theme="dark"] .ec-slot-info-value {
+                color: #e2e8f0;
+            }
+
+            /* Dark mode - Slot Selection Highlight */
+            [data-theme="dark"] .fc-highlight {
+                background: rgba(59, 130, 246, 0.25) !important;
+                border-color: #3b82f6 !important;
             }
         `;
         document.head.appendChild(style);
@@ -1541,10 +1933,11 @@ class EnhancedCalendarController {
                 right: 'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth'
             },
 
-            // Time settings
+            // Time settings - 30-minute intervals
             slotMinTime: '06:00:00',
             slotMaxTime: '22:00:00',
-            slotDuration: '00:15:00',
+            slotDuration: '00:30:00',
+            snapDuration: '00:30:00',
             slotLabelInterval: '01:00:00',
             slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
 

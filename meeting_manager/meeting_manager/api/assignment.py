@@ -151,7 +151,7 @@ def assign_least_busy(available_members, scheduled_date):
 				filters={
 					"name": ["in", booking_ids],
 					"start_datetime": ["between", [scheduled_date, week_end]],
-					"booking_status": ["in", ["Confirmed", "Pending"]]
+					"booking_status": ["not in", ["Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible"]]
 				}
 			)
 

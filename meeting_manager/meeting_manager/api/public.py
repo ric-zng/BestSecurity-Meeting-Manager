@@ -337,7 +337,7 @@ def create_customer_booking(booking_data):
 		"meeting_description": meeting_type.description,
 
 		# Status
-		"booking_status": "Pending" if meeting_type.requires_approval else "Confirmed",
+		"booking_status": "New Appointment" if meeting_type.requires_approval else "New Booking",
 		"requires_approval": meeting_type.requires_approval,
 
 		# Customer self-service tokens and links
@@ -387,7 +387,7 @@ def create_customer_booking(booking_data):
 			"duration": meeting_type.duration,
 			"status": booking.booking_status,
 			"assigned_to_email": frappe.get_value("User", assignment["assigned_to"], "email"),
-			"message": "Your booking has been confirmed! Check your email for details and calendar invite." if booking.booking_status == "Confirmed" else "Your booking request has been received and is pending approval."
+			"message": "Your booking has been confirmed! Check your email for details and calendar invite." if booking.booking_status == "New Booking" else "Your booking request has been received and is pending approval."
 		},
 		"cancel_url": booking.cancel_link,
 		"reschedule_url": booking.reschedule_link
@@ -454,7 +454,9 @@ def cancel_booking(token):
 	if not booking:
 		frappe.throw(_("Invalid or expired cancellation link"))
 
-	if booking.booking_status in ["Cancelled", "Completed"]:
+	# Finalized bookings cannot be cancelled again
+	finalized_statuses = ["Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed"]
+	if booking.booking_status in finalized_statuses:
 		frappe.throw(_("This booking has already been {0}").format(booking.booking_status.lower()))
 
 	# Cancel the booking
@@ -511,7 +513,9 @@ def get_booking_details(token):
 	if not booking:
 		frappe.throw(_("Invalid or expired link"))
 
-	if booking.booking_status in ["Cancelled", "Completed"]:
+	# Finalized bookings cannot be rescheduled
+	finalized_statuses = ["Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed"]
+	if booking.booking_status in finalized_statuses:
 		frappe.throw(_("This booking has already been {0}").format(booking.booking_status.lower()))
 
 	# Get meeting type details to extract department
@@ -576,7 +580,9 @@ def reschedule_booking(token, new_date, new_time):
 	if not booking_data:
 		frappe.throw(_("Invalid or expired reschedule link"))
 
-	if booking_data.booking_status in ["Cancelled", "Completed"]:
+	# Finalized bookings cannot be rescheduled
+	finalized_statuses = ["Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed"]
+	if booking_data.booking_status in finalized_statuses:
 		frappe.throw(_("This booking has already been {0}").format(booking_data.booking_status.lower()))
 
 	# Get full booking document to access assigned users
@@ -656,7 +662,7 @@ def reschedule_booking(token, new_date, new_time):
 	# Update booking
 	booking.start_datetime = new_start_datetime
 	booking.end_datetime = new_end_datetime
-	booking.booking_status = "Rescheduled"
+	booking.booking_status = "Rebook"
 
 	# Update assigned user if changed
 	if member_changed and new_assigned_to:
@@ -688,11 +694,11 @@ def reschedule_booking(token, new_date, new_time):
 	# Prepare datetime dictionaries for email
 	old_datetime_dict = {
 		"date": old_start_datetime.strftime("%B %d, %Y"),
-		"time": old_start_datetime.strftime("%I:%M %p")
+		"time": old_start_datetime.strftime("%H:%M")
 	}
 	new_datetime_dict = {
 		"date": new_start_datetime.strftime("%B %d, %Y"),
-		"time": new_start_datetime.strftime("%I:%M %p")
+		"time": new_start_datetime.strftime("%H:%M")
 	}
 
 	# Send reschedule confirmation emails with new tokens
