@@ -1,0 +1,541 @@
+/**
+ * Meeting Manager - Shared Booking Styles
+ *
+ * This file contains shared CSS for the booking wizard (steps 1-5).
+ * Include this via the head_include block in templates.
+ */
+
+/* ============================================
+   CSS Variables - Theme Colors
+   Scoped to booking-container to avoid Frappe theme overrides
+   ============================================ */
+:root,
+.booking-container {
+	--mm-primary: #e19800;
+	--mm-primary-soft: #fff8e8;
+	--mm-bg: #fffcf5;
+	--mm-card: #ffffff;
+	--mm-text: #0f172a;
+	--mm-muted: #6b7280;
+	--mm-border: #ffe8b3;
+	--mm-success: #e19800;
+}
+
+/* Map to shorthand for easier use */
+.booking-container {
+	--primary: var(--mm-primary);
+	--primary-soft: var(--mm-primary-soft);
+	--bg: var(--mm-bg);
+	--card: var(--mm-card);
+	--text: var(--mm-text);
+	--muted: #4b5563; /* Darker muted for better contrast (WCAG AA) */
+	--border: var(--mm-border);
+	--success: var(--mm-success);
+	--focus-ring: rgba(225, 152, 0, 0.4);
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	font-family: system-ui, -apple-system, sans-serif;
+	background: #ffffff;
+}
+
+/* ============================================
+   Booking Container
+   ============================================ */
+.booking-container {
+	max-width: 900px;
+	margin: 0 auto;
+	padding: 0rem 1.5rem 3rem;
+}
+
+/* ============================================
+   Progress Steps (Stepper)
+   ============================================ */
+.booking-progress {
+	position: relative;
+	margin-bottom: 2rem;
+	padding-bottom: 0;
+	border-bottom: none;
+}
+
+.progress-steps {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	position: relative;
+	margin: 2.5rem auto 3.5rem;
+	max-width: 1000px;
+}
+
+.progress-steps::before {
+	content: "";
+	position: absolute;
+	top: 28px;
+	left: 0;
+	right: 0;
+	height: 4px;
+	background: var(--border);
+	z-index: 0;
+}
+
+.progress-step {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	flex: 1;
+	position: relative;
+	z-index: 1;
+	text-align: center;
+}
+
+.step-number {
+	width: 56px;
+	height: 56px;
+	border-radius: 50%;
+	background: #ffffff;
+	border: 2px solid #e5e7eb;
+	color: #9ca3af;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	font-size: 1.1rem;
+	margin-bottom: 0.75rem;
+	transition: all 0.3s;
+}
+
+/* Active step - Yellow filled with shadow (current step) */
+.progress-step.active .step-number {
+	background: #e19800 !important;
+	border-color: #e19800 !important;
+	color: white !important;
+	box-shadow: 0 10px 25px rgba(225, 152, 0, 0.35) !important;
+	transform: scale(1.05);
+}
+
+/* Completed step - Yellow outline with checkmark (past steps) */
+.progress-step.completed .step-number {
+	background: #fff8e8 !important;
+	border-color: #e19800 !important;
+	border-width: 2px !important;
+	color: #e19800 !important;
+}
+
+.step-label {
+	font-size: 0.95rem;
+	color: #9ca3af;
+	font-weight: 600;
+}
+
+/* Active step label - Bold yellow */
+.progress-step.active .step-label {
+	color: #e19800 !important;
+	font-weight: 700;
+}
+
+/* Completed step label - Muted yellow */
+.progress-step.completed .step-label {
+	color: #b37700 !important;
+}
+
+/* ============================================
+   Breadcrumb Navigation
+   ============================================ */
+.breadcrumb-nav {
+	margin-bottom: 1.5rem;
+}
+
+.breadcrumb-link {
+	color: var(--muted);
+	text-decoration: none;
+	font-size: 0.9rem;
+	transition: color 0.2s;
+}
+
+.breadcrumb-link:hover {
+	color: var(--primary);
+}
+
+/* ============================================
+   Page Header
+   ============================================ */
+.booking-header {
+	text-align: center;
+	margin-bottom: 2rem;
+}
+
+.booking-header h1 {
+	font-size: 2.3rem;
+	font-weight: 800;
+	color: var(--text);
+	margin-bottom: 0.6rem;
+}
+
+.booking-header .text-muted {
+	color: var(--muted);
+	font-size: 1rem;
+	line-height: 1.6;
+}
+
+.timezone-info {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	color: var(--muted);
+	font-size: 0.875rem;
+	margin-top: 0.5rem;
+}
+
+/* ============================================
+   Cards & Containers
+   ============================================ */
+.card-container {
+	background: var(--card);
+	border: 2px solid var(--border);
+	border-radius: 20px;
+	padding: 2rem;
+	box-shadow: 0 40px 80px rgba(15, 23, 42, 0.1);
+}
+
+/* ============================================
+   Loading State
+   ============================================ */
+.loading-state {
+	text-align: center;
+	padding: 3rem 1rem;
+}
+
+.spinner {
+	width: 50px;
+	height: 50px;
+	border: 4px solid var(--border);
+	border-top-color: var(--primary);
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+	margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.loading-state p {
+	color: var(--muted);
+	font-size: 1rem;
+}
+
+/* ============================================
+   Error State
+   ============================================ */
+.error-state {
+	text-align: center;
+	padding: 3rem 1rem;
+}
+
+.error-state svg {
+	color: #ef4444;
+	margin-bottom: 1rem;
+}
+
+.error-state p {
+	color: var(--muted);
+	font-size: 1rem;
+	margin-bottom: 1.5rem;
+}
+
+/* ============================================
+   Empty State
+   ============================================ */
+.empty-state {
+	text-align: center;
+	padding: 3rem 1rem;
+}
+
+.empty-state svg {
+	color: #9ca3af;
+	margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+	font-size: 1.5rem;
+	font-weight: 600;
+	color: var(--text);
+	margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+	color: var(--muted);
+	margin-bottom: 1.5rem;
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+.btn-primary {
+	display: inline-block;
+	padding: 0.875rem 1.5rem;
+	background: var(--primary);
+	color: white;
+	border: none;
+	border-radius: 8px;
+	text-decoration: none;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.btn-primary:hover {
+	background: #c17a00;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(225, 152, 0, 0.2);
+}
+
+.btn-secondary {
+	display: inline-block;
+	padding: 0.875rem 1.5rem;
+	background: white;
+	color: var(--primary);
+	border: 2px solid var(--border);
+	border-radius: 8px;
+	text-decoration: none;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+	border-color: var(--primary);
+	color: #c17a00;
+	transform: translateY(-1px);
+}
+
+.retry-btn {
+	background: var(--primary);
+	color: white;
+	border: none;
+	padding: 0.75rem 1.5rem;
+	border-radius: 8px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.retry-btn:hover {
+	background: #c17a00;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(225, 152, 0, 0.2);
+}
+
+/* ============================================
+   Focus Indicators (Accessibility)
+   ============================================ */
+.btn-primary:focus,
+.btn-secondary:focus,
+.retry-btn:focus {
+	outline: 2px solid #e19800;
+	outline-offset: 2px;
+}
+
+.breadcrumb-link:focus {
+	outline: 2px solid #e19800;
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+/* Ensure all interactive elements have visible focus */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible {
+	outline: 2px solid #e19800 !important;
+	outline-offset: 2px !important;
+}
+
+/* ============================================
+   Form Controls
+   ============================================ */
+.form-group {
+	margin-bottom: 1.5rem;
+}
+
+.form-group label {
+	display: block;
+	font-weight: 500;
+	color: var(--text);
+	margin-bottom: 0.5rem;
+	font-size: 0.9rem;
+}
+
+.required {
+	color: #ef4444;
+}
+
+.form-control {
+	width: 100%;
+	padding: 0.75rem 1rem;
+	border: 2px solid var(--border);
+	border-radius: 8px;
+	font-size: 1rem;
+	transition: all 0.2s;
+	font-family: inherit;
+	background: white;
+	color: var(--text);
+}
+
+.form-control:focus {
+	outline: none;
+	border-color: var(--primary);
+	box-shadow: 0 0 0 3px rgba(225, 152, 0, 0.1);
+}
+
+textarea.form-control {
+	resize: vertical;
+	min-height: 100px;
+}
+
+/* ============================================
+   Alerts
+   ============================================ */
+.alert {
+	padding: 1rem;
+	border-radius: 8px;
+	margin-bottom: 1.5rem;
+	display: flex;
+	align-items: start;
+	gap: 0.75rem;
+}
+
+.alert-danger {
+	background: #fef2f2;
+	color: #991b1b;
+	border: 1px solid #fecaca;
+}
+
+.alert svg {
+	flex-shrink: 0;
+	margin-top: 0.125rem;
+}
+
+/* ============================================
+   Loading Skeleton
+   ============================================ */
+.skeleton {
+	background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+	background-size: 200% 100%;
+	animation: skeleton-loading 1.5s infinite;
+	border-radius: 8px;
+}
+
+@keyframes skeleton-loading {
+	0% {
+		background-position: 200% 0;
+	}
+	100% {
+		background-position: -200% 0;
+	}
+}
+
+.skeleton-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+	gap: 1rem;
+}
+
+.skeleton-slot {
+	height: 52px;
+	border-radius: 8px;
+}
+
+.skeleton-calendar {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 0.5rem;
+}
+
+.skeleton-day {
+	aspect-ratio: 1;
+	border-radius: 8px;
+}
+
+/* ============================================
+   Page Transitions
+   ============================================ */
+.booking-container {
+	animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* ============================================
+   Responsive / Mobile Styles
+   ============================================ */
+@media (max-width: 768px) {
+	.progress-steps {
+		flex-direction: column;
+		gap: 2rem;
+	}
+
+	.progress-steps::before {
+		display: none;
+	}
+
+	.progress-step {
+		width: auto;
+	}
+
+	.booking-header h1 {
+		font-size: 1.5rem;
+	}
+
+	.step-label {
+		font-size: 0.75rem;
+	}
+
+	.step-number {
+		width: 44px;
+		height: 44px;
+		font-size: 0.875rem;
+	}
+
+	.card-container {
+		padding: 1.5rem;
+	}
+
+	/* Mobile touch targets - minimum 44x44px per WCAG 2.1 */
+	.btn-primary,
+	.btn-secondary,
+	.retry-btn {
+		min-height: 44px;
+		padding: 0.75rem 1.25rem;
+	}
+
+	.breadcrumb-link {
+		display: inline-block;
+		min-height: 44px;
+		line-height: 44px;
+		padding: 0 0.5rem;
+	}
+
+	.month-nav-btn {
+		min-width: 44px;
+		min-height: 44px;
+	}
+}

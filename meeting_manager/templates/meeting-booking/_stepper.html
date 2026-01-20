@@ -1,0 +1,43 @@
+{#
+	Progress Stepper Component
+
+	Usage: {% include "templates/meeting-booking/_stepper.html" with context %}
+
+	Required context variable:
+	- current_step: integer (1-6) indicating the active step
+
+	Steps:
+	1 = Department
+	2 = Meeting Type
+	3 = Date
+	4 = Time
+	5 = Details
+	6 = Confirm (shown on confirmation page)
+#}
+
+{% set steps = [
+	{"number": 1, "label": "Department"},
+	{"number": 2, "label": "Meeting Type"},
+	{"number": 3, "label": "Date"},
+	{"number": 4, "label": "Time"},
+	{"number": 5, "label": "Details"},
+	{"number": 6, "label": "Confirm"}
+] %}
+
+<div class="booking-progress" role="navigation" aria-label="Booking progress">
+	<div class="progress-steps">
+		{% for step in steps %}
+		<div class="progress-step {% if step.number < current_step %}completed{% elif step.number == current_step %}active{% endif %}"
+			 aria-current="{% if step.number == current_step %}step{% endif %}">
+			<div class="step-number" aria-hidden="true">
+				{% if step.number < current_step %}
+				&#10003;
+				{% else %}
+				{{ step.number }}
+				{% endif %}
+			</div>
+			<div class="step-label">{{ step.label }}</div>
+		</div>
+		{% endfor %}
+	</div>
+</div>
