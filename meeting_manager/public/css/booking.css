@@ -53,7 +53,7 @@ body {
 .booking-container {
 	max-width: 900px;
 	margin: 0 auto;
-	padding: 0rem 1.5rem 3rem;
+	padding: 0rem 1.5rem 2rem;
 }
 
 /* ============================================
@@ -61,7 +61,7 @@ body {
    ============================================ */
 .booking-progress {
 	position: relative;
-	margin-bottom: 2rem;
+	margin-bottom: 0;
 	padding-bottom: 0;
 	border-bottom: none;
 }
@@ -71,17 +71,17 @@ body {
 	justify-content: space-between;
 	align-items: center;
 	position: relative;
-	margin: 2.5rem auto 3.5rem;
-	max-width: 1000px;
+	margin: 1rem auto 0;
+	max-width: 800px;
 }
 
 .progress-steps::before {
 	content: "";
 	position: absolute;
-	top: 28px;
+	top: 22px;
 	left: 0;
 	right: 0;
-	height: 4px;
+	height: 3px;
 	background: var(--border);
 	z-index: 0;
 }
@@ -97,8 +97,8 @@ body {
 }
 
 .step-number {
-	width: 56px;
-	height: 56px;
+	width: 44px;
+	height: 44px;
 	border-radius: 50%;
 	background: #ffffff;
 	border: 2px solid #e5e7eb;
@@ -107,8 +107,8 @@ body {
 	align-items: center;
 	justify-content: center;
 	font-weight: 700;
-	font-size: 1.1rem;
-	margin-bottom: 0.75rem;
+	font-size: 1rem;
+	margin-bottom: 0.5rem;
 	transition: all 0.3s;
 }
 
@@ -117,8 +117,8 @@ body {
 	background: #e19800 !important;
 	border-color: #e19800 !important;
 	color: white !important;
-	box-shadow: 0 10px 25px rgba(225, 152, 0, 0.35) !important;
-	transform: scale(1.05);
+	box-shadow: 0 6px 16px rgba(225, 152, 0, 0.35) !important;
+	transform: scale(1.08);
 }
 
 /* Completed step - Yellow outline with checkmark (past steps) */
@@ -130,7 +130,7 @@ body {
 }
 
 .step-label {
-	font-size: 0.95rem;
+	font-size: 0.8rem;
 	color: #9ca3af;
 	font-weight: 600;
 }
@@ -150,7 +150,7 @@ body {
    Breadcrumb Navigation
    ============================================ */
 .breadcrumb-nav {
-	margin-bottom: 1.5rem;
+	margin-bottom: 1rem;
 }
 
 .breadcrumb-link {
@@ -169,20 +169,20 @@ body {
    ============================================ */
 .booking-header {
 	text-align: center;
-	margin-bottom: 2rem;
+	margin-bottom: 1.25rem;
 }
 
 .booking-header h1 {
-	font-size: 2.3rem;
+	font-size: 2rem;
 	font-weight: 800;
 	color: var(--text);
-	margin-bottom: 0.6rem;
+	margin-bottom: 0.4rem;
 }
 
 .booking-header .text-muted {
 	color: var(--muted);
-	font-size: 1rem;
-	line-height: 1.6;
+	font-size: 0.95rem;
+	line-height: 1.5;
 }
 
 .timezone-info {
@@ -190,8 +190,8 @@ body {
 	align-items: center;
 	gap: 0.5rem;
 	color: var(--muted);
-	font-size: 0.875rem;
-	margin-top: 0.5rem;
+	font-size: 0.8rem;
+	margin-top: 0.35rem;
 }
 
 /* ============================================
@@ -200,9 +200,9 @@ body {
 .card-container {
 	background: var(--card);
 	border: 2px solid var(--border);
-	border-radius: 20px;
-	padding: 2rem;
-	box-shadow: 0 40px 80px rgba(15, 23, 42, 0.1);
+	border-radius: 16px;
+	padding: 1.5rem;
+	box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
 }
 
 /* ============================================
@@ -210,7 +210,7 @@ body {
    ============================================ */
 .loading-state {
 	text-align: center;
-	padding: 3rem 1rem;
+	padding: 2rem 1rem;
 }
 
 .spinner {
@@ -239,7 +239,7 @@ body {
    ============================================ */
 .error-state {
 	text-align: center;
-	padding: 3rem 1rem;
+	padding: 2rem 1rem;
 }
 
 .error-state svg {
@@ -258,7 +258,7 @@ body {
    ============================================ */
 .empty-state {
 	text-align: center;
-	padding: 3rem 1rem;
+	padding: 2rem 1rem;
 }
 
 .empty-state svg {
@@ -485,38 +485,113 @@ textarea.form-control {
 }
 
 /* ============================================
-   Responsive / Mobile Styles
+   Responsive / Tablet Styles (769px - 1024px)
    ============================================ */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
 	.progress-steps {
-		flex-direction: column;
-		gap: 2rem;
+		margin: 1rem auto 1.5rem;
+	}
+
+	.step-number {
+		width: 40px;
+		height: 40px;
+		font-size: 0.9rem;
 	}
 
 	.progress-steps::before {
-		display: none;
-	}
-
-	.progress-step {
-		width: auto;
-	}
-
-	.booking-header h1 {
-		font-size: 1.5rem;
+		top: 20px;
 	}
 
 	.step-label {
 		font-size: 0.75rem;
 	}
 
-	.step-number {
-		width: 44px;
-		height: 44px;
-		font-size: 0.875rem;
+	.booking-header h1 {
+		font-size: 1.75rem;
+	}
+}
+
+/* ============================================
+   Responsive / Mobile Styles (max 768px)
+   ============================================ */
+@media (max-width: 768px) {
+	.booking-container {
+		padding: 0 1rem 1.5rem;
 	}
 
+	/* Compact horizontal stepper - stays in one row */
+	.progress-steps {
+		margin: 0.75rem auto 1.25rem;
+		gap: 0;
+		max-width: 100%;
+	}
+
+	.progress-steps::before {
+		top: 16px;
+		height: 2px;
+	}
+
+	.progress-step {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.step-number {
+		width: 32px;
+		height: 32px;
+		font-size: 0.75rem;
+		margin-bottom: 0.35rem;
+	}
+
+	/* Active step slightly larger on mobile */
+	.progress-step.active .step-number {
+		transform: scale(1.15);
+		box-shadow: 0 4px 10px rgba(225, 152, 0, 0.3) !important;
+	}
+
+	.step-label {
+		font-size: 0.6rem;
+		line-height: 1.2;
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	/* Page header compact */
+	.booking-progress {
+		margin-bottom: 0.75rem;
+	}
+
+	.booking-header {
+		margin-bottom: 1rem;
+	}
+
+	.booking-header h1 {
+		font-size: 1.35rem;
+		margin-bottom: 0.3rem;
+	}
+
+	.booking-header .text-muted {
+		font-size: 0.85rem;
+	}
+
+	/* Breadcrumb compact */
+	.breadcrumb-nav {
+		margin-bottom: 0.75rem;
+	}
+
+	/* Card containers compact */
 	.card-container {
-		padding: 1.5rem;
+		padding: 1rem;
+		border-radius: 12px;
+	}
+
+	/* States compact */
+	.loading-state,
+	.error-state,
+	.empty-state {
+		padding: 1.5rem 1rem;
 	}
 
 	/* Mobile touch targets - minimum 44x44px per WCAG 2.1 */
@@ -531,11 +606,48 @@ textarea.form-control {
 		display: inline-block;
 		min-height: 44px;
 		line-height: 44px;
-		padding: 0 0.5rem;
+		padding: 0 0.25rem;
+		font-size: 0.85rem;
 	}
 
 	.month-nav-btn {
 		min-width: 44px;
 		min-height: 44px;
+	}
+}
+
+/* ============================================
+   Responsive / Small Mobile (max 480px)
+   ============================================ */
+@media (max-width: 480px) {
+	.booking-container {
+		padding: 0 0.75rem 1rem;
+	}
+
+	.progress-steps {
+		margin: 0.5rem auto 1rem;
+	}
+
+	.step-number {
+		width: 28px;
+		height: 28px;
+		font-size: 0.65rem;
+		border-width: 1.5px;
+	}
+
+	.progress-steps::before {
+		top: 14px;
+	}
+
+	.step-label {
+		font-size: 0.55rem;
+	}
+
+	.booking-header h1 {
+		font-size: 1.25rem;
+	}
+
+	.booking-header .text-muted {
+		font-size: 0.8rem;
 	}
 }

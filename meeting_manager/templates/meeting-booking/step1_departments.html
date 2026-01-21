@@ -5,7 +5,7 @@
 	<!-- Page Header -->
 	<div class="booking-header">
 		<h1>Select a Department</h1>
-		<p class="text-muted">Select a department you'd like to book a meeting with.</p>
+		<p class="text-muted">Choose the department you'd like to book a meeting with.</p>
 	</div>
 
 	<!-- Department Selection Card -->
@@ -40,13 +40,29 @@
 </div>
 
 <style>
-	/* Department Selection Card */
+	/* Add space between stepper and header on step 1 */
+	.booking-header {
+		margin-top: 1rem;
+	}
+
+	/* Reset browser default margins on header elements */
+	.booking-header h1 {
+		margin-top: 0;
+		margin-bottom: 0.15rem;
+	}
+
+	.booking-header .text-muted {
+		margin-top: 0;
+		margin-bottom: 0.1rem;
+	}
+
+	/* Department Selection Card - Large wrapper */
 	.departments-card {
 		background: var(--card);
-		border-radius: 20px;
+		border-radius: 24px;
 		padding: 2.5rem;
 		border: 2px solid var(--border);
-		box-shadow: 0 40px 80px rgba(15, 23, 42, 0.1);
+		box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
 	}
 
 	.card-title {
@@ -64,6 +80,7 @@
 	.card-title .text-muted {
 		color: var(--muted);
 		margin: 0;
+		font-size: 1rem;
 	}
 
 	/* Departments Grid */
@@ -97,28 +114,28 @@
 
 	.dept-card h3 {
 		margin: 0;
-		font-size: 1.1rem;
+		font-size: 1rem;
 		font-weight: 700;
 		color: var(--text);
 	}
 
 	.dept-card .meta {
-		font-size: 0.8rem;
+		font-size: 0.75rem;
 		color: var(--muted);
-		margin-bottom: 0.75rem;
+		margin-bottom: 0.5rem;
 	}
 
 	.dept-card .desc {
-		font-size: 0.95rem;
+		font-size: 0.85rem;
 		color: var(--muted);
-		line-height: 1.6;
+		line-height: 1.5;
 		flex: 1;
-		margin-bottom: 1.25rem;
+		margin-bottom: 0.75rem;
 	}
 
 	.dept-card .cta {
 		font-weight: 600;
-		font-size: 0.9rem;
+		font-size: 0.85rem;
 		color: var(--primary);
 	}
 
@@ -126,10 +143,29 @@
 	@media (max-width: 768px) {
 		.departments-card {
 			padding: 1.5rem;
+			border-radius: 16px;
+		}
+
+		.card-title {
+			margin-bottom: 1.25rem;
+		}
+
+		.card-title h2 {
+			font-size: 1.25rem;
+		}
+
+		.card-title .text-muted {
+			font-size: 0.9rem;
 		}
 
 		.departments-grid {
 			grid-template-columns: 1fr;
+			gap: 1rem;
+		}
+
+		.dept-card {
+			padding: 1.25rem;
+			border-radius: 14px;
 		}
 	}
 </style>
