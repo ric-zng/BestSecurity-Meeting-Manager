@@ -71,16 +71,20 @@
 	}
 
 	.card-title h2 {
-		font-size: 1.5rem;
-		font-weight: 700;
+		font-size: var(--text-2xl);
+		font-weight: var(--font-bold);
 		color: var(--text);
+		line-height: var(--leading-tight);
+		letter-spacing: var(--tracking-tight);
 		margin: 0 0 0.5rem 0;
 	}
 
 	.card-title .text-muted {
 		color: var(--muted);
 		margin: 0;
-		font-size: 1rem;
+		font-size: var(--text-base);
+		font-weight: var(--font-normal);
+		line-height: var(--leading-relaxed);
 	}
 
 	/* Departments Grid */
@@ -114,29 +118,34 @@
 
 	.dept-card h3 {
 		margin: 0;
-		font-size: 1rem;
-		font-weight: 700;
+		font-size: var(--text-base);
+		font-weight: var(--font-semibold);
 		color: var(--text);
+		line-height: var(--leading-snug);
 	}
 
 	.dept-card .meta {
-		font-size: 0.75rem;
+		font-size: var(--text-xs);
+		font-weight: var(--font-medium);
 		color: var(--muted);
+		line-height: var(--leading-normal);
 		margin-bottom: 0.5rem;
 	}
 
 	.dept-card .desc {
-		font-size: 0.85rem;
+		font-size: var(--text-sm);
+		font-weight: var(--font-normal);
 		color: var(--muted);
-		line-height: 1.5;
+		line-height: var(--leading-relaxed);
 		flex: 1;
 		margin-bottom: 0.75rem;
 	}
 
 	.dept-card .cta {
-		font-weight: 600;
-		font-size: 0.85rem;
+		font-size: var(--text-sm);
+		font-weight: var(--font-semibold);
 		color: var(--primary);
+		line-height: var(--leading-normal);
 	}
 
 	/* Mobile */
@@ -151,11 +160,11 @@
 		}
 
 		.card-title h2 {
-			font-size: 1.25rem;
+			font-size: var(--text-xl);
 		}
 
 		.card-title .text-muted {
-			font-size: 0.9rem;
+			font-size: var(--text-sm);
 		}
 
 		.departments-grid {
@@ -166,6 +175,18 @@
 		.dept-card {
 			padding: 1.25rem;
 			border-radius: 14px;
+		}
+
+		.dept-card h3 {
+			font-size: var(--text-sm);
+		}
+
+		.dept-card .desc {
+			font-size: var(--text-xs);
+		}
+
+		.dept-card .cta {
+			font-size: var(--text-xs);
 		}
 	}
 </style>

@@ -165,9 +165,10 @@
 	}
 
 	.meeting-type-header h3 {
-		font-size: 1.1rem;
-		font-weight: 700;
+		font-size: var(--text-base);
+		font-weight: var(--font-semibold);
 		color: var(--text);
+		line-height: var(--leading-snug);
 		margin: 0;
 		flex: 1;
 	}
@@ -180,16 +181,18 @@
 		color: var(--primary);
 		padding: 0.4rem 0.75rem;
 		border-radius: 6px;
-		font-size: 0.85rem;
-		font-weight: 500;
+		font-size: var(--text-xs);
+		font-weight: var(--font-medium);
+		line-height: var(--leading-normal);
 		white-space: nowrap;
 		margin-left: 1rem;
 	}
 
 	.meeting-type-description {
 		color: var(--muted);
-		font-size: 0.95rem;
-		line-height: 1.6;
+		font-size: var(--text-sm);
+		font-weight: var(--font-normal);
+		line-height: var(--leading-relaxed);
 		flex: 1;
 		margin-bottom: 1rem;
 	}
@@ -207,7 +210,9 @@
 		align-items: center;
 		gap: 0.5rem;
 		color: var(--muted);
-		font-size: 0.85rem;
+		font-size: var(--text-xs);
+		font-weight: var(--font-medium);
+		line-height: var(--leading-normal);
 	}
 
 	.card-arrow {

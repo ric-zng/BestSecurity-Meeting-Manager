@@ -6,11 +6,12 @@
  */
 
 /* ============================================
-   CSS Variables - Theme Colors
+   CSS Variables - Theme Colors & Typography
    Scoped to booking-container to avoid Frappe theme overrides
    ============================================ */
 :root,
 .booking-container {
+	/* Colors */
 	--mm-primary: #e19800;
 	--mm-primary-soft: #fff8e8;
 	--mm-bg: #fffcf5;
@@ -19,6 +20,72 @@
 	--mm-muted: #6b7280;
 	--mm-border: #ffe8b3;
 	--mm-success: #e19800;
+
+	/* ========================================
+	   TYPOGRAPHY SYSTEM
+	   ========================================
+	   Design Rationale:
+	   - Inter is a highly legible, modern sans-serif optimized for screens
+	   - Fallback to system fonts ensures fast loading if Inter unavailable
+	   - Type scale uses 1.2 ratio (Minor Third) for harmonious sizing
+	   - Line heights optimized per text size for readability
+	   ======================================== */
+
+	/* Font Families */
+	--font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	--font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+	/* Type Scale (1.2 ratio - Minor Third)
+	   Base: 16px (1rem)
+	   ----------------------------------------
+	   xs:    0.75rem  (12px)  - Metadata, timestamps
+	   sm:    0.875rem (14px)  - Helper text, captions
+	   base:  1rem     (16px)  - Body text
+	   lg:    1.125rem (18px)  - Lead paragraphs
+	   xl:    1.25rem  (20px)  - Section headers (h3)
+	   2xl:   1.5rem   (24px)  - Page subheadings (h2)
+	   3xl:   1.875rem (30px)  - Page titles (h1)
+	   4xl:   2.25rem  (36px)  - Hero titles
+	   ---------------------------------------- */
+	--text-xs: 0.75rem;
+	--text-sm: 0.875rem;
+	--text-base: 1rem;
+	--text-lg: 1.125rem;
+	--text-xl: 1.25rem;
+	--text-2xl: 1.5rem;
+	--text-3xl: 1.875rem;
+	--text-4xl: 2.25rem;
+
+	/* Line Heights
+	   ----------------------------------------
+	   Tighter for headings, looser for body
+	   ---------------------------------------- */
+	--leading-none: 1;
+	--leading-tight: 1.25;
+	--leading-snug: 1.375;
+	--leading-normal: 1.5;
+	--leading-relaxed: 1.625;
+
+	/* Font Weights
+	   ----------------------------------------
+	   400: Regular   - Body text
+	   500: Medium    - Emphasis, labels
+	   600: Semibold  - Buttons, section headers
+	   700: Bold      - Page titles, strong emphasis
+	   ---------------------------------------- */
+	--font-normal: 400;
+	--font-medium: 500;
+	--font-semibold: 600;
+	--font-bold: 700;
+
+	/* Letter Spacing
+	   ----------------------------------------
+	   Tighter for large text, normal for body
+	   ---------------------------------------- */
+	--tracking-tighter: -0.025em;
+	--tracking-tight: -0.0125em;
+	--tracking-normal: 0;
+	--tracking-wide: 0.025em;
 }
 
 /* Map to shorthand for easier use */
@@ -43,8 +110,10 @@
 
 body {
 	margin: 0;
-	font-family: system-ui, -apple-system, sans-serif;
+	font-family: var(--font-sans);
 	background: #ffffff;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 /* ============================================
@@ -54,6 +123,11 @@ body {
 	max-width: 900px;
 	margin: 0 auto;
 	padding: 0rem 1.5rem 2rem;
+	font-family: var(--font-sans);
+	font-size: var(--text-base);
+	line-height: var(--leading-normal);
+	color: var(--text);
+	letter-spacing: var(--tracking-normal);
 }
 
 /* ============================================
@@ -106,8 +180,9 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-weight: 700;
-	font-size: 1rem;
+	font-weight: var(--font-semibold);
+	font-size: var(--text-sm);
+	line-height: var(--leading-none);
 	margin-bottom: 0.5rem;
 	transition: all 0.3s;
 }
@@ -130,15 +205,18 @@ body {
 }
 
 .step-label {
-	font-size: 0.8rem;
+	font-size: var(--text-xs);
 	color: #9ca3af;
-	font-weight: 600;
+	font-weight: var(--font-medium);
+	line-height: var(--leading-snug);
+	letter-spacing: var(--tracking-wide);
+	text-transform: uppercase;
 }
 
 /* Active step label - Bold yellow */
 .progress-step.active .step-label {
 	color: #e19800 !important;
-	font-weight: 700;
+	font-weight: var(--font-semibold);
 }
 
 /* Completed step label - Muted yellow */
@@ -156,7 +234,9 @@ body {
 .breadcrumb-link {
 	color: var(--muted);
 	text-decoration: none;
-	font-size: 0.9rem;
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	line-height: var(--leading-normal);
 	transition: color 0.2s;
 }
 
@@ -173,16 +253,20 @@ body {
 }
 
 .booking-header h1 {
-	font-size: 2rem;
-	font-weight: 800;
+	font-size: var(--text-3xl);
+	font-weight: var(--font-bold);
 	color: var(--text);
-	margin-bottom: 0.4rem;
+	line-height: var(--leading-tight);
+	letter-spacing: var(--tracking-tight);
+	margin: 0 0 0.5rem 0;
 }
 
 .booking-header .text-muted {
 	color: var(--muted);
-	font-size: 0.95rem;
-	line-height: 1.5;
+	font-size: var(--text-base);
+	line-height: var(--leading-relaxed);
+	font-weight: var(--font-normal);
+	margin: 0;
 }
 
 .timezone-info {
@@ -190,7 +274,9 @@ body {
 	align-items: center;
 	gap: 0.5rem;
 	color: var(--muted);
-	font-size: 0.8rem;
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	line-height: var(--leading-normal);
 	margin-top: 0.35rem;
 }
 
@@ -231,7 +317,9 @@ body {
 
 .loading-state p {
 	color: var(--muted);
-	font-size: 1rem;
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	line-height: var(--leading-normal);
 }
 
 /* ============================================
@@ -249,7 +337,9 @@ body {
 
 .error-state p {
 	color: var(--muted);
-	font-size: 1rem;
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
+	line-height: var(--leading-relaxed);
 	margin-bottom: 1.5rem;
 }
 
@@ -267,15 +357,19 @@ body {
 }
 
 .empty-state h3 {
-	font-size: 1.5rem;
-	font-weight: 600;
+	font-size: var(--text-xl);
+	font-weight: var(--font-semibold);
 	color: var(--text);
-	margin-bottom: 0.5rem;
+	line-height: var(--leading-snug);
+	margin: 0 0 0.5rem 0;
 }
 
 .empty-state p {
 	color: var(--muted);
-	margin-bottom: 1.5rem;
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
+	line-height: var(--leading-relaxed);
+	margin: 0 0 1.5rem 0;
 }
 
 /* ============================================
@@ -289,7 +383,11 @@ body {
 	border: none;
 	border-radius: 8px;
 	text-decoration: none;
-	font-weight: 600;
+	font-family: var(--font-sans);
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+	line-height: var(--leading-tight);
+	letter-spacing: var(--tracking-normal);
 	cursor: pointer;
 	transition: all 0.2s;
 }
@@ -308,7 +406,11 @@ body {
 	border: 2px solid var(--border);
 	border-radius: 8px;
 	text-decoration: none;
-	font-weight: 600;
+	font-family: var(--font-sans);
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+	line-height: var(--leading-tight);
+	letter-spacing: var(--tracking-normal);
 	cursor: pointer;
 	transition: all 0.2s;
 }
@@ -325,7 +427,10 @@ body {
 	border: none;
 	padding: 0.75rem 1.5rem;
 	border-radius: 8px;
-	font-weight: 600;
+	font-family: var(--font-sans);
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+	line-height: var(--leading-tight);
 	cursor: pointer;
 	transition: all 0.2s;
 }
@@ -369,10 +474,11 @@ button:focus-visible,
 
 .form-group label {
 	display: block;
-	font-weight: 500;
+	font-weight: var(--font-medium);
 	color: var(--text);
 	margin-bottom: 0.5rem;
-	font-size: 0.9rem;
+	font-size: var(--text-sm);
+	line-height: var(--leading-normal);
 }
 
 .required {
@@ -384,11 +490,18 @@ button:focus-visible,
 	padding: 0.75rem 1rem;
 	border: 2px solid var(--border);
 	border-radius: 8px;
-	font-size: 1rem;
+	font-family: var(--font-sans);
+	font-size: var(--text-base);
+	font-weight: var(--font-normal);
+	line-height: var(--leading-normal);
 	transition: all 0.2s;
-	font-family: inherit;
 	background: white;
 	color: var(--text);
+}
+
+.form-control::placeholder {
+	color: #9ca3af;
+	font-weight: var(--font-normal);
 }
 
 .form-control:focus {
@@ -495,7 +608,7 @@ textarea.form-control {
 	.step-number {
 		width: 40px;
 		height: 40px;
-		font-size: 0.9rem;
+		font-size: var(--text-xs);
 	}
 
 	.progress-steps::before {
@@ -503,11 +616,15 @@ textarea.form-control {
 	}
 
 	.step-label {
-		font-size: 0.75rem;
+		font-size: 0.7rem;
 	}
 
 	.booking-header h1 {
-		font-size: 1.75rem;
+		font-size: var(--text-2xl);
+	}
+
+	.booking-header .text-muted {
+		font-size: var(--text-sm);
 	}
 }
 
@@ -539,7 +656,7 @@ textarea.form-control {
 	.step-number {
 		width: 32px;
 		height: 32px;
-		font-size: 0.75rem;
+		font-size: 0.65rem;
 		margin-bottom: 0.35rem;
 	}
 
@@ -550,8 +667,8 @@ textarea.form-control {
 	}
 
 	.step-label {
-		font-size: 0.6rem;
-		line-height: 1.2;
+		font-size: 0.55rem;
+		line-height: var(--leading-snug);
 		max-width: 100%;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -568,17 +685,27 @@ textarea.form-control {
 	}
 
 	.booking-header h1 {
-		font-size: 1.35rem;
-		margin-bottom: 0.3rem;
+		font-size: var(--text-xl);
+		letter-spacing: var(--tracking-tight);
+		margin-bottom: 0.25rem;
 	}
 
 	.booking-header .text-muted {
-		font-size: 0.85rem;
+		font-size: var(--text-sm);
+		line-height: var(--leading-normal);
 	}
 
 	/* Breadcrumb compact */
 	.breadcrumb-nav {
 		margin-bottom: 0.75rem;
+	}
+
+	.breadcrumb-link {
+		display: inline-block;
+		min-height: 44px;
+		line-height: 44px;
+		padding: 0 0.25rem;
+		font-size: var(--text-sm);
 	}
 
 	/* Card containers compact */
@@ -594,25 +721,35 @@ textarea.form-control {
 		padding: 1.5rem 1rem;
 	}
 
+	.empty-state h3 {
+		font-size: var(--text-lg);
+	}
+
+	.empty-state p {
+		font-size: var(--text-sm);
+	}
+
 	/* Mobile touch targets - minimum 44x44px per WCAG 2.1 */
 	.btn-primary,
 	.btn-secondary,
 	.retry-btn {
 		min-height: 44px;
 		padding: 0.75rem 1.25rem;
-	}
-
-	.breadcrumb-link {
-		display: inline-block;
-		min-height: 44px;
-		line-height: 44px;
-		padding: 0 0.25rem;
-		font-size: 0.85rem;
+		font-size: var(--text-sm);
 	}
 
 	.month-nav-btn {
 		min-width: 44px;
 		min-height: 44px;
+	}
+
+	/* Form controls mobile */
+	.form-group label {
+		font-size: var(--text-sm);
+	}
+
+	.form-control {
+		font-size: var(--text-base); /* Keep 16px to prevent iOS zoom */
 	}
 }
 
@@ -631,7 +768,7 @@ textarea.form-control {
 	.step-number {
 		width: 28px;
 		height: 28px;
-		font-size: 0.65rem;
+		font-size: 0.6rem;
 		border-width: 1.5px;
 	}
 
@@ -640,14 +777,26 @@ textarea.form-control {
 	}
 
 	.step-label {
-		font-size: 0.55rem;
+		font-size: 0.5rem;
 	}
 
 	.booking-header h1 {
-		font-size: 1.25rem;
+		font-size: var(--text-lg);
 	}
 
 	.booking-header .text-muted {
-		font-size: 0.8rem;
+		font-size: var(--text-xs);
+	}
+
+	.breadcrumb-link {
+		font-size: var(--text-xs);
+	}
+
+	.empty-state h3 {
+		font-size: var(--text-base);
+	}
+
+	.empty-state p {
+		font-size: var(--text-xs);
 	}
 }
