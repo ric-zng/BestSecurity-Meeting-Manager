@@ -348,7 +348,7 @@ def get_calendar_events(start, end, departments=None, focus_department=None,
         "Booking Approved Not Sale": "#ef4444",  # Red
         "Call Customer About Sale": "#f97316",   # Orange
         "No Answer 1-3": "#9ca3af",          # Grey
-        "No Answer 4-5": "#a3a33a",          # Light Brown/Olive
+        "No Answer 4-5": "#964B00",          # Light Brown/Olive
         "Customer Unsure": "#7dd3fc",        # Baby Blue
         "No Contact About Offer": "#b91c1c", # Dark Red
         "Cancelled": "#d1d5db",              # Light Grey
@@ -646,7 +646,7 @@ def get_status_color(status):
         "Booking Approved Not Sale": "#ef4444",  # Red
         "Call Customer About Sale": "#f97316",   # Orange
         "No Answer 1-3": "#9ca3af",          # Grey
-        "No Answer 4-5": "#a3a33a",          # Light Brown/Olive
+        "No Answer 4-5": "#964B00",          # Light Brown/Olive
         "Customer Unsure": "#7dd3fc",        # Baby Blue
         "No Contact About Offer": "#b91c1c", # Dark Red
         "Cancelled": "#d1d5db",              # Light Grey
@@ -756,7 +756,8 @@ def get_resource_availability(resource_id, start_date, end_date):
 
 @frappe.whitelist()
 def update_calendar_booking(booking_id, start_datetime=None, end_datetime=None,
-                           new_host=None, browser_timezone=None):
+                           new_host=None, browser_timezone=None,
+                           notify_customer=False, notify_host=False, notify_participants=False):
     """
     Update a booking with strict permission checks.
 
@@ -766,10 +767,35 @@ def update_calendar_booking(booking_id, start_datetime=None, end_datetime=None,
         end_datetime (str): New end datetime (ISO format)
         new_host (str): New assigned user (for reassignment)
         browser_timezone (str): Browser timezone for conversion
+        notify_customer (bool): Send notification to customer
+        notify_host (bool): Send notification to host(s)
+        notify_participants (bool): Send notification to participants (team meetings)
 
     Returns:
         dict: {success: bool, message: str}
     """
+    from meeting_manager.meeting_manager.utils.email_notifications import (
+        send_reschedule_notification,
+        send_reassignment_notification,
+        send_extension_notification
+    )
+
+    # Convert string/int booleans from JS (checkbox values come as 1/0 or 'true'/'false')
+    def to_bool(val):
+        if isinstance(val, bool):
+            return val
+        if isinstance(val, int):
+            return val == 1
+        if isinstance(val, str):
+            return val.lower() in ('true', '1', 'yes')
+        return bool(val)
+
+    notify_customer = to_bool(notify_customer)
+    notify_host = to_bool(notify_host)
+    notify_participants = to_bool(notify_participants)
+
+    frappe.logger().info(f"update_calendar_booking called: booking_id={booking_id}, start_datetime={start_datetime}, end_datetime={end_datetime}, new_host={new_host}, notify_customer={notify_customer}, notify_host={notify_host}, notify_participants={notify_participants}")
+
     user = frappe.session.user
     role_level, _role_name = get_user_role_level()
 
@@ -778,6 +804,20 @@ def update_calendar_booking(booking_id, start_datetime=None, end_datetime=None,
         return {"success": False, "message": _("Booking not found")}
 
     booking = frappe.get_doc("MM Meeting Booking", booking_id)
+
+    # Store old values for notification context
+    old_start_datetime = str(booking.start_datetime) if booking.start_datetime else None
+    old_end_datetime = str(booking.end_datetime) if booking.end_datetime else None
+    old_duration_minutes = int((get_datetime(booking.end_datetime) - get_datetime(booking.start_datetime)).total_seconds() / 60) if booking.start_datetime and booking.end_datetime else None
+    old_primary_host = next((au.user for au in booking.assigned_users if au.is_primary_host), None)
+    if not old_primary_host and booking.assigned_users:
+        old_primary_host = booking.assigned_users[0].user
+    old_primary_host_name = frappe.db.get_value("User", old_primary_host, "full_name") if old_primary_host else None
+
+    # Track what changes are made
+    is_reassignment = False
+    is_reschedule = False
+    is_extension = False
 
     # Prevent modifications to finalized bookings
     finalized_statuses = ("Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed")
@@ -855,6 +895,7 @@ def update_calendar_booking(booking_id, start_datetime=None, end_datetime=None,
         for au in booking.assigned_users:
             if au.is_primary_host or au.user == primary_host:
                 au.user = new_host
+                is_reassignment = True
                 break
         else:
             # No primary host found, add new one
@@ -862,6 +903,7 @@ def update_calendar_booking(booking_id, start_datetime=None, end_datetime=None,
                 "user": new_host,
                 "is_primary_host": 1
             })
+            is_reassignment = True
 
     # Check permissions for reschedule
     if start_datetime or end_datetime:
@@ -897,6 +939,7 @@ def update_calendar_booking(booking_id, start_datetime=None, end_datetime=None,
             if hasattr(parsed_start, 'tzinfo') and parsed_start.tzinfo is not None:
                 parsed_start = parsed_start.replace(tzinfo=None)
             booking.start_datetime = parsed_start
+            is_reschedule = True  # Start time changed = reschedule
 
         if end_datetime:
             parsed_end = get_datetime(end_datetime)
@@ -904,6 +947,12 @@ def update_calendar_booking(booking_id, start_datetime=None, end_datetime=None,
             if hasattr(parsed_end, 'tzinfo') and parsed_end.tzinfo is not None:
                 parsed_end = parsed_end.replace(tzinfo=None)
             booking.end_datetime = parsed_end
+            # If only end_datetime changed (not start), it's an extension
+            if not start_datetime:
+                is_extension = True
+                frappe.logger().info(f"Extension detected: start_datetime={start_datetime}, end_datetime={end_datetime}")
+
+        frappe.logger().info(f"After datetime parsing: is_reschedule={is_reschedule}, is_extension={is_extension}, start_datetime={start_datetime}, end_datetime={end_datetime}")
 
         # Validate availability for all assigned users with new times
         new_start = booking.start_datetime
@@ -988,6 +1037,60 @@ def update_calendar_booking(booking_id, start_datetime=None, end_datetime=None,
         if not updated_primary_host and booking.assigned_users:
             updated_primary_host = booking.assigned_users[0].user
 
+        # Send notifications based on what changed
+        notification_results = []
+
+        # Determine who changed it
+        changed_by = frappe.db.get_value("User", frappe.session.user, "full_name") or frappe.session.user
+
+        # Reschedule notification (start time changed)
+        if is_reschedule and (notify_customer or notify_host or notify_participants):
+            try:
+                frappe.logger().info(f"Sending reschedule notification: booking={booking.name}, notify_customer={notify_customer}, notify_host={notify_host}, is_internal={booking.is_internal}")
+                result = send_reschedule_notification(
+                    booking_id=booking.name,
+                    old_datetime=old_start_datetime,
+                    notify_customer=notify_customer and not booking.is_internal,
+                    notify_host=notify_host,
+                    changed_by=changed_by
+                )
+                frappe.logger().info(f"Reschedule notification result: {result}")
+                notification_results.append({"type": "reschedule", "result": result})
+            except Exception as e:
+                frappe.log_error(f"Reschedule notification error: {str(e)}\n{frappe.get_traceback()}", "Notification Error")
+
+        # Extension notification (only end time changed)
+        frappe.logger().info(f"Extension check: is_extension={is_extension}, notify_host={notify_host}, is_reschedule={is_reschedule}")
+        if is_extension and notify_host:
+            try:
+                frappe.logger().info(f"Sending extension notification: booking={booking.name}, old_duration={old_duration_minutes}")
+                result = send_extension_notification(
+                    booking_id=booking.name,
+                    old_duration=old_duration_minutes,
+                    notify_host=notify_host,
+                    changed_by=changed_by
+                )
+                frappe.logger().info(f"Extension notification result: {result}")
+                notification_results.append({"type": "extension", "result": result})
+            except Exception as e:
+                frappe.log_error(f"Extension notification error: {str(e)}\n{frappe.get_traceback()}", "Notification Error")
+
+        # Reassignment notification
+        if is_reassignment and (notify_customer or notify_host):
+            try:
+                new_host_email = frappe.db.get_value("User", new_host, "email")
+                result = send_reassignment_notification(
+                    booking_id=booking.name,
+                    new_host_email=new_host_email,
+                    previous_host=old_primary_host_name,
+                    notify_customer=notify_customer and not booking.is_internal,
+                    notify_new_host=notify_host,
+                    changed_by=changed_by
+                )
+                notification_results.append({"type": "reassignment", "result": result})
+            except Exception as e:
+                frappe.log_error(f"Reassignment notification error: {str(e)}", "Notification Error")
+
         return {
             "success": True,
             "message": _("Booking updated successfully"),
@@ -996,7 +1099,8 @@ def update_calendar_booking(booking_id, start_datetime=None, end_datetime=None,
                 "start_datetime": str(booking.start_datetime),
                 "end_datetime": str(booking.end_datetime),
                 "assigned_to": updated_primary_host
-            }
+            },
+            "notifications": notification_results
         }
     except Exception as e:
         frappe.db.rollback()
@@ -1144,7 +1248,7 @@ def get_filter_options():
         {"value": "Booking Approved Not Sale", "label": "Booking Approved Not Sale", "color": "#ef4444"},
         {"value": "Call Customer About Sale", "label": "Call Customer About Sale", "color": "#f97316"},
         {"value": "No Answer 1-3", "label": "No Answer 1-3", "color": "#9ca3af"},
-        {"value": "No Answer 4-5", "label": "No Answer 4-5", "color": "#a3a33a"},
+        {"value": "No Answer 4-5", "label": "No Answer 4-5", "color": "#964B00"},
         {"value": "Customer Unsure", "label": "Customer Unsure", "color": "#7dd3fc"},
         {"value": "No Contact About Offer", "label": "No Contact About Offer", "color": "#b91c1c"},
         {"value": "Cancelled", "label": "Cancelled", "color": "#d1d5db"},
@@ -1807,9 +1911,21 @@ def create_slot_booking(booking_data):
             customer_doc.save(ignore_permissions=True)
             frappe.db.commit()
 
-        # TODO: Send email notification if requested
-        # if send_notification:
-        #     send_booking_notification(booking.name)
+        # Send email notifications if requested
+        notification_results = []
+        notify_host = booking_data.get("notify_host", 0)
+
+        if send_notification or notify_host:
+            try:
+                from meeting_manager.meeting_manager.utils.email_notifications import send_booking_confirmation
+                result = send_booking_confirmation(
+                    booking_id=booking.name,
+                    notify_customer=bool(send_notification),
+                    notify_host=bool(notify_host)
+                )
+                notification_results.append(result)
+            except Exception as e:
+                frappe.log_error(f"Notification error: {str(e)}", "Booking Notification Error")
 
         host_name = frappe.db.get_value("User", assigned_to, "full_name") or assigned_to
 
@@ -1830,4 +1946,209 @@ def create_slot_booking(booking_data):
         frappe.db.rollback()
         import traceback
         frappe.log_error(traceback.format_exc(), "Calendar Slot Booking Error")
+        return {"success": False, "message": str(e)}
+
+
+# =============================================================================
+# BLOCKED SLOTS API
+# =============================================================================
+
+@frappe.whitelist()
+def get_user_blocked_slots(resource_ids, start_date, end_date):
+    """
+    Get all blocked slots for specified users within a date range.
+
+    Args:
+        resource_ids (str): JSON array of User IDs
+        start_date (str): Start date (YYYY-MM-DD)
+        end_date (str): End date (YYYY-MM-DD)
+
+    Returns:
+        dict: {resource_id: [blocked_slots]}
+    """
+    if isinstance(resource_ids, str):
+        resource_ids = json.loads(resource_ids)
+
+    result = {}
+    for resource_id in resource_ids:
+        slots = frappe.get_all(
+            "MM User Blocked Slot",
+            filters={
+                "user": resource_id,
+                "blocked_date": ["between", [start_date, end_date]]
+            },
+            fields=["name", "blocked_date", "start_time", "end_time", "reason"],
+            order_by="blocked_date, start_time"
+        )
+        # Convert time objects to strings
+        for slot in slots:
+            slot["blocked_date"] = str(slot["blocked_date"])
+            slot["start_time"] = str(slot["start_time"])
+            slot["end_time"] = str(slot["end_time"])
+        result[resource_id] = slots
+
+    return result
+
+
+@frappe.whitelist()
+def create_blocked_slot(user, blocked_date, start_time, end_time, reason):
+    """
+    Create a new blocked slot.
+
+    Args:
+        user (str): User ID
+        blocked_date (str): Date (YYYY-MM-DD)
+        start_time (str): Start time (HH:MM)
+        end_time (str): End time (HH:MM)
+        reason (str): Reason for blocking (MANDATORY)
+
+    Returns:
+        dict: {success: bool, message: str, blocked_slot: dict}
+    """
+    try:
+        # Validate reason is provided
+        if not reason or not reason.strip():
+            return {"success": False, "message": _("Reason is mandatory. Please provide a reason for blocking this time slot.")}
+
+        # Permission check is handled in the doctype's validate method
+        doc = frappe.get_doc({
+            "doctype": "MM User Blocked Slot",
+            "user": user,
+            "blocked_date": blocked_date,
+            "start_time": start_time,
+            "end_time": end_time,
+            "reason": reason.strip()
+        })
+        doc.insert()
+        frappe.db.commit()
+
+        return {
+            "success": True,
+            "message": _("Blocked slot created successfully"),
+            "blocked_slot": {
+                "name": doc.name,
+                "user": doc.user,
+                "blocked_date": str(doc.blocked_date),
+                "start_time": str(doc.start_time),
+                "end_time": str(doc.end_time),
+                "reason": doc.reason
+            }
+        }
+    except Exception as e:
+        frappe.db.rollback()
+        return {"success": False, "message": str(e)}
+
+
+@frappe.whitelist()
+def delete_blocked_slot(blocked_slot_name):
+    """
+    Delete a blocked slot.
+
+    Args:
+        blocked_slot_name (str): Name of the blocked slot document
+
+    Returns:
+        dict: {success: bool, message: str}
+    """
+    try:
+        doc = frappe.get_doc("MM User Blocked Slot", blocked_slot_name)
+
+        # Permission check
+        current_user = frappe.session.user
+        if "System Manager" not in frappe.get_roles(current_user):
+            if "MM Department Leader" in frappe.get_roles(current_user):
+                # Check if user leads the department
+                led_depts = frappe.get_all(
+                    "MM Department",
+                    filters={"department_leader": current_user, "is_active": 1},
+                    pluck="name"
+                )
+                if led_depts:
+                    user_in_led_dept = frappe.db.exists("MM Department Member", {
+                        "parent": ["in", led_depts],
+                        "member": doc.user,
+                        "is_active": 1
+                    })
+                    if not user_in_led_dept and doc.user != current_user:
+                        return {"success": False, "message": _("Permission denied")}
+                elif doc.user != current_user:
+                    return {"success": False, "message": _("Permission denied")}
+            elif doc.user != current_user:
+                return {"success": False, "message": _("You can only delete your own blocked slots")}
+
+        doc.delete()
+        frappe.db.commit()
+
+        return {"success": True, "message": _("Blocked slot deleted successfully")}
+    except Exception as e:
+        frappe.db.rollback()
+        return {"success": False, "message": str(e)}
+
+
+@frappe.whitelist()
+def update_blocked_slot(blocked_slot_name, blocked_date=None, start_time=None, end_time=None, reason=None):
+    """
+    Update an existing blocked slot.
+
+    Args:
+        blocked_slot_name (str): Name of the blocked slot document
+        blocked_date (str, optional): New date (YYYY-MM-DD) - for moving to different date
+        start_time (str, optional): New start time
+        end_time (str, optional): New end time
+        reason (str, optional): New reason
+
+    Returns:
+        dict: {success: bool, message: str, blocked_slot: dict}
+    """
+    try:
+        doc = frappe.get_doc("MM User Blocked Slot", blocked_slot_name)
+
+        # Permission check
+        current_user = frappe.session.user
+        if "System Manager" not in frappe.get_roles(current_user):
+            if "MM Department Leader" in frappe.get_roles(current_user):
+                led_depts = frappe.get_all(
+                    "MM Department",
+                    filters={"department_leader": current_user, "is_active": 1},
+                    pluck="name"
+                )
+                if led_depts:
+                    user_in_led_dept = frappe.db.exists("MM Department Member", {
+                        "parent": ["in", led_depts],
+                        "member": doc.user,
+                        "is_active": 1
+                    })
+                    if not user_in_led_dept and doc.user != current_user:
+                        return {"success": False, "message": _("Permission denied")}
+                elif doc.user != current_user:
+                    return {"success": False, "message": _("Permission denied")}
+            elif doc.user != current_user:
+                return {"success": False, "message": _("You can only modify your own blocked slots")}
+
+        if blocked_date:
+            doc.blocked_date = blocked_date
+        if start_time:
+            doc.start_time = start_time
+        if end_time:
+            doc.end_time = end_time
+        if reason is not None:
+            doc.reason = reason
+
+        doc.save()
+        frappe.db.commit()
+
+        return {
+            "success": True,
+            "message": _("Blocked slot updated successfully"),
+            "blocked_slot": {
+                "name": doc.name,
+                "user": doc.user,
+                "blocked_date": str(doc.blocked_date),
+                "start_time": str(doc.start_time),
+                "end_time": str(doc.end_time),
+                "reason": doc.reason
+            }
+        }
+    except Exception as e:
+        frappe.db.rollback()
         return {"success": False, "message": str(e)}
