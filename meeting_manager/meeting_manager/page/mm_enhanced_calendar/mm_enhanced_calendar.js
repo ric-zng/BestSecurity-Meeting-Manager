@@ -280,8 +280,8 @@ class EnhancedCalendarController {
                                         <span class="ec-status-dot" style="background-color: #9ca3af;"></span>
                                         ${__('No Answer 1-3')}
                                     </button>
-                                    <button class="ec-status-btn active" data-status="No Answer 4-5" style="--status-color: #a3a33a;">
-                                        <span class="ec-status-dot" style="background-color: #a3a33a;"></span>
+                                    <button class="ec-status-btn active" data-status="No Answer 4-5" style="--status-color: #964B00;">
+                                        <span class="ec-status-dot" style="background-color: #964B00;"></span>
                                         ${__('No Answer 4-5')}
                                     </button>
                                     <button class="ec-status-btn active" data-status="Customer Unsure" style="--status-color: #7dd3fc;">
@@ -761,6 +761,20 @@ class EnhancedCalendarController {
                 padding: 6px 16px;
             }
 
+            /* Toggle Orientation button */
+            .ec-calendar-container .fc-toggleOrientation-button {
+                padding: 6px 12px;
+                background-color: #6366f1 !important;
+                border-color: #4f46e5 !important;
+                color: white !important;
+                font-weight: 500;
+            }
+
+            .ec-calendar-container .fc-toggleOrientation-button:hover {
+                background-color: #4f46e5 !important;
+                border-color: #4338ca !important;
+            }
+
             /* Toolbar styling */
             .ec-calendar-container .fc-toolbar {
                 margin-bottom: 20px;
@@ -800,19 +814,39 @@ class EnhancedCalendarController {
                 opacity: 0.5 !important;
             }
 
-            /* Non-working hours styling */
-            .fc-timeline-event.ec-nonworking-block {
+            /* Non-working hours styling (works for both timeline and timegrid) */
+            .ec-nonworking-block {
                 background-color: #cbd5e1 !important;
             }
 
             /* Day off styling */
-            .fc-timeline-event.ec-dayoff-block {
+            .ec-dayoff-block {
                 background-color: #e2e8f0 !important;
             }
 
             /* Unavailable styling */
-            .fc-timeline-event.ec-unavailable-block {
+            .ec-unavailable-block {
                 background-color: #fecaca !important;
+            }
+
+            /* Blocked Slot Styling - BLACK (works for both views) */
+            .ec-blocked-slot {
+                background-color: #1a1a1a !important;
+                border-color: #000000 !important;
+                opacity: 0.9 !important;
+                cursor: pointer !important;
+                pointer-events: auto !important;
+                z-index: 5 !important;
+            }
+
+            .ec-blocked-slot .fc-event-main {
+                color: #ffffff !important;
+                font-weight: 500;
+            }
+
+            .ec-blocked-slot:hover {
+                opacity: 1 !important;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
             }
 
             /* Override default FullCalendar background event styling */
@@ -821,77 +855,58 @@ class EnhancedCalendarController {
                 pointer-events: none;
             }
 
-            /* Resource Timeline specific - target the harness and event container */
-            .fc-timeline-event-harness {
+            /* Resource TimeGrid specific styling */
+            .fc-timegrid-event-harness {
                 z-index: 1;
             }
 
-            /* Background events in timeline view */
-            .fc-timeline-event.fc-bg-event,
-            .fc-timegrid-bg-harness .fc-bg-event,
-            .fc-timeline-bg-harness .fc-bg-event {
+            /* Background events in timegrid view */
+            .fc-timegrid-bg-harness .fc-bg-event {
                 opacity: 1 !important;
                 z-index: 0 !important;
             }
 
-            /* Make sure the lane frame allows background to show */
-            .fc-timeline-lane-frame {
-                position: relative;
+            /* Resource column headers in timegrid */
+            .fc-col-header-cell {
+                background-color: #f8fafc;
+                font-weight: 600;
+                padding: 8px 4px !important;
             }
 
-            /* Target the specific background event wrapper in timeline */
-            .fc-timeline-events .fc-bg-event {
-                opacity: 1 !important;
-                min-height: 100%;
-            }
-
-            /* Ensure timeline slots show the background properly */
-            .fc-timeline-slot-frame {
-                position: relative;
+            /* Time slots on left axis */
+            .fc-timegrid-slot-label {
+                font-size: 12px;
+                color: #64748b;
             }
 
             /* Force visibility on all background events in the calendar container */
             .ec-calendar-container .fc-bg-event {
                 opacity: 1 !important;
-                min-height: 28px;
             }
 
-            /* Make events fill 90% of resource row height */
-            .ec-calendar-container .fc-timeline-lane {
-                height: 50px !important;
-            }
-
-            .ec-calendar-container .fc-timeline-lane-frame {
-                height: 50px !important;
-                position: relative;
-            }
-
-            .ec-calendar-container .fc-timeline-events {
-                height: 100% !important;
-                position: relative;
-            }
-
-            .ec-calendar-container .fc-timeline-event-harness {
-                top: 5% !important;
-                height: 90% !important;
-                margin: 0 !important;
-            }
-
-            .ec-calendar-container .fc-timeline-event {
-                height: 100% !important;
-                min-height: unset !important;
-                margin: 0 !important;
+            /* TimeGrid event styling */
+            .ec-calendar-container .fc-timegrid-event {
                 border-radius: 4px;
+                margin: 1px;
             }
 
             .ec-calendar-container .fc-event-main {
-                height: 100%;
                 display: flex;
-                align-items: center;
-                padding: 0 6px;
+                align-items: flex-start;
+                padding: 4px 6px;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                white-space: nowrap;
+                font-size: 11px;
+            }
+
+            /* Resource columns - equal width distribution */
+            .fc-timegrid-cols > table {
+                width: 100%;
+            }
+
+            /* Ensure columns have minimum width */
+            .fc-timegrid-col {
+                min-width: 120px;
             }
 
             /* Ensure the event main frame fills properly */
@@ -1407,8 +1422,9 @@ class EnhancedCalendarController {
                 color: #141414;
             }
 
-            /* Cursor for selectable areas */
-            .fc-timeline-lane:not(.ec-nonworking-block):not(.ec-unavailable-block):not(.ec-dayoff-block) {
+            /* Cursor for selectable areas (works for both timeline and timegrid) */
+            .fc-timeline-lane:not(.ec-nonworking-block):not(.ec-unavailable-block):not(.ec-dayoff-block),
+            .fc-timegrid-col:not(.ec-nonworking-block):not(.ec-unavailable-block):not(.ec-dayoff-block) {
                 cursor: pointer;
             }
 
@@ -1567,6 +1583,17 @@ class EnhancedCalendarController {
                 border-color: #3b82f6 !important;
             }
 
+            /* Dark mode - Toggle Orientation button */
+            [data-theme="dark"] .ec-calendar-container .fc-toggleOrientation-button {
+                background-color: #4f46e5 !important;
+                border-color: #6366f1 !important;
+            }
+
+            [data-theme="dark"] .ec-calendar-container .fc-toggleOrientation-button:hover {
+                background-color: #6366f1 !important;
+                border-color: #818cf8 !important;
+            }
+
             [data-theme="dark"] .ec-calendar-container .fc-toolbar-title {
                 color: #e2e8f0;
             }
@@ -1597,12 +1624,19 @@ class EnhancedCalendarController {
                 color: #e2e8f0;
             }
 
+            [data-theme="dark"] .ec-calendar-container .fc-timegrid-slot,
             [data-theme="dark"] .ec-calendar-container .fc-timeline-slot {
                 background: #111111;
             }
 
+            [data-theme="dark"] .ec-calendar-container .fc-timegrid-slot-label,
             [data-theme="dark"] .ec-calendar-container .fc-timeline-slot-cushion {
                 color: #94a3b8;
+            }
+
+            [data-theme="dark"] .ec-calendar-container .fc-col-header-cell {
+                background: #0a0a0a;
+                color: #e2e8f0;
             }
 
             [data-theme="dark"] .ec-calendar-container .fc-resource-timeline-divider {
@@ -1610,16 +1644,22 @@ class EnhancedCalendarController {
             }
 
             /* Dark mode - Non-working/unavailable blocks */
-            [data-theme="dark"] .fc-timeline-event.ec-nonworking-block {
+            [data-theme="dark"] .ec-nonworking-block {
                 background-color: #374151 !important;
             }
 
-            [data-theme="dark"] .fc-timeline-event.ec-dayoff-block {
+            [data-theme="dark"] .ec-dayoff-block {
                 background-color: #1f2937 !important;
             }
 
-            [data-theme="dark"] .fc-timeline-event.ec-unavailable-block {
+            [data-theme="dark"] .ec-unavailable-block {
                 background-color: #7f1d1d !important;
+            }
+
+            /* Dark mode - Blocked slots (stay black in dark mode) */
+            [data-theme="dark"] .ec-blocked-slot {
+                background-color: #0a0a0a !important;
+                border-color: #000000 !important;
             }
 
             /* Dark mode - Tooltip */
@@ -1910,9 +1950,13 @@ class EnhancedCalendarController {
 
         const calendarEl = document.getElementById('ec-calendar');
 
+        // Track current orientation (vertical = timegrid, horizontal = timeline)
+        this.isVerticalView = true;
+
         this.calendar = new FullCalendar.Calendar(calendarEl, {
             schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
-            initialView: 'resourceTimelineDay',
+            // Default: Vertical orientation (users as columns on top, time on left)
+            initialView: 'resourceTimeGridDay',
             customButtons: {
                 current: {
                     text: __('Current'),
@@ -1925,15 +1969,21 @@ class EnhancedCalendarController {
                     click: () => {
                         this.showDatePicker();
                     }
+                },
+                toggleOrientation: {
+                    text: __('⇄ Horizontal'),
+                    click: () => {
+                        this.toggleCalendarOrientation();
+                    }
                 }
             },
             headerToolbar: {
-                left: 'prev,next current,jumpToDate',
+                left: 'prev,next current,jumpToDate toggleOrientation',
                 center: 'title',
-                right: 'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth'
+                right: 'resourceTimeGridDay,resourceTimeGridWeek'
             },
 
-            // Time settings - 30-minute intervals
+            // Time settings - 30-minute intervals (vertical axis on left)
             slotMinTime: '06:00:00',
             slotMaxTime: '22:00:00',
             slotDuration: '00:30:00',
@@ -1941,10 +1991,10 @@ class EnhancedCalendarController {
             slotLabelInterval: '01:00:00',
             slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
 
-            // Resources
+            // Resources configuration (works for both vertical and horizontal views)
             resources: this.resources,
-            resourceAreaWidth: '180px',
-            resourceAreaHeaderContent: __('Team Members'),
+            resourceAreaWidth: '180px',  // For horizontal/timeline view
+            resourceAreaHeaderContent: __('Team Members'),  // For horizontal/timeline view
             resourceLabelContent: (arg) => this.renderResourceLabel(arg.resource),
 
             // Events - includes background events for non-working hours
@@ -2003,15 +2053,15 @@ class EnhancedCalendarController {
 
     async fetchEventsWithBusinessHours(fetchInfo, successCallback, failureCallback) {
         /**
-         * Fetch both booking events AND business hours background events.
+         * Fetch booking events, business hours background events, AND blocked slots.
          * Returns them all to FullCalendar as a unified event array.
          */
         try {
             const startDate = fetchInfo.startStr.split('T')[0];
             const endDate = fetchInfo.endStr.split('T')[0];
 
-            // Fetch both regular events and business hours in parallel
-            const [eventsResponse, businessHoursResponse] = await Promise.all([
+            // Fetch regular events, business hours, AND blocked slots in parallel
+            const [eventsResponse, businessHoursResponse, blockedSlotsResponse] = await Promise.all([
                 frappe.call({
                     method: 'meeting_manager.meeting_manager.page.mm_enhanced_calendar.api.get_calendar_events',
                     args: {
@@ -2031,6 +2081,14 @@ class EnhancedCalendarController {
                         start_date: startDate,
                         end_date: endDate
                     }
+                }),
+                frappe.call({
+                    method: 'meeting_manager.meeting_manager.page.mm_enhanced_calendar.api.get_user_blocked_slots',
+                    args: {
+                        resource_ids: JSON.stringify(this.resources.map(r => r.id)),
+                        start_date: startDate,
+                        end_date: endDate
+                    }
                 })
             ]);
 
@@ -2045,8 +2103,13 @@ class EnhancedCalendarController {
                 new Date(fetchInfo.end)
             );
 
+            // Generate blocked slot events
+            const blockedSlotsData = blockedSlotsResponse.message || {};
+            const blockedSlotEvents = this.generateBlockedSlotEvents(blockedSlotsData);
+
             // Combine all events
             allEvents.push(...backgroundEvents);
+            allEvents.push(...blockedSlotEvents);
 
             successCallback(allEvents);
         } catch (error) {
@@ -2171,6 +2234,113 @@ class EnhancedCalendarController {
         });
 
         return backgroundEvents;
+    }
+
+    generateBlockedSlotEvents(blockedSlotsData) {
+        /**
+         * Generate calendar events for blocked slots (displayed in BLACK).
+         * These are user-defined time blocks where they are unavailable.
+         * Blocked slots are editable (draggable/resizable) if user has permission.
+         */
+        const blockedEvents = [];
+
+        // Debug: Log context when generating blocked slot events
+        console.log('[generateBlockedSlotEvents] Data:', {
+            blockedSlotsData,
+            userContext: this.userContext,
+            currentUser: this.userContext?.user,
+            roleLevel: this.userContext?.role
+        });
+
+        Object.entries(blockedSlotsData).forEach(([resourceId, slots]) => {
+            slots.forEach(slot => {
+                const canManage = this.canManageBlockedSlot(resourceId);
+                console.log(`[generateBlockedSlotEvents] Slot ${slot.name}: resourceId=${resourceId}, canManage=${canManage}`);
+                blockedEvents.push({
+                    id: `blocked-${slot.name}`,
+                    resourceId: resourceId,
+                    start: `${slot.blocked_date}T${slot.start_time}`,
+                    end: `${slot.blocked_date}T${slot.end_time}`,
+                    title: slot.reason || __('Blocked'),
+                    backgroundColor: '#1a1a1a',
+                    borderColor: '#000000',
+                    textColor: '#ffffff',
+                    classNames: ['ec-blocked-slot'],
+                    editable: canManage,
+                    durationEditable: canManage,
+                    resourceEditable: false,  // Cannot move to different user
+                    extendedProps: {
+                        isBlockedSlot: true,
+                        blockedSlotName: slot.name,
+                        blockedSlotUser: resourceId,
+                        originalDate: slot.blocked_date,
+                        originalStartTime: slot.start_time,
+                        originalEndTime: slot.end_time,
+                        reason: slot.reason,
+                        canManage: canManage
+                    }
+                });
+            });
+        });
+
+        return blockedEvents;
+    }
+
+    canManageBlockedSlot(resourceId) {
+        /**
+         * Check if current user can manage (edit/delete) a blocked slot for this resource.
+         *
+         * Permissions:
+         * - System Manager: can manage ANY blocked slot (checked first for efficiency)
+         * - ANY user can ALWAYS manage their OWN blocked slots
+         * - Dept Leader: can manage own + team members in led departments
+         * - Dept Member: can only manage their own blocked slots
+         */
+        // Safety check - if userContext not loaded yet, deny by default
+        if (!this.userContext) {
+            console.warn('[canManageBlockedSlot] userContext not yet loaded');
+            return false;
+        }
+
+        const currentUser = this.userContext.user;
+        const roleLevel = this.userContext.role;
+
+        // Debug logging - remove after debugging
+        console.log('[canManageBlockedSlot] Check:', {
+            resourceId,
+            currentUser,
+            roleLevel,
+            isSystemManager: roleLevel === 'system_manager',
+            isOwnSlot: resourceId === currentUser
+        });
+
+        // System Manager can manage ANY blocked slot (highest privilege)
+        if (roleLevel === 'system_manager') {
+            console.log('[canManageBlockedSlot] ALLOWED: System Manager');
+            return true;
+        }
+
+        // Users can ALWAYS manage their own blocked slots
+        if (resourceId === currentUser) {
+            console.log('[canManageBlockedSlot] ALLOWED: Own slot');
+            return true;
+        }
+
+        // Department Leader can manage team members' blocked slots
+        if (roleLevel === 'department_leader') {
+            const userDepts = this.userContext.accessible_departments || [];
+            const ledDeptNames = userDepts.filter(d => d.is_leader).map(d => d.name);
+            const resource = this.resources.find(r => r.id === resourceId);
+
+            if (resource && ledDeptNames.includes(resource.department)) {
+                console.log('[canManageBlockedSlot] ALLOWED: Dept Leader for this member');
+                return true;
+            }
+        }
+
+        // Default: no permission
+        console.log('[canManageBlockedSlot] DENIED: No matching permission');
+        return false;
     }
 
     normalizeTime(timeStr) {
@@ -2647,6 +2817,14 @@ class EnhancedCalendarController {
     canModifyEvent(dropInfo, draggedEvent) {
         const props = draggedEvent.extendedProps;
 
+        // Handle blocked slots - check canManage permission
+        if (props.isBlockedSlot) {
+            // For blocked slots, re-check permission dynamically
+            const resourceId = props.blockedSlotUser || draggedEvent.getResources()[0]?.id;
+            return this.canManageBlockedSlot(resourceId);
+        }
+
+        // Handle regular bookings
         // Check reassignment
         if (dropInfo.resource) {
             const currentResources = draggedEvent.getResources();
@@ -2663,6 +2841,14 @@ class EnhancedCalendarController {
         // Hide any open tooltips before showing dialog
         this.hideAllTooltips();
 
+        const props = info.event.extendedProps;
+
+        // Handle blocked slot drag (move to different time/date)
+        if (props.isBlockedSlot) {
+            await this.handleBlockedSlotDrop(info);
+            return;
+        }
+
         // Validate: Cannot move to past date/time
         const now = new Date();
         if (info.event.start < now) {
@@ -2675,7 +2861,6 @@ class EnhancedCalendarController {
             return;
         }
 
-        const props = info.event.extendedProps;
         const newResource = info.newResource;
         const oldResource = info.oldResource;
 
@@ -2724,6 +2909,9 @@ class EnhancedCalendarController {
             newResource: newResource
         });
 
+        // Determine if this is a team meeting (internal)
+        const isTeamMeeting = props.is_internal;
+
         const dialog = new frappe.ui.Dialog({
             title: dialogTitle,
             size: 'large',
@@ -2732,10 +2920,44 @@ class EnhancedCalendarController {
                     fieldtype: 'HTML',
                     fieldname: 'confirmation_content',
                     options: dialogContent
+                },
+                {
+                    fieldtype: 'Section Break',
+                    label: __('Email Notifications')
+                },
+                {
+                    fieldtype: 'HTML',
+                    fieldname: 'notification_switches',
+                    options: `
+                        <div class="ec-notification-switches" style="display: flex; gap: 24px; flex-wrap: wrap; padding: 8px 0;">
+                            ${!isTeamMeeting ? `
+                            <label class="ec-switch-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" class="ec-switch-input" data-fieldname="notify_customer" checked style="width: 18px; height: 18px; cursor: pointer;">
+                                <span>${__('Notify Customer')}</span>
+                            </label>
+                            ` : ''}
+                            <label class="ec-switch-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" class="ec-switch-input" data-fieldname="notify_host" checked style="width: 18px; height: 18px; cursor: pointer;">
+                                <span>${__('Notify Host')}</span>
+                            </label>
+                            ${isTeamMeeting ? `
+                            <label class="ec-switch-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" class="ec-switch-input" data-fieldname="notify_participants" checked style="width: 18px; height: 18px; cursor: pointer;">
+                                <span>${__('Notify Participants')}</span>
+                            </label>
+                            ` : ''}
+                        </div>
+                    `
                 }
             ],
             primary_action_label: primaryLabel,
             primary_action: async () => {
+                // Get notification values from HTML checkboxes
+                const $wrapper = dialog.$wrapper;
+                const notifyCustomer = $wrapper.find('[data-fieldname="notify_customer"]').is(':checked') ? 1 : 0;
+                const notifyHost = $wrapper.find('[data-fieldname="notify_host"]').is(':checked') ? 1 : 0;
+                const notifyParticipants = $wrapper.find('[data-fieldname="notify_participants"]').is(':checked') ? 1 : 0;
+
                 dialog.hide();
                 try {
                     const response = await frappe.call({
@@ -2744,7 +2966,10 @@ class EnhancedCalendarController {
                             booking_id: props.booking_id,
                             start_datetime: updates.startDatetime,
                             end_datetime: updates.endDatetime,
-                            new_host: updates.newHost || null
+                            new_host: updates.newHost || null,
+                            notify_customer: notifyCustomer,
+                            notify_host: notifyHost,
+                            notify_participants: notifyParticipants
                         }
                     });
 
@@ -2777,6 +3002,12 @@ class EnhancedCalendarController {
 
         const props = info.event.extendedProps;
 
+        // Handle blocked slot resize (extend/shrink)
+        if (props.isBlockedSlot) {
+            await this.handleBlockedSlotResize(info);
+            return;
+        }
+
         if (!props.can_reschedule) {
             info.revert();
             frappe.msgprint(__('You do not have permission to modify this booking.'));
@@ -2805,6 +3036,9 @@ class EnhancedCalendarController {
             newEnd: info.event.end
         });
 
+        // Determine if this is a team meeting (internal)
+        const isTeamMeetingExtend = props.is_internal;
+
         const dialog = new frappe.ui.Dialog({
             title: __('Extend Booking'),
             size: 'large',
@@ -2813,17 +3047,46 @@ class EnhancedCalendarController {
                     fieldtype: 'HTML',
                     fieldname: 'confirmation_content',
                     options: dialogContent
+                },
+                {
+                    fieldtype: 'Section Break',
+                    label: __('Email Notifications')
+                },
+                {
+                    fieldtype: 'HTML',
+                    fieldname: 'notification_switches',
+                    options: `
+                        <div class="ec-notification-switches" style="display: flex; gap: 24px; flex-wrap: wrap; padding: 8px 0;">
+                            <label class="ec-switch-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" class="ec-switch-input" data-fieldname="notify_host" checked style="width: 18px; height: 18px; cursor: pointer;">
+                                <span>${__('Notify Host')}</span>
+                            </label>
+                            ${isTeamMeetingExtend ? `
+                            <label class="ec-switch-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" class="ec-switch-input" data-fieldname="notify_participants" checked style="width: 18px; height: 18px; cursor: pointer;">
+                                <span>${__('Notify Participants')}</span>
+                            </label>
+                            ` : ''}
+                        </div>
+                    `
                 }
             ],
             primary_action_label: __('Extend'),
             primary_action: async () => {
+                // Get notification values from HTML checkboxes
+                const $wrapper = dialog.$wrapper;
+                const notifyHost = $wrapper.find('[data-fieldname="notify_host"]').is(':checked') ? 1 : 0;
+                const notifyParticipants = $wrapper.find('[data-fieldname="notify_participants"]').is(':checked') ? 1 : 0;
+
                 dialog.hide();
                 try {
                     const response = await frappe.call({
                         method: 'meeting_manager.meeting_manager.page.mm_enhanced_calendar.api.update_calendar_booking',
                         args: {
                             booking_id: props.booking_id,
-                            end_datetime: this.formatDateTimeForServer(info.event.end)
+                            end_datetime: this.formatDateTimeForServer(info.event.end),
+                            notify_host: notifyHost,
+                            notify_participants: notifyParticipants
                         }
                     });
 
@@ -2854,8 +3117,237 @@ class EnhancedCalendarController {
         this.hideAllTooltips();
 
         const props = info.event.extendedProps;
-        // Navigate to the custom meeting view page
-        frappe.set_route('mm-meeting-view', props.booking_id);
+
+        // Handle blocked slot click
+        if (props.isBlockedSlot) {
+            // Re-check permission at action time
+            const resourceId = props.blockedSlotUser || info.event.getResources()[0]?.id;
+            const canManage = this.canManageBlockedSlot(resourceId);
+
+            if (canManage) {
+                this.showBlockedSlotDeleteDialog(info.event);
+            } else {
+                frappe.show_alert({
+                    message: __('You do not have permission to modify this blocked slot'),
+                    indicator: 'orange'
+                });
+            }
+            return;
+        }
+
+        // Handle business hours background events (non-clickable)
+        if (props.isBusinessHoursBackground) {
+            return;
+        }
+
+        // Navigate to the custom meeting view page for regular bookings
+        if (props.booking_id) {
+            frappe.set_route('mm-meeting-view', props.booking_id);
+        }
+    }
+
+    /**
+     * Show confirmation dialog for deleting a blocked slot.
+     */
+    showBlockedSlotDeleteDialog(event) {
+        const props = event.extendedProps;
+        const startTime = event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+        const endTime = event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+        const dateStr = event.start.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        const reasonHtml = props.reason ? `<p><strong>${__('Reason')}:</strong> ${props.reason}</p>` : '';
+
+        frappe.confirm(
+            `<div style="text-align: left;">
+                <p>${__('Remove this blocked slot?')}</p>
+                <hr style="margin: 10px 0;">
+                <p><strong>${__('Date')}:</strong> ${dateStr}</p>
+                <p><strong>${__('Time')}:</strong> ${startTime} - ${endTime}</p>
+                ${reasonHtml}
+            </div>`,
+            async () => {
+                // Yes callback - delete the blocked slot
+                try {
+                    const response = await frappe.call({
+                        method: 'meeting_manager.meeting_manager.page.mm_enhanced_calendar.api.delete_blocked_slot',
+                        args: { blocked_slot_name: props.blockedSlotName }
+                    });
+
+                    if (response.message && response.message.success) {
+                        frappe.show_alert({
+                            message: __('Blocked slot removed'),
+                            indicator: 'green'
+                        });
+                        this.calendar.refetchEvents();
+                    } else {
+                        frappe.msgprint({
+                            title: __('Error'),
+                            message: response.message?.message || __('Failed to remove blocked slot'),
+                            indicator: 'red'
+                        });
+                    }
+                } catch (error) {
+                    frappe.msgprint({
+                        title: __('Error'),
+                        message: error.message || __('Failed to remove blocked slot'),
+                        indicator: 'red'
+                    });
+                }
+            },
+            () => {
+                // No callback - just close (do nothing)
+            }
+        );
+    }
+
+    /**
+     * Handle blocked slot drag (move to different time/date).
+     */
+    async handleBlockedSlotDrop(info) {
+        const props = info.event.extendedProps;
+
+        // Re-check permission at action time (don't rely solely on cached canManage)
+        const resourceId = props.blockedSlotUser || info.event.getResources()[0]?.id;
+        const canManage = this.canManageBlockedSlot(resourceId);
+
+        if (!canManage) {
+            info.revert();
+            frappe.msgprint(__('You do not have permission to modify this blocked slot.'));
+            return;
+        }
+
+        // Get new date and times
+        const newDate = info.event.start.toISOString().split('T')[0];
+        const newStartTime = info.event.start.toTimeString().substring(0, 5);
+        const newEndTime = info.event.end.toTimeString().substring(0, 5);
+
+        // Format for display
+        const oldDateDisplay = new Date(props.originalDate).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+        const newDateDisplay = info.event.start.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+
+        const changes = [];
+        if (props.originalDate !== newDate) {
+            changes.push(`<p><strong>${__('Date')}:</strong> ${oldDateDisplay} → ${newDateDisplay}</p>`);
+        }
+        if (props.originalStartTime !== newStartTime || props.originalEndTime !== newEndTime) {
+            changes.push(`<p><strong>${__('Time')}:</strong> ${props.originalStartTime} - ${props.originalEndTime} → ${newStartTime} - ${newEndTime}</p>`);
+        }
+
+        frappe.confirm(
+            `<div style="text-align: left;">
+                <p>${__('Move this blocked slot?')}</p>
+                <hr style="margin: 10px 0;">
+                ${changes.join('')}
+                ${props.reason ? `<p><strong>${__('Reason')}:</strong> ${props.reason}</p>` : ''}
+            </div>`,
+            async () => {
+                try {
+                    const response = await frappe.call({
+                        method: 'meeting_manager.meeting_manager.page.mm_enhanced_calendar.api.update_blocked_slot',
+                        args: {
+                            blocked_slot_name: props.blockedSlotName,
+                            blocked_date: newDate,
+                            start_time: newStartTime,
+                            end_time: newEndTime
+                        }
+                    });
+
+                    if (response.message && response.message.success) {
+                        frappe.show_alert({
+                            message: __('Blocked slot moved'),
+                            indicator: 'green'
+                        });
+                        this.calendar.refetchEvents();
+                    } else {
+                        info.revert();
+                        frappe.msgprint({
+                            title: __('Error'),
+                            message: response.message?.message || __('Failed to move blocked slot'),
+                            indicator: 'red'
+                        });
+                    }
+                } catch (error) {
+                    info.revert();
+                    frappe.msgprint({
+                        title: __('Error'),
+                        message: error.message || __('Failed to move blocked slot'),
+                        indicator: 'red'
+                    });
+                }
+            },
+            () => {
+                info.revert();
+            },
+            __('Move')
+        );
+    }
+
+    /**
+     * Handle blocked slot resize (extend/shrink).
+     */
+    async handleBlockedSlotResize(info) {
+        const props = info.event.extendedProps;
+
+        // Re-check permission at action time (don't rely solely on cached canManage)
+        const resourceId = props.blockedSlotUser || info.event.getResources()[0]?.id;
+        const canManage = this.canManageBlockedSlot(resourceId);
+
+        if (!canManage) {
+            info.revert();
+            frappe.msgprint(__('You do not have permission to modify this blocked slot.'));
+            return;
+        }
+
+        // Get new times
+        const newStartTime = info.event.start.toTimeString().substring(0, 5);
+        const newEndTime = info.event.end.toTimeString().substring(0, 5);
+
+        frappe.confirm(
+            `<div style="text-align: left;">
+                <p>${__('Resize this blocked slot?')}</p>
+                <hr style="margin: 10px 0;">
+                <p><strong>${__('Time')}:</strong> ${props.originalStartTime} - ${props.originalEndTime} → ${newStartTime} - ${newEndTime}</p>
+                ${props.reason ? `<p><strong>${__('Reason')}:</strong> ${props.reason}</p>` : ''}
+            </div>`,
+            async () => {
+                try {
+                    const response = await frappe.call({
+                        method: 'meeting_manager.meeting_manager.page.mm_enhanced_calendar.api.update_blocked_slot',
+                        args: {
+                            blocked_slot_name: props.blockedSlotName,
+                            start_time: newStartTime,
+                            end_time: newEndTime
+                        }
+                    });
+
+                    if (response.message && response.message.success) {
+                        frappe.show_alert({
+                            message: __('Blocked slot resized'),
+                            indicator: 'green'
+                        });
+                        this.calendar.refetchEvents();
+                    } else {
+                        info.revert();
+                        frappe.msgprint({
+                            title: __('Error'),
+                            message: response.message?.message || __('Failed to resize blocked slot'),
+                            indicator: 'red'
+                        });
+                    }
+                } catch (error) {
+                    info.revert();
+                    frappe.msgprint({
+                        title: __('Error'),
+                        message: error.message || __('Failed to resize blocked slot'),
+                        indicator: 'red'
+                    });
+                }
+            },
+            () => {
+                info.revert();
+            },
+            __('Resize')
+        );
     }
 
     showDatePicker() {
@@ -2883,6 +3375,71 @@ class EnhancedCalendarController {
         });
 
         dialog.show();
+    }
+
+    toggleCalendarOrientation() {
+        /**
+         * Toggle between vertical (timeGrid) and horizontal (timeline) views.
+         * - Vertical: Users as columns on top, time on left axis
+         * - Horizontal: Users on left, time flows horizontally
+         */
+        const currentView = this.calendar.view.type;
+        let newView;
+
+        if (this.isVerticalView) {
+            // Switch to horizontal (timeline)
+            if (currentView.includes('Day')) {
+                newView = 'resourceTimelineDay';
+            } else if (currentView.includes('Week')) {
+                newView = 'resourceTimelineWeek';
+            } else {
+                newView = 'resourceTimelineDay';
+            }
+            this.isVerticalView = false;
+
+            // Update toolbar to show timeline options
+            this.calendar.setOption('headerToolbar', {
+                left: 'prev,next current,jumpToDate toggleOrientation',
+                center: 'title',
+                right: 'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth'
+            });
+
+            // Update button text
+            this.updateToggleButtonText(__('⇅ Vertical'));
+        } else {
+            // Switch to vertical (timeGrid)
+            if (currentView.includes('Day')) {
+                newView = 'resourceTimeGridDay';
+            } else if (currentView.includes('Week')) {
+                newView = 'resourceTimeGridWeek';
+            } else {
+                newView = 'resourceTimeGridDay';
+            }
+            this.isVerticalView = true;
+
+            // Update toolbar to show timegrid options
+            this.calendar.setOption('headerToolbar', {
+                left: 'prev,next current,jumpToDate toggleOrientation',
+                center: 'title',
+                right: 'resourceTimeGridDay,resourceTimeGridWeek'
+            });
+
+            // Update button text
+            this.updateToggleButtonText(__('⇄ Horizontal'));
+        }
+
+        // Change the view
+        this.calendar.changeView(newView);
+    }
+
+    updateToggleButtonText(text) {
+        /**
+         * Update the toggle orientation button text.
+         */
+        const button = this.$container.find('.fc-toggleOrientation-button');
+        if (button.length) {
+            button.text(text);
+        }
     }
 
     buildConfirmationDialogContent(options) {
@@ -3194,7 +3751,7 @@ class EnhancedCalendarController {
     }
 
     /**
-     * Handle slot selection - opens a dialog to create a booking for a customer.
+     * Handle slot selection - opens an action dialog with options to create booking or block slot.
      */
     handleSlotSelect(selectInfo) {
         const resource = selectInfo.resource;
@@ -3214,20 +3771,193 @@ class EnhancedCalendarController {
         const durationMs = endDate - startDate;
         const durationMinutes = Math.round(durationMs / 60000);
 
-        // Show the booking dialog
-        this.showSlotBookingDialog({
+        const slotInfo = {
             start: startDate,
             end: endDate,
             resourceId: resourceId,
             resourceTitle: resourceTitle,
             department: resourceDept,
             duration: durationMinutes
-        });
+        };
+
+        // Check if user can block slots for this resource
+        const canBlock = this.canManageBlockedSlot(resourceId);
+
+        // Show action selection dialog
+        this.showSlotActionDialog(slotInfo, canBlock);
     }
 
     /**
-     * Show a dialog for creating a customer booking in the selected time slot.
+     * Show action dialog with options: Create Booking or Block Slot
      */
+    showSlotActionDialog(slotInfo, canBlock) {
+        const { start, end, resourceTitle } = slotInfo;
+
+        const dateStr = start.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const startTime = start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+        const endTime = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+
+        const fields = [
+            {
+                fieldtype: 'HTML',
+                options: `
+                    <div class="ec-slot-info-card" style="margin-bottom: 20px;">
+                        <div class="ec-slot-info-header">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            ${__('Selected Time Slot')}
+                        </div>
+                        <div class="ec-slot-info-body">
+                            <div class="ec-slot-info-row">
+                                <span class="ec-slot-info-label">${__('Date')}</span>
+                                <span class="ec-slot-info-value">${dateStr}</span>
+                            </div>
+                            <div class="ec-slot-info-row">
+                                <span class="ec-slot-info-label">${__('Time')}</span>
+                                <span class="ec-slot-info-value">${startTime} - ${endTime}</span>
+                            </div>
+                            <div class="ec-slot-info-row">
+                                <span class="ec-slot-info-label">${__('Team Member')}</span>
+                                <span class="ec-slot-info-value">${resourceTitle}</span>
+                            </div>
+                        </div>
+                    </div>
+                `
+            }
+        ];
+
+        const dialog = new frappe.ui.Dialog({
+            title: __('Select Action'),
+            fields: fields,
+            primary_action_label: __('Create Booking'),
+            primary_action: () => {
+                dialog.hide();
+                this.showSlotBookingDialog(slotInfo);
+            }
+        });
+
+        // Add Block Slot button if user has permission
+        if (canBlock) {
+            dialog.set_secondary_action_label(__('Block Slot'));
+            dialog.set_secondary_action(() => {
+                dialog.hide();
+                this.showBlockSlotDialog(slotInfo);
+            });
+        }
+
+        dialog.show();
+    }
+
+    /**
+     * Show a dialog for blocking a time slot.
+     */
+    showBlockSlotDialog(slotInfo) {
+        const { start, end, resourceId, resourceTitle } = slotInfo;
+
+        const dateStr = start.toISOString().split('T')[0];
+        const startTime = start.toTimeString().substring(0, 5);
+        const endTime = end.toTimeString().substring(0, 5);
+        const displayDate = start.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        const dialog = new frappe.ui.Dialog({
+            title: __('Block Time Slot'),
+            fields: [
+                {
+                    fieldtype: 'HTML',
+                    options: `
+                        <div class="ec-slot-info-card" style="margin-bottom: 15px; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border-color: #000;">
+                            <div class="ec-slot-info-header" style="color: #fff;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                                </svg>
+                                ${__('Blocking Time Slot')}
+                            </div>
+                            <div class="ec-slot-info-body">
+                                <div class="ec-slot-info-row">
+                                    <span class="ec-slot-info-label" style="color: #9ca3af;">${__('For')}</span>
+                                    <span class="ec-slot-info-value" style="color: #fff;">${resourceTitle}</span>
+                                </div>
+                                <div class="ec-slot-info-row">
+                                    <span class="ec-slot-info-label" style="color: #9ca3af;">${__('Date')}</span>
+                                    <span class="ec-slot-info-value" style="color: #fff;">${displayDate}</span>
+                                </div>
+                                <div class="ec-slot-info-row">
+                                    <span class="ec-slot-info-label" style="color: #9ca3af;">${__('Time')}</span>
+                                    <span class="ec-slot-info-value" style="color: #fff;">${startTime} - ${endTime}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                {
+                    fieldname: 'reason',
+                    fieldtype: 'Small Text',
+                    label: __('Reason'),
+                    reqd: 1,
+                    description: __('e.g., "Focus time", "Personal appointment", "Training"')
+                }
+            ],
+            primary_action_label: __('Block Slot'),
+            primary_action: async (values) => {
+                // Validate reason is provided
+                if (!values.reason || !values.reason.trim()) {
+                    frappe.msgprint({
+                        title: __('Missing Reason'),
+                        message: __('Please provide a reason for blocking this time slot.'),
+                        indicator: 'orange'
+                    });
+                    return;
+                }
+
+                dialog.disable_primary_action();
+
+                try {
+                    const response = await frappe.call({
+                        method: 'meeting_manager.meeting_manager.page.mm_enhanced_calendar.api.create_blocked_slot',
+                        args: {
+                            user: resourceId,
+                            blocked_date: dateStr,
+                            start_time: startTime,
+                            end_time: endTime,
+                            reason: values.reason.trim()
+                        }
+                    });
+
+                    if (response.message && response.message.success) {
+                        dialog.hide();
+                        frappe.show_alert({
+                            message: __('Time slot blocked successfully'),
+                            indicator: 'green'
+                        });
+                        this.calendar.refetchEvents();
+                    } else {
+                        frappe.msgprint({
+                            title: __('Error'),
+                            message: response.message?.message || __('Failed to block slot'),
+                            indicator: 'red'
+                        });
+                        dialog.enable_primary_action();
+                    }
+                } catch (error) {
+                    frappe.msgprint({
+                        title: __('Error'),
+                        message: error.message || __('Failed to block slot'),
+                        indicator: 'red'
+                    });
+                    dialog.enable_primary_action();
+                }
+            }
+        });
+
+        dialog.show();
+    }
+
     /**
      * Show a dialog for creating a customer booking in the selected time slot.
      * Follows the mm_self_book_meeting approach:
@@ -3455,10 +4185,24 @@ class EnhancedCalendarController {
                     label: __('Meeting Agenda / Notes')
                 },
                 {
-                    fieldtype: 'Check',
-                    fieldname: 'send_notification',
-                    label: __('Send email notification to customer'),
-                    default: 0
+                    fieldtype: 'Section Break',
+                    label: __('Email Notifications')
+                },
+                {
+                    fieldtype: 'HTML',
+                    fieldname: 'notification_switches',
+                    options: `
+                        <div class="ec-notification-switches" style="display: flex; gap: 24px; flex-wrap: wrap; padding: 8px 0;">
+                            <label class="ec-switch-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" class="ec-switch-input" data-fieldname="send_notification" checked style="width: 18px; height: 18px; cursor: pointer;">
+                                <span>${__('Notify Customer')}</span>
+                            </label>
+                            <label class="ec-switch-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" class="ec-switch-input" data-fieldname="notify_host" checked style="width: 18px; height: 18px; cursor: pointer;">
+                                <span>${__('Notify Host')}</span>
+                            </label>
+                        </div>
+                    `
                 }
             ],
             primary_action_label: __('Create Booking'),
@@ -3484,6 +4228,11 @@ class EnhancedCalendarController {
                     return;
                 }
 
+                // Get notification values from HTML checkboxes
+                const $wrapper = dialog.$wrapper;
+                const sendNotification = $wrapper.find('[data-fieldname="send_notification"]').is(':checked') ? 1 : 0;
+                const notifyHost = $wrapper.find('[data-fieldname="notify_host"]').is(':checked') ? 1 : 0;
+
                 dialog.hide();
 
                 try {
@@ -3504,7 +4253,8 @@ class EnhancedCalendarController {
                                 customer_company: values.customer_company || null,
                                 service_type: values.service_type,
                                 meeting_agenda: values.meeting_agenda || null,
-                                send_notification: values.send_notification ? 1 : 0
+                                send_notification: sendNotification,
+                                notify_host: notifyHost
                             })
                         }
                     });

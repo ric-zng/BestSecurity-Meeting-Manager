@@ -130,13 +130,25 @@ after_install = "meeting_manager.meeting_manager.setup.after_install"
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
-#
-# has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+permission_query_conditions = {
+	"MM Meeting Booking": "meeting_manager.meeting_manager.utils.permissions.get_mm_meeting_booking_permission_query_conditions",
+	"MM Customer": "meeting_manager.meeting_manager.utils.permissions.get_mm_customer_permission_query_conditions",
+	"MM Department": "meeting_manager.meeting_manager.utils.permissions.get_mm_department_permission_query_conditions",
+	"MM Meeting Type": "meeting_manager.meeting_manager.utils.permissions.get_mm_meeting_type_permission_query_conditions",
+	"MM User Settings": "meeting_manager.meeting_manager.utils.permissions.get_mm_user_settings_permission_query_conditions",
+	"MM User Availability Rule": "meeting_manager.meeting_manager.utils.permissions.get_mm_user_availability_rule_permission_query_conditions",
+	"MM User Blocked Slot": "meeting_manager.meeting_manager.utils.permissions.get_mm_user_blocked_slot_permission_query_conditions",
+}
+
+has_permission = {
+	"MM Meeting Booking": "meeting_manager.meeting_manager.utils.permissions.has_mm_meeting_booking_permission",
+	"MM Customer": "meeting_manager.meeting_manager.utils.permissions.has_mm_customer_permission",
+	"MM Department": "meeting_manager.meeting_manager.utils.permissions.has_mm_department_permission",
+	"MM Meeting Type": "meeting_manager.meeting_manager.utils.permissions.has_mm_meeting_type_permission",
+	"MM User Settings": "meeting_manager.meeting_manager.utils.permissions.has_mm_user_settings_permission",
+	"MM User Availability Rule": "meeting_manager.meeting_manager.utils.permissions.has_mm_user_availability_rule_permission",
+	"MM User Blocked Slot": "meeting_manager.meeting_manager.utils.permissions.has_mm_user_blocked_slot_permission",
+}
 
 # Document Events
 # ---------------
@@ -275,5 +287,8 @@ fixtures = [
 	{
 		"doctype": "Role",
 		"filters": [["name", "in", ["MM Department Leader", "MM Department Member"]]]
+	},
+	{
+		"doctype": "MM Email Template"
 	}
 ]

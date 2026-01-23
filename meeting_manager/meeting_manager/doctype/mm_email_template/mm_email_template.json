@@ -1,0 +1,181 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:template_name",
+ "creation": "2026-01-23 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "template_name",
+  "email_type",
+  "recipient_type",
+  "service_type",
+  "is_active",
+  "column_break_1",
+  "language",
+  "priority",
+  "section_break_content",
+  "subject",
+  "email_body",
+  "section_break_settings",
+  "include_remote_support_link",
+  "remote_support_url",
+  "column_break_settings",
+  "include_brochure",
+  "section_break_preview",
+  "available_variables"
+ ],
+ "fields": [
+  {
+   "fieldname": "template_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Template Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "email_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Email Type",
+   "options": "Booking Confirmation\nReschedule Notification\nReassignment Notification\nExtension Notification\nCancellation\nTeam Meeting Invitation\nReminder\nFollow-up",
+   "reqd": 1
+  },
+  {
+   "fieldname": "recipient_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Recipient Type",
+   "options": "Customer\nHost\nParticipant\nTeam Member",
+   "reqd": 1,
+   "default": "Customer"
+  },
+  {
+   "description": "Select which service type this template applies to. Leave empty for default template.",
+   "fieldname": "service_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Service Type",
+   "options": "\nBusiness\nBusiness Extended\nBusiness Rebook\nNew Setup Business\nPrivate/Business Customer\nPrivate New Sale\nPrivate Self Book\nMicrosoft 365 Backup\nWebsite Security"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "en",
+   "fieldname": "language",
+   "fieldtype": "Link",
+   "label": "Language",
+   "options": "Language"
+  },
+  {
+   "default": "0",
+   "description": "Higher priority templates are selected first when multiple templates match",
+   "fieldname": "priority",
+   "fieldtype": "Int",
+   "label": "Priority"
+  },
+  {
+   "fieldname": "section_break_content",
+   "fieldtype": "Section Break",
+   "label": "Email Content"
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "label": "Subject",
+   "reqd": 1
+  },
+  {
+   "description": "Use Jinja2 template syntax. Available variables: {{ customer_name }}, {{ customer_firstname }}, {{ company }}, {{ provider }}, {{ event_date }}, {{ event_time }}, {{ event_datetime }}, {{ booker }}, {{ booking_reference }}",
+   "fieldname": "email_body",
+   "fieldtype": "Text Editor",
+   "label": "Email Body",
+   "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_settings",
+   "fieldtype": "Section Break",
+   "label": "Additional Settings"
+  },
+  {
+   "default": "1",
+   "fieldname": "include_remote_support_link",
+   "fieldtype": "Check",
+   "label": "Include Remote Support Link"
+  },
+  {
+   "default": "https://rmmeu-bestsecurity.screenconnect.com/",
+   "depends_on": "eval:doc.include_remote_support_link",
+   "fieldname": "remote_support_url",
+   "fieldtype": "Data",
+   "label": "Remote Support URL"
+  },
+  {
+   "fieldname": "column_break_settings",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "include_brochure",
+   "fieldtype": "Check",
+   "label": "Include Business Brochure"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_preview",
+   "fieldtype": "Section Break",
+   "label": "Template Variables Reference"
+  },
+  {
+   "fieldname": "available_variables",
+   "fieldtype": "HTML",
+   "label": "Available Variables",
+   "options": "<div class=\"alert alert-info\">\n<strong>Available Template Variables:</strong>\n<ul>\n<li><code>{{ customer_name }}</code> - Full customer name</li>\n<li><code>{{ customer_firstname }}</code> - Customer first name only</li>\n<li><code>{{ company }}</code> - Customer company name</li>\n<li><code>{{ provider }}</code> - Assigned team member name</li>\n<li><code>{{ event_date }}</code> - Meeting date (e.g., \"Monday, January 23, 2026\")</li>\n<li><code>{{ event_time }}</code> - Meeting time (e.g., \"14:30\")</li>\n<li><code>{{ event_datetime }}</code> - Full date and time</li>\n<li><code>{{ booker }}</code> - Name of person who made the booking</li>\n<li><code>{{ booking_reference }}</code> - Unique booking reference</li>\n<li><code>{{ remote_support_link }}</code> - Remote support software URL</li>\n<li><code>{{ cancel_link }}</code> - Link for customer to cancel</li>\n<li><code>{{ reschedule_link }}</code> - Link for customer to reschedule</li>\n</ul>\n</div>"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-23 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Meeting Manager",
+ "name": "MM Email Template",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "MM Department Leader"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "template_name",
+ "track_changes": 1
+}
