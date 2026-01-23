@@ -1,0 +1,93 @@
+{
+ "name": "MM Setup",
+ "doctype": "Workspace",
+ "module": "MM Setup",
+ "label": "MM Setup",
+ "title": "Setup",
+ "icon": "setting-gear",
+ "indicator_color": "orange",
+ "public": 1,
+ "is_hidden": 0,
+ "hide_custom": 0,
+ "sequence_id": 12.0,
+ "content": "[{\"id\": \"shortcuts_header\", \"type\": \"header\", \"data\": {\"text\": \"<span class='h4'><b>Quick Setup</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_departments\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Departments\", \"col\": 4}}, {\"id\": \"shortcut_meeting_types\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Meeting Types\", \"col\": 4}}, {\"id\": \"shortcut_user_settings\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"User Settings\", \"col\": 4}}, {\"id\": \"spacer_1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"links_header\", \"type\": \"header\", \"data\": {\"text\": \"<span class='h4'><b>Configuration</b></span>\", \"col\": 12}}, {\"id\": \"card_organization\", \"type\": \"card\", \"data\": {\"card_name\": \"Organization\", \"col\": 6}}, {\"id\": \"card_availability\", \"type\": \"card\", \"data\": {\"card_name\": \"Availability\", \"col\": 6}}]",
+ "number_cards": [],
+ "charts": [],
+ "shortcuts": [
+  {
+   "type": "DocType",
+   "link_to": "MM Department",
+   "doc_view": "List",
+   "label": "Departments",
+   "color": "Blue",
+   "format": "{} Departments"
+  },
+  {
+   "type": "DocType",
+   "link_to": "MM Meeting Type",
+   "doc_view": "List",
+   "label": "Meeting Types",
+   "color": "Green",
+   "format": "{} Types"
+  },
+  {
+   "type": "DocType",
+   "link_to": "MM User Settings",
+   "doc_view": "List",
+   "label": "User Settings",
+   "color": "Orange",
+   "format": "{} Settings"
+  }
+ ],
+ "links": [
+  {
+   "type": "Card Break",
+   "label": "Organization"
+  },
+  {
+   "type": "Link",
+   "label": "Departments",
+   "link_type": "DocType",
+   "link_to": "MM Department",
+   "onboard": 1
+  },
+  {
+   "type": "Link",
+   "label": "Meeting Types",
+   "link_type": "DocType",
+   "link_to": "MM Meeting Type"
+  },
+  {
+   "type": "Card Break",
+   "label": "Availability"
+  },
+  {
+   "type": "Link",
+   "label": "User Settings",
+   "link_type": "DocType",
+   "link_to": "MM User Settings",
+   "onboard": 1
+  },
+  {
+   "type": "Link",
+   "label": "Availability Rules",
+   "link_type": "DocType",
+   "link_to": "MM User Availability Rule"
+  },
+  {
+   "type": "Link",
+   "label": "Date Overrides",
+   "link_type": "DocType",
+   "link_to": "MM Date Override"
+  },
+  {
+   "type": "Link",
+   "label": "Blocked Slots",
+   "link_type": "DocType",
+   "link_to": "MM User Blocked Slot"
+  }
+ ],
+ "quick_lists": [],
+ "custom_blocks": [],
+ "roles": []
+}

@@ -1,0 +1,146 @@
+{
+ "name": "MM Bookings",
+ "doctype": "Workspace",
+ "module": "MM Bookings",
+ "label": "MM Bookings",
+ "title": "Bookings",
+ "icon": "calendar",
+ "indicator_color": "blue",
+ "public": 1,
+ "is_hidden": 0,
+ "hide_custom": 0,
+ "sequence_id": 11.0,
+ "content": "[{\"id\": \"shortcuts_header\", \"type\": \"header\", \"data\": {\"text\": \"<span class='h4'><b>Quick Actions</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_new_booking\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Create Booking\", \"col\": 4}}, {\"id\": \"shortcut_calendar\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Enhanced Calendar\", \"col\": 4}}, {\"id\": \"shortcut_customers\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customers\", \"col\": 4}}, {\"id\": \"spacer_1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"status_header\", \"type\": \"header\", \"data\": {\"text\": \"<span class='h4'><b>Bookings by Status</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_new_appointment\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"New Appointment\", \"col\": 4}}, {\"id\": \"shortcut_new_booking_status\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"New Booking\", \"col\": 4}}, {\"id\": \"shortcut_booking_started\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Booking Started\", \"col\": 4}}, {\"id\": \"shortcut_sale_approved\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sale Approved\", \"col\": 4}}, {\"id\": \"shortcut_cancelled\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Cancelled\", \"col\": 4}}, {\"id\": \"shortcut_rebook\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Rebook\", \"col\": 4}}, {\"id\": \"spacer_2\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"links_header\", \"type\": \"header\", \"data\": {\"text\": \"<span class='h4'><b>Bookings</b></span>\", \"col\": 12}}, {\"id\": \"card_bookings\", \"type\": \"card\", \"data\": {\"card_name\": \"Bookings\", \"col\": 6}}, {\"id\": \"card_calendar\", \"type\": \"card\", \"data\": {\"card_name\": \"Calendar\", \"col\": 6}}]",
+ "number_cards": [],
+ "charts": [],
+ "shortcuts": [
+  {
+   "type": "DocType",
+   "link_to": "MM Meeting Booking",
+   "doc_view": "New",
+   "label": "Create Booking",
+   "color": "Green",
+   "format": "{} Create"
+  },
+  {
+   "type": "Page",
+   "link_to": "mm-enhanced-calendar",
+   "label": "Enhanced Calendar",
+   "color": "Blue",
+   "format": "{}"
+  },
+  {
+   "type": "DocType",
+   "link_to": "MM Customer",
+   "doc_view": "List",
+   "label": "Customers",
+   "color": "Purple",
+   "format": "{} Customers"
+  },
+  {
+   "type": "DocType",
+   "link_to": "MM Meeting Booking",
+   "doc_view": "List",
+   "label": "New Appointment",
+   "stats_filter": "{\"booking_status\":\"New Appointment\"}",
+   "color": "Blue",
+   "format": "{} New Appointment"
+  },
+  {
+   "type": "DocType",
+   "link_to": "MM Meeting Booking",
+   "doc_view": "List",
+   "label": "New Booking",
+   "stats_filter": "{\"booking_status\":\"New Booking\"}",
+   "color": "Green",
+   "format": "{} New Booking"
+  },
+  {
+   "type": "DocType",
+   "link_to": "MM Meeting Booking",
+   "doc_view": "List",
+   "label": "Booking Started",
+   "stats_filter": "{\"booking_status\":\"Booking Started\"}",
+   "color": "Yellow",
+   "format": "{} Booking Started"
+  },
+  {
+   "type": "DocType",
+   "link_to": "MM Meeting Booking",
+   "doc_view": "List",
+   "label": "Sale Approved",
+   "stats_filter": "{\"booking_status\":\"Sale Approved\"}",
+   "color": "Green",
+   "format": "{} Sale Approved"
+  },
+  {
+   "type": "DocType",
+   "link_to": "MM Meeting Booking",
+   "doc_view": "List",
+   "label": "Cancelled",
+   "stats_filter": "{\"booking_status\":\"Cancelled\"}",
+   "color": "Red",
+   "format": "{} Cancelled"
+  },
+  {
+   "type": "DocType",
+   "link_to": "MM Meeting Booking",
+   "doc_view": "List",
+   "label": "Rebook",
+   "stats_filter": "{\"booking_status\":\"Rebook\"}",
+   "color": "Orange",
+   "format": "{} Rebook"
+  }
+ ],
+ "links": [
+  {
+   "type": "Card Break",
+   "label": "Bookings"
+  },
+  {
+   "type": "Link",
+   "label": "All Bookings",
+   "link_type": "DocType",
+   "link_to": "MM Meeting Booking",
+   "onboard": 1
+  },
+  {
+   "type": "Link",
+   "label": "Customers",
+   "link_type": "DocType",
+   "link_to": "MM Customer"
+  },
+  {
+   "type": "Link",
+   "label": "Blocked Slots",
+   "link_type": "DocType",
+   "link_to": "MM User Blocked Slot"
+  },
+  {
+   "type": "Card Break",
+   "label": "Calendar"
+  },
+  {
+   "type": "Link",
+   "label": "Enhanced Calendar",
+   "link_type": "Page",
+   "link_to": "mm-enhanced-calendar",
+   "onboard": 1
+  },
+  {
+   "type": "Link",
+   "label": "Self Book Meeting",
+   "link_type": "Page",
+   "link_to": "mm-self-book-meeting"
+  },
+  {
+   "type": "Link",
+   "label": "Schedule Team Meeting",
+   "link_type": "Page",
+   "link_to": "mm-team-meeting"
+  }
+ ],
+ "quick_lists": [],
+ "custom_blocks": [],
+ "roles": []
+}

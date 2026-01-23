@@ -1,1 +1,4 @@
 Meeting Manager
+MM Bookings
+MM Setup
+MM Reports

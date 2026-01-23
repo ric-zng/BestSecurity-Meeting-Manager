@@ -14,6 +14,53 @@ from datetime import datetime, timedelta, time
 import json
 
 
+def check_blocked_slots(member, scheduled_date, start_time, end_time):
+	"""
+	Check if the requested time falls within any blocked slots.
+
+	CRITICAL: Blocked slots have HIGHEST PRIORITY - they override everything.
+
+	Args:
+		member (str): User ID
+		scheduled_date (date): Date to check
+		start_time (time): Start time of requested slot
+		end_time (time): End time of requested slot
+
+	Returns:
+		dict: {
+			"available": bool,
+			"reason": str,
+			"has_blocked_slot": bool
+		}
+	"""
+	blocked_slots = frappe.get_all(
+		"MM User Blocked Slot",
+		filters={
+			"user": member,
+			"blocked_date": scheduled_date
+		},
+		fields=["name", "start_time", "end_time", "reason"]
+	)
+
+	if not blocked_slots:
+		return {"available": True, "reason": None, "has_blocked_slot": False}
+
+	for slot in blocked_slots:
+		slot_start = get_time(slot.start_time)
+		slot_end = get_time(slot.end_time)
+
+		# Check for overlap: NOT (end_time <= slot_start OR start_time >= slot_end)
+		if not (end_time <= slot_start or start_time >= slot_end):
+			reason = slot.reason or "Time slot is blocked"
+			return {
+				"available": False,
+				"reason": f"Blocked: {reason} ({slot.start_time} - {slot.end_time})",
+				"has_blocked_slot": True
+			}
+
+	return {"available": True, "reason": None, "has_blocked_slot": False}
+
+
 def check_member_availability(member, scheduled_date, scheduled_start_time, duration_minutes, exclude_booking=None):
 	"""
 	Check if a member is available at the specified date/time
@@ -43,7 +90,21 @@ def check_member_availability(member, scheduled_date, scheduled_start_time, dura
 
 	conflicts = []
 
-	# 1. Check date overrides FIRST (vacations, special availability)
+	# 0. Check BLOCKED SLOTS FIRST (highest priority)
+	blocked_slot_check = check_blocked_slots(member, scheduled_date, scheduled_start_time, scheduled_end_time)
+	if not blocked_slot_check["available"]:
+		conflicts.append({
+			"type": "blocked_slot",
+			"message": blocked_slot_check["reason"]
+		})
+		# Return immediately - blocked slots are absolute
+		return {
+			"available": False,
+			"conflicts": conflicts,
+			"reason": conflicts[0]["message"]
+		}
+
+	# 1. Check date overrides (vacations, special availability)
 	# Date overrides take FULL PRIORITY over regular working hours
 	date_override_check = check_date_overrides(member, scheduled_date, scheduled_start_time, scheduled_end_time)
 

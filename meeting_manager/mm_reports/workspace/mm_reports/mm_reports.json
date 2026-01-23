@@ -1,0 +1,91 @@
+{
+ "name": "MM Reports",
+ "doctype": "Workspace",
+ "module": "MM Reports",
+ "label": "MM Reports",
+ "title": "Reports",
+ "icon": "file",
+ "indicator_color": "purple",
+ "public": 1,
+ "is_hidden": 0,
+ "hide_custom": 0,
+ "sequence_id": 13.0,
+ "content": "[{\"id\": \"shortcuts_header\", \"type\": \"header\", \"data\": {\"text\": \"<span class='h4'><b>Quick Reports</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_all_bookings\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"All Bookings Report\", \"col\": 4}}, {\"id\": \"shortcut_cancelled\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Cancelled\", \"col\": 4}}, {\"id\": \"shortcut_not_possible\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Not Possible\", \"col\": 4}}, {\"id\": \"spacer_1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"links_header\", \"type\": \"header\", \"data\": {\"text\": \"<span class='h4'><b>Reports & Analytics</b></span>\", \"col\": 12}}, {\"id\": \"card_reports\", \"type\": \"card\", \"data\": {\"card_name\": \"Booking Reports\", \"col\": 6}}, {\"id\": \"card_analytics\", \"type\": \"card\", \"data\": {\"card_name\": \"Analytics\", \"col\": 6}}]",
+ "number_cards": [],
+ "charts": [],
+ "shortcuts": [
+  {
+   "type": "DocType",
+   "link_to": "MM Meeting Booking",
+   "doc_view": "Report",
+   "label": "All Bookings Report",
+   "color": "Blue",
+   "format": "{} Bookings"
+  },
+  {
+   "type": "DocType",
+   "link_to": "MM Meeting Booking",
+   "doc_view": "List",
+   "label": "Cancelled",
+   "stats_filter": "{\"booking_status\":\"Cancelled\"}",
+   "color": "Red",
+   "format": "{} Cancelled"
+  },
+  {
+   "type": "DocType",
+   "link_to": "MM Meeting Booking",
+   "doc_view": "List",
+   "label": "Not Possible",
+   "stats_filter": "{\"booking_status\":\"Not Possible\"}",
+   "color": "Grey",
+   "format": "{} Not Possible"
+  }
+ ],
+ "links": [
+  {
+   "type": "Card Break",
+   "label": "Booking Reports"
+  },
+  {
+   "type": "Link",
+   "label": "All Bookings",
+   "link_type": "DocType",
+   "link_to": "MM Meeting Booking",
+   "onboard": 1
+  },
+  {
+   "type": "Link",
+   "label": "Customers",
+   "link_type": "DocType",
+   "link_to": "MM Customer"
+  },
+  {
+   "type": "Card Break",
+   "label": "Analytics"
+  },
+  {
+   "type": "Link",
+   "label": "Bookings by Status",
+   "link_type": "DocType",
+   "link_to": "MM Meeting Booking",
+   "dependencies": "booking_status"
+  },
+  {
+   "type": "Link",
+   "label": "Bookings by Department",
+   "link_type": "DocType",
+   "link_to": "MM Meeting Booking",
+   "dependencies": "department"
+  },
+  {
+   "type": "Link",
+   "label": "Bookings by Meeting Type",
+   "link_type": "DocType",
+   "link_to": "MM Meeting Booking",
+   "dependencies": "meeting_type"
+  }
+ ],
+ "quick_lists": [],
+ "custom_blocks": [],
+ "roles": []
+}

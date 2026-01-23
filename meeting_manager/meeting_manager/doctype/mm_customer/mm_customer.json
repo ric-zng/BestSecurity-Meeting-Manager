@@ -168,7 +168,8 @@
   },
   {
    "read": 1,
-   "role": "MM Department Member"
+   "role": "MM Department Member",
+   "write": 1
   }
  ],
  "row_format": "Dynamic",

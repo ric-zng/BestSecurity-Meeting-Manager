@@ -10,7 +10,7 @@
  "is_hidden": 0,
  "hide_custom": 0,
  "sequence_id": 10.0,
- "content": "[{\"id\": \"shortcuts_header\", \"type\": \"header\", \"data\": {\"text\": \"<span class='h4'><b>Quick Access</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_meeting_bookings\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Meeting Bookings\", \"col\": 4}}, {\"id\": \"shortcut_new_department\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"New Department\", \"col\": 4}}, {\"id\": \"shortcut_meeting_types\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Meeting Types\", \"col\": 4}}, {\"id\": \"shortcut_my_settings\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"User Settings\", \"col\": 4}}, {\"id\": \"shortcut_availability\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"User Availability Rule\", \"col\": 4}}, {\"id\": \"spacer_1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"bookings_by_status_header\", \"type\": \"header\", \"data\": {\"text\": \"<span class='h4'><b>Bookings by Status</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_pending\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Pending\", \"col\": 4}}, {\"id\": \"shortcut_confirmed\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Confirmed\", \"col\": 4}}, {\"id\": \"shortcut_cancelled\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Cancelled\", \"col\": 4}}, {\"id\": \"shortcut_completed\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Completed\", \"col\": 4}}, {\"id\": \"shortcut_no_show\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"No-Show\", \"col\": 4}}, {\"id\": \"shortcut_rescheduled\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Rescheduled\", \"col\": 4}}, {\"id\": \"spacer_2\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"links_header\", \"type\": \"header\", \"data\": {\"text\": \"<span class='h4'><b>Meeting Manager</b></span>\", \"col\": 12}}, {\"id\": \"card_bookings\", \"type\": \"card\", \"data\": {\"card_name\": \"Bookings\", \"col\": 4}}, {\"id\": \"card_setup\", \"type\": \"card\", \"data\": {\"card_name\": \"Setup\", \"col\": 4}}, {\"id\": \"card_configuration\", \"type\": \"card\", \"data\": {\"card_name\": \"Configuration\", \"col\": 4}}]",
+ "content": "[{\"id\": \"shortcuts_header\", \"type\": \"header\", \"data\": {\"text\": \"<span class='h4'><b>Quick Access</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_meeting_bookings\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Meeting Bookings\", \"col\": 4}}, {\"id\": \"shortcut_new_department\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"New Department\", \"col\": 4}}, {\"id\": \"shortcut_meeting_types\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Meeting Types\", \"col\": 4}}, {\"id\": \"shortcut_my_settings\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"User Settings\", \"col\": 4}}, {\"id\": \"shortcut_availability\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"User Availability Rule\", \"col\": 4}}, {\"id\": \"spacer_1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"bookings_by_status_header\", \"type\": \"header\", \"data\": {\"text\": \"<span class='h4'><b>Bookings by Status</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_new_appointment\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"New Appointment\", \"col\": 4}}, {\"id\": \"shortcut_new_booking\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"New Booking\", \"col\": 4}}, {\"id\": \"shortcut_booking_started\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Booking Started\", \"col\": 4}}, {\"id\": \"shortcut_sale_approved\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sale Approved\", \"col\": 4}}, {\"id\": \"shortcut_cancelled\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Cancelled\", \"col\": 4}}, {\"id\": \"shortcut_rebook\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Rebook\", \"col\": 4}}, {\"id\": \"spacer_2\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"links_header\", \"type\": \"header\", \"data\": {\"text\": \"<span class='h4'><b>Meeting Manager</b></span>\", \"col\": 12}}, {\"id\": \"card_bookings\", \"type\": \"card\", \"data\": {\"card_name\": \"Bookings\", \"col\": 4}}, {\"id\": \"card_setup\", \"type\": \"card\", \"data\": {\"card_name\": \"Setup\", \"col\": 4}}, {\"id\": \"card_configuration\", \"type\": \"card\", \"data\": {\"card_name\": \"Configuration\", \"col\": 4}}]",
  "number_cards": [],
  "charts": [],
  "shortcuts": [
@@ -58,19 +58,37 @@
    "type": "DocType",
    "link_to": "MM Meeting Booking",
    "doc_view": "List",
-   "label": "Pending",
-   "stats_filter": "{\"booking_status\":\"Pending\"}",
-   "color": "Yellow",
-   "format": "{} Pending"
+   "label": "New Appointment",
+   "stats_filter": "{\"booking_status\":\"New Appointment\"}",
+   "color": "Blue",
+   "format": "{} New Appointment"
   },
   {
    "type": "DocType",
    "link_to": "MM Meeting Booking",
    "doc_view": "List",
-   "label": "Confirmed",
-   "stats_filter": "{\"booking_status\":\"Confirmed\"}",
+   "label": "New Booking",
+   "stats_filter": "{\"booking_status\":\"New Booking\"}",
    "color": "Green",
-   "format": "{} Confirmed"
+   "format": "{} New Booking"
+  },
+  {
+   "type": "DocType",
+   "link_to": "MM Meeting Booking",
+   "doc_view": "List",
+   "label": "Booking Started",
+   "stats_filter": "{\"booking_status\":\"Booking Started\"}",
+   "color": "Yellow",
+   "format": "{} Booking Started"
+  },
+  {
+   "type": "DocType",
+   "link_to": "MM Meeting Booking",
+   "doc_view": "List",
+   "label": "Sale Approved",
+   "stats_filter": "{\"booking_status\":\"Sale Approved\"}",
+   "color": "Green",
+   "format": "{} Sale Approved"
   },
   {
    "type": "DocType",
@@ -85,28 +103,10 @@
    "type": "DocType",
    "link_to": "MM Meeting Booking",
    "doc_view": "List",
-   "label": "Completed",
-   "stats_filter": "{\"booking_status\":\"Completed\"}",
-   "color": "Blue",
-   "format": "{} Completed"
-  },
-  {
-   "type": "DocType",
-   "link_to": "MM Meeting Booking",
-   "doc_view": "List",
-   "label": "No-Show",
-   "stats_filter": "{\"booking_status\":\"No-Show\"}",
-   "color": "Grey",
-   "format": "{} No-Show"
-  },
-  {
-   "type": "DocType",
-   "link_to": "MM Meeting Booking",
-   "doc_view": "List",
-   "label": "Rescheduled",
-   "stats_filter": "{\"booking_status\":\"Rescheduled\"}",
+   "label": "Rebook",
+   "stats_filter": "{\"booking_status\":\"Rebook\"}",
    "color": "Orange",
-   "format": "{} Rescheduled"
+   "format": "{} Rebook"
   }
  ],
  "links": [
@@ -126,12 +126,6 @@
    "label": "Customers",
    "link_type": "DocType",
    "link_to": "MM Customer"
-  },
-  {
-   "type": "Link",
-   "label": "Timeline Calendar",
-   "link_type": "Page",
-   "link_to": "mm-timeline-calendar"
   },
   {
    "type": "Link",
