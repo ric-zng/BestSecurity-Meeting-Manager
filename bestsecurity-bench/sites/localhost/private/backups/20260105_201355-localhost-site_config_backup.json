@@ -1,0 +1,7 @@
+{
+ "SystemSettings.enable_scheduler": 1,
+ "db_name": "_b3b4f07343c65532",
+ "db_password": "vE01aWEDizkR6QpP",
+ "db_type": "mariadb",
+ "system_settings.scheduled_tasks": 1
+}

@@ -1,0 +1,241 @@
+2026-01-12 16:31:28,981 INFO ipython === bench console session ===
+2026-01-12 16:31:28,981 INFO ipython #!/usr/bin/env python3
+2026-01-12 16:31:28,981 INFO ipython """
+Quick script to seed Support Dashboard test data
+Run from bench directory: python3 seed_data.py
+"""
+2026-01-12 16:31:28,981 INFO ipython import os
+2026-01-12 16:31:28,981 INFO ipython import sys
+2026-01-12 16:31:28,981 INFO ipython # Change to bench directory
+2026-01-12 16:31:28,981 INFO ipython os.chdir('/Users/justus/Desktop/projects/zng/test/bestsecurity-bench')
+2026-01-12 16:31:28,981 INFO ipython import frappe
+2026-01-12 16:31:28,981 INFO ipython from frappe.utils import now_datetime, add_days, formatdate
+2026-01-12 16:31:28,981 INFO ipython import random
+2026-01-12 16:31:28,981 INFO ipython frappe.init(site='localhost')
+2026-01-12 16:31:28,981 INFO ipython frappe.connect()
+2026-01-12 16:31:28,981 INFO ipython frappe.set_user('Administrator')
+2026-01-12 16:31:28,981 INFO ipython print("\n" + "="*60)
+2026-01-12 16:31:28,981 INFO ipython print("🌱 Starting Support Dashboard Data Seeding")
+2026-01-12 16:31:28,981 INFO ipython print("="*60 + "\n")
+2026-01-12 16:31:28,981 INFO ipython # Step 1: Create customers
+2026-01-12 16:31:28,981 INFO ipython print("📊 Creating test customers...")
+2026-01-12 16:31:28,981 INFO ipython customers_data = [
+    {"name": "John Smith", "email": "john.smith@email.com", "phone": "+1-555-0101"},
+    {"name": "Sarah Johnson", "email": "sarah.j@company.com", "phone": "+1-555-0102"},
+    {"name": "Michael Chen", "email": "mchen@techcorp.com", "phone": "+1-555-0103"},
+    {"name": "Emily Williams", "email": "emily.williams@gmail.com", "phone": "+1-555-0104"},
+    {"name": "David Rodriguez", "email": "d.rodriguez@business.com", "phone": "+1-555-0105"},
+]
+2026-01-12 16:31:28,982 INFO ipython customers = []
+2026-01-12 16:31:28,982 INFO ipython for data in customers_data:
+    if frappe.db.exists("Customer", {"email_id": data["email"]}):
+        print(f"  ✓ Customer {data['name']} already exists")
+        customer = frappe.get_doc("Customer", {"email_id": data["email"]})
+        customers.append(customer)
+    else:
+        customer = frappe.get_doc({
+            "doctype": "Customer",
+            "customer_name": data["name"],
+            "email_id": data["email"],
+            "mobile_no": data["phone"],
+            "customer_group": "Individual",
+            "territory": "All Territories",
+        })
+        customer.insert(ignore_permissions=True)
+        customers.append(customer)
+        print(f"  ✓ Created customer: {data['name']}")
+2026-01-12 16:31:28,982 INFO ipython frappe.db.commit()
+2026-01-12 16:31:28,982 INFO ipython print(f"✓ Total customers: {len(customers)}\n")
+2026-01-12 16:31:28,982 INFO ipython # Step 2: Create items
+2026-01-12 16:31:28,982 INFO ipython print("📦 Creating test items...")
+2026-01-12 16:31:28,982 INFO ipython items_data = [
+    {"code": "LAPTOP-TEST", "name": "Business Laptop", "rate": 1200.00},
+    {"code": "MOUSE-TEST", "name": "Wireless Mouse", "rate": 35.00},
+    {"code": "MONITOR-TEST", "name": "27-inch Monitor", "rate": 350.00},
+]
+2026-01-12 16:31:28,982 INFO ipython items = []
+2026-01-12 16:31:28,982 INFO ipython for data in items_data:
+    if frappe.db.exists("Item", data["code"]):
+        print(f"  ✓ Item {data['code']} already exists")
+        items.append(data["code"])
+    else:
+        item = frappe.get_doc({
+            "doctype": "Item",
+            "item_code": data["code"],
+            "item_name": data["name"],
+            "item_group": "Products",
+            "stock_uom": "Nos",
+            "is_stock_item": 1,
+            "standard_rate": data["rate"],
+        })
+        item.insert(ignore_permissions=True)
+        items.append(data["code"])
+        print(f"  ✓ Created item: {data['code']}")
+2026-01-12 16:31:28,982 INFO ipython frappe.db.commit()
+2026-01-12 16:31:28,982 INFO ipython print(f"✓ Total items: {len(items)}\n")
+2026-01-12 16:31:28,982 INFO ipython # Step 3: Create sales orders
+2026-01-12 16:31:28,982 INFO ipython print("🛒 Creating sales orders...")
+2026-01-12 16:31:28,982 INFO ipython orders = []
+2026-01-12 16:31:28,982 INFO ipython statuses = ["To Deliver and Bill", "To Bill", "Completed"]
+2026-01-12 16:31:28,982 INFO ipython for customer in customers[:3]:  # First 3 customers
+    num_orders = random.randint(2, 4)
+    for i in range(num_orders):
+        days_ago = random.randint(1, 120)
+        order_date = add_days(now_datetime(), -days_ago)
+2026-01-12 16:31:28,982 INFO ipython         order = frappe.get_doc({
+            "doctype": "Sales Order",
+            "customer": customer.name,
+            "transaction_date": formatdate(order_date),
+            "delivery_date": formatdate(add_days(order_date, 7)),
+        })
+2026-01-12 16:31:28,982 INFO ipython         # Add 1-2 items
+2026-01-12 16:31:28,982 INFO ipython         for item_code in random.sample(items, min(2, len(items))):
+            item_rate = frappe.db.get_value("Item", item_code, "standard_rate")
+            order.append("items", {
+                "item_code": item_code,
+                "qty": random.randint(1, 2),
+                "rate": item_rate,
+                "delivery_date": formatdate(add_days(order_date, 7)),
+            })
+2026-01-12 16:31:28,982 INFO ipython         order.insert(ignore_permissions=True)
+2026-01-12 16:31:28,982 INFO ipython         order.submit()
+2026-01-12 16:31:28,982 INFO ipython         orders.append(order)
+2026-01-12 16:31:28,982 INFO ipython         print(f"  ✓ Created order {order.name} for {customer.customer_name}")
+2026-01-12 16:31:28,982 INFO ipython frappe.db.commit()
+2026-01-12 16:31:28,982 INFO ipython print(f"✓ Total orders: {len(orders)}\n")
+2026-01-12 16:31:28,982 INFO ipython # Step 4: Create communications
+2026-01-12 16:31:28,982 INFO ipython print("💬 Creating communications...")
+2026-01-12 16:31:28,982 INFO ipython comms = []
+2026-01-12 16:31:28,982 INFO ipython subjects = ["Order Inquiry", "Product Question", "Billing Issue", "Support Request"]
+2026-01-12 16:31:28,982 INFO ipython contents = [
+    "Customer inquired about order status.",
+    "Asked about product specifications.",
+    "Raised concern about invoice.",
+    "Requested technical support.",
+]
+2026-01-12 16:31:28,982 INFO ipython for customer in customers[:3]:
+    num_comms = random.randint(1, 3)
+    for i in range(num_comms):
+        days_ago = random.randint(1, 60)
+        comm_date = add_days(now_datetime(), -days_ago)
+2026-01-12 16:31:28,982 INFO ipython         comm = frappe.get_doc({
+            "doctype": "Communication",
+            "communication_type": "Communication",
+            "communication_medium": "Email",
+            "subject": random.choice(subjects),
+            "content": random.choice(contents),
+            "reference_doctype": "Customer",
+            "reference_name": customer.name,
+            "sent_or_received": "Received",
+            "sender": customer.email_id,
+            "creation": comm_date,
+        })
+2026-01-12 16:31:28,982 INFO ipython         comm.insert(ignore_permissions=True)
+2026-01-12 16:31:28,982 INFO ipython         comms.append(comm)
+2026-01-12 16:31:28,982 INFO ipython         print(f"  ✓ Created communication for {customer.customer_name}")
+2026-01-12 16:31:28,982 INFO ipython frappe.db.commit()
+2026-01-12 16:31:28,982 INFO ipython print(f"✓ Total communications: {len(comms)}\n")
+2026-01-12 16:31:28,982 INFO ipython print("="*60)
+2026-01-12 16:31:28,982 INFO ipython print("✅ Data seeding complete!")
+2026-01-12 16:31:28,982 INFO ipython print("="*60)
+2026-01-12 16:31:28,982 INFO ipython print(f"\nSummary:")
+2026-01-12 16:31:28,982 INFO ipython print(f"  • {len(customers)} customers")
+2026-01-12 16:31:28,982 INFO ipython print(f"  • {len(items)} items")
+2026-01-12 16:31:28,982 INFO ipython print(f"  • {len(orders)} sales orders")
+2026-01-12 16:31:28,982 INFO ipython print(f"  • {len(comms)} communications")
+2026-01-12 16:31:28,983 INFO ipython print(f"\n🎯 Test the Support Dashboard:")
+2026-01-12 16:31:28,983 INFO ipython print(f"   http://localhost:8000/support-dashboard")
+2026-01-12 16:31:28,983 INFO ipython print(f"\n💡 Try searching for:")
+2026-01-12 16:31:28,983 INFO ipython if customers:
+    print(f"   • {customers[0].customer_name}")
+    print(f"   • {customers[0].email_id}")
+if orders:
+    print(f"   • {orders[0].name}")
+print("\n")
+2026-01-12 16:31:28,983 INFO ipython frappe.db.close()
+2026-01-12 16:31:28,983 INFO ipython === session end ===
+2026-01-12 16:32:17,800 INFO ipython === bench console session ===
+2026-01-12 16:32:17,801 INFO ipython #!/usr/bin/env python3
+2026-01-12 16:32:17,801 INFO ipython """
+Create test orders for customers via Frappe console
+"""
+2026-01-12 16:32:17,801 INFO ipython import os
+2026-01-12 16:32:17,801 INFO ipython os.chdir('/Users/justus/Desktop/projects/zng/test/bestsecurity-bench')
+2026-01-12 16:32:17,801 INFO ipython import frappe
+2026-01-12 16:32:17,801 INFO ipython from datetime import datetime, timedelta
+2026-01-12 16:32:17,801 INFO ipython import random
+2026-01-12 16:32:17,801 INFO ipython frappe.init(site='localhost')
+2026-01-12 16:32:17,801 INFO ipython frappe.connect()
+2026-01-12 16:32:17,801 INFO ipython frappe.set_user('Administrator')
+2026-01-12 16:32:17,801 INFO ipython print("\n🛒 Creating test sales orders...\n")
+2026-01-12 16:32:17,801 INFO ipython # Get customers
+2026-01-12 16:32:17,801 INFO ipython customers = frappe.db.sql("""
+    SELECT name, customer_name, email_id
+    FROM `tabCustomer`
+    WHERE disabled = 0
+    AND email_id IN ('john.smith@email.com', 'sarah.j@company.com', 'mchen@techcorp.com')
+    LIMIT 3
+""", as_dict=True)
+2026-01-12 16:32:17,801 INFO ipython # Get items
+2026-01-12 16:32:17,801 INFO ipython items = frappe.db.sql("""
+    SELECT item_code, item_name, standard_rate
+    FROM `tabItem`
+    WHERE item_code IN ('LAPTOP-TEST', 'MOUSE-TEST', 'MONITOR-TEST')
+""", as_dict=True)
+2026-01-12 16:32:17,801 INFO ipython if not customers:
+    print("❌ No customers found!")
+    frappe.db.close()
+    exit()
+2026-01-12 16:32:17,801 INFO ipython if not items:
+    print("❌ No items found!")
+    frappe.db.close()
+    exit()
+2026-01-12 16:32:17,801 INFO ipython orders_created = 0
+2026-01-12 16:32:17,801 INFO ipython for customer in customers:
+    num_orders = random.randint(2, 4)
+    print(f"Creating {num_orders} orders for {customer.customer_name}...")
+2026-01-12 16:32:17,801 INFO ipython     for i in range(num_orders):
+        try:
+            # Generate order date
+            days_ago = random.randint(1, 120)
+            order_date = datetime.now() - timedelta(days=days_ago)
+            delivery_date = order_date + timedelta(days=7)
+
+            # Format dates as YYYY-MM-DD
+            order_date_str = order_date.strftime("%Y-%m-%d")
+            delivery_date_str = delivery_date.strftime("%Y-%m-%d")
+
+            # Create order
+            order = frappe.get_doc({
+                "doctype": "Sales Order",
+                "customer": customer.name,
+                "transaction_date": order_date_str,
+                "delivery_date": delivery_date_str,
+                "contact_email": customer.email_id,
+            })
+
+            # Add 1-2 items randomly
+            selected_items = random.sample(items, min(2, len(items)))
+            for item in selected_items:
+                order.append("items", {
+                    "item_code": item.item_code,
+                    "item_name": item.item_name,
+                    "qty": random.randint(1, 3),
+                    "rate": item.standard_rate,
+                    "delivery_date": delivery_date_str,
+                })
+
+            # Save and submit
+            order.insert(ignore_permissions=True)
+            order.submit()
+
+            print(f"  ✓ Created order {order.name}")
+            orders_created += 1
+
+        except Exception as e:
+            print(f"  ✗ Failed to create order: {str(e)}")
+            continue
+2026-01-12 16:32:17,801 INFO ipython frappe.db.commit()
+2026-01-12 16:32:17,802 INFO ipython print(f"\n✅ Created {orders_created} orders total!\n")
+2026-01-12 16:32:17,802 INFO ipython frappe.db.close()
+2026-01-12 16:32:17,802 INFO ipython === session end ===
