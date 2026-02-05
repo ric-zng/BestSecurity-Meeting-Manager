@@ -93,6 +93,9 @@ class EnhancedCalendarController {
             // Build UI
             this.buildUI();
 
+            // Add calendar integration button
+            this.setupCalendarIntegrationButton();
+
             // Initialize calendar
             await this.initCalendar();
 
@@ -1561,8 +1564,9 @@ class EnhancedCalendarController {
 
             /* Dark mode - Calendar Container */
             [data-theme="dark"] .ec-calendar-container {
-                background: #111111;
+                background: #141414;
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+                border: 1px solid #333333;
             }
 
             /* Dark mode - FullCalendar */
@@ -1601,37 +1605,42 @@ class EnhancedCalendarController {
             /* Dark mode - FullCalendar Grid */
             [data-theme="dark"] .ec-calendar-container .fc-theme-standard td,
             [data-theme="dark"] .ec-calendar-container .fc-theme-standard th {
-                border-color: #222222;
+                border-color: #404040;
             }
 
             [data-theme="dark"] .ec-calendar-container .fc-theme-standard .fc-scrollgrid {
-                border-color: #222222;
+                border-color: #404040;
             }
 
             [data-theme="dark"] .ec-calendar-container .fc-col-header-cell {
-                background: #0a0a0a;
+                background: #0f0f0f;
+                border-color: #404040 !important;
             }
 
             [data-theme="dark"] .ec-calendar-container .fc-col-header-cell-cushion {
-                color: #94a3b8;
+                color: #a8b3cf;
+                font-weight: 600;
             }
 
             [data-theme="dark"] .ec-calendar-container .fc-datagrid-cell {
-                background: #111111;
+                background: #141414;
+                border-color: #404040 !important;
             }
 
             [data-theme="dark"] .ec-calendar-container .fc-datagrid-cell-cushion {
                 color: #e2e8f0;
+                font-weight: 500;
             }
 
             [data-theme="dark"] .ec-calendar-container .fc-timegrid-slot,
             [data-theme="dark"] .ec-calendar-container .fc-timeline-slot {
-                background: #111111;
+                background: #141414;
             }
 
             [data-theme="dark"] .ec-calendar-container .fc-timegrid-slot-label,
             [data-theme="dark"] .ec-calendar-container .fc-timeline-slot-cushion {
-                color: #94a3b8;
+                color: #a8b3cf;
+                font-weight: 500;
             }
 
             [data-theme="dark"] .ec-calendar-container .fc-col-header-cell {
@@ -1640,26 +1649,42 @@ class EnhancedCalendarController {
             }
 
             [data-theme="dark"] .ec-calendar-container .fc-resource-timeline-divider {
-                background: #222222;
+                background: #404040;
+                width: 2px;
             }
 
-            /* Dark mode - Non-working/unavailable blocks */
+            /* Dark mode - Non-working/unavailable blocks - improved visibility */
             [data-theme="dark"] .ec-nonworking-block {
                 background-color: #374151 !important;
+                opacity: 0.6 !important;
+                border: 1px solid #475569 !important;
             }
 
             [data-theme="dark"] .ec-dayoff-block {
                 background-color: #1f2937 !important;
+                opacity: 0.7 !important;
+                border: 1px solid #374151 !important;
             }
 
             [data-theme="dark"] .ec-unavailable-block {
                 background-color: #7f1d1d !important;
+                opacity: 0.8 !important;
+                border: 1px solid #991b1b !important;
             }
 
-            /* Dark mode - Blocked slots (stay black in dark mode) */
+            /* Dark mode - Blocked slots - much more visible with diagonal stripes */
             [data-theme="dark"] .ec-blocked-slot {
-                background-color: #0a0a0a !important;
-                border-color: #000000 !important;
+                background-color: #1a1a1a !important;
+                background-image: repeating-linear-gradient(
+                    45deg,
+                    #1a1a1a,
+                    #1a1a1a 10px,
+                    #252525 10px,
+                    #252525 20px
+                ) !important;
+                border: 2px solid #333333 !important;
+                border-left: 4px solid #ef4444 !important;
+                opacity: 1 !important;
             }
 
             /* Dark mode - Tooltip */
@@ -1765,10 +1790,32 @@ class EnhancedCalendarController {
                 color: #94a3b8;
             }
 
+            /* Dark mode - Better grid line visibility */
+            [data-theme="dark"] .ec-calendar-container .fc-timegrid-slot-lane,
+            [data-theme="dark"] .ec-calendar-container .fc-timeline-lane {
+                border-color: #404040 !important;
+            }
+
+            /* Dark mode - Hour lines more visible */
+            [data-theme="dark"] .ec-calendar-container .fc-timegrid-slot.fc-timegrid-slot-major {
+                border-top: 1px solid #505050 !important;
+            }
+
+            /* Dark mode - Current time indicator */
+            [data-theme="dark"] .ec-calendar-container .fc-timegrid-now-indicator-line {
+                border-color: #ef4444 !important;
+                border-width: 2px !important;
+            }
+
+            [data-theme="dark"] .ec-calendar-container .fc-timeline-now-indicator-line {
+                border-color: #ef4444 !important;
+                border-width: 2px !important;
+            }
+
             /* Dark mode - Slot Info Card */
             [data-theme="dark"] .ec-slot-info-card {
                 background: linear-gradient(135deg, #0a0a0a 0%, #111111 100%);
-                border-color: #222222;
+                border-color: #333333;
             }
 
             [data-theme="dark"] .ec-slot-info-header {
@@ -1980,7 +2027,7 @@ class EnhancedCalendarController {
             headerToolbar: {
                 left: 'prev,next current,jumpToDate toggleOrientation',
                 center: 'title',
-                right: 'resourceTimeGridDay,resourceTimeGridWeek'
+                right: 'resourceTimeGridDay,resourceTimeGridWeek,dayGridMonth'
             },
 
             // Time settings - 30-minute intervals (vertical axis on left)
@@ -3392,6 +3439,8 @@ class EnhancedCalendarController {
                 newView = 'resourceTimelineDay';
             } else if (currentView.includes('Week')) {
                 newView = 'resourceTimelineWeek';
+            } else if (currentView.includes('Month')) {
+                newView = 'resourceTimelineMonth';
             } else {
                 newView = 'resourceTimelineDay';
             }
@@ -3412,6 +3461,8 @@ class EnhancedCalendarController {
                 newView = 'resourceTimeGridDay';
             } else if (currentView.includes('Week')) {
                 newView = 'resourceTimeGridWeek';
+            } else if (currentView.includes('Month')) {
+                newView = 'dayGridMonth';
             } else {
                 newView = 'resourceTimeGridDay';
             }
@@ -3421,7 +3472,7 @@ class EnhancedCalendarController {
             this.calendar.setOption('headerToolbar', {
                 left: 'prev,next current,jumpToDate toggleOrientation',
                 center: 'title',
-                right: 'resourceTimeGridDay,resourceTimeGridWeek'
+                right: 'resourceTimeGridDay,resourceTimeGridWeek,dayGridMonth'
             });
 
             // Update button text
@@ -4306,5 +4357,193 @@ class EnhancedCalendarController {
         }, 100);
 
         dialog.show();
+    }
+
+    /**
+     * Setup Calendar Integration Button
+     * Adds "Connect Calendar" button to page header
+     */
+    setupCalendarIntegrationButton() {
+        // Add button to page
+        this.page.add_inner_button(
+            __('Connect Calendar'),
+            () => this.showCalendarIntegrationDialog(),
+            __('Calendar')
+        );
+    }
+
+    /**
+     * Show Calendar Integration Dialog
+     * Allows users to connect Google Calendar or Outlook Calendar
+     */
+    showCalendarIntegrationDialog() {
+        const dialog = new frappe.ui.Dialog({
+            title: __('Connect External Calendar'),
+            fields: [
+                {
+                    fieldtype: 'HTML',
+                    fieldname: 'integration_options',
+                    options: `
+                        <div style="padding: 20px;">
+                            <h4 style="margin-bottom: 20px; color: #333;">${__('Choose calendar to connect:')}</h4>
+                            <button class="btn btn-primary btn-lg btn-block" id="connect-google-calendar" style="margin: 10px 0; padding: 12px;">
+                                <svg style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/>
+                                </svg>
+                                ${__('Connect Google Calendar')}
+                            </button>
+                            <button class="btn btn-primary btn-lg btn-block" id="connect-outlook-calendar" style="margin: 10px 0; padding: 12px;">
+                                <svg style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M7.88 12.04q0 .45-.11.87-.1.41-.33.74-.22.33-.58.52-.37.2-.87.2t-.85-.2q-.35-.21-.57-.55-.22-.33-.33-.75-.1-.42-.1-.86t.1-.87q.1-.43.34-.76.22-.34.59-.54.36-.2.87-.2t.86.2q.35.21.57.55.22.34.31.77.1.43.1.88zM24 12v9.38q0 .46-.33.8-.33.32-.8.32H7.13q-.46 0-.8-.33-.32-.33-.32-.8V18H1q-.41 0-.7-.3-.3-.29-.3-.7V7q0-.41.3-.7Q.58 6 1 6h6.5V2.55q0-.44.3-.75.3-.3.75-.3h12.9q.44 0 .75.3.3.3.3.75V10.85l1.24.72h.01q.1.07.18.18.07.12.07.25zm-6-8.25v3h3v-3zm0 4.5v3h3v-3zm0 4.5v1.83l3.05-1.83zm-5.25-9v3h3.75v-3zm0 4.5v3h3.75v-3zm0 4.5v2.03l2.41 1.5 1.34-.8v-2.73zM9 3.75V6h2l.13.01.12.04v-2.3zM5.98 15.98q.9 0 1.6-.3.7-.32 1.19-.84.48-.52.73-1.23.24-.71.24-1.53 0-.87-.25-1.56-.24-.7-.71-1.19-.46-.5-1.15-.78-.68-.28-1.55-.28-.92 0-1.64.3-.71.3-1.2.83-.48.52-.72 1.22-.24.7-.24 1.53 0 .86.25 1.56.25.7.72 1.19.47.48 1.17.77.7.28 1.56.28zM.88 16.54h-.7L.32 22.3v.45q0 .35.18.52.18.17.54.17.34 0 .53-.17.17-.17.17-.52V16.54z"/>
+                                </svg>
+                                ${__('Connect Outlook Calendar')}
+                            </button>
+                            <hr style="margin: 20px 0;">
+                            <p class="text-muted" style="margin: 0; font-size: 13px;">
+                                <svg style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"/>
+                                </svg>
+                                ${__('Connected calendars will sync automatically every 10 minutes.')}<br>
+                                ${__('Default: Read-only (your calendar events block availability).')}
+                            </p>
+                        </div>
+                    `
+                }
+            ]
+        });
+
+        // Setup Google Calendar button click handler
+        dialog.$wrapper.on('click', '#connect-google-calendar', () => {
+            this.connectGoogleCalendar(dialog);
+        });
+
+        // Setup Outlook Calendar button click handler
+        dialog.$wrapper.on('click', '#connect-outlook-calendar', () => {
+            this.connectOutlookCalendar(dialog);
+        });
+
+        dialog.show();
+    }
+
+    /**
+     * Connect Google Calendar
+     * Initiates OAuth flow for Google Calendar
+     */
+    connectGoogleCalendar(parentDialog) {
+        frappe.call({
+            method: 'meeting_manager.api.oauth_callbacks.get_google_oauth_url',
+            callback: (r) => {
+                if (r.message && r.message.authorization_url) {
+                    // Open OAuth popup
+                    const popup = window.open(
+                        r.message.authorization_url,
+                        'google_oauth',
+                        'width=600,height=700,menubar=no,toolbar=no,location=no'
+                    );
+
+                    // Listen for OAuth callback
+                    const messageHandler = (event) => {
+                        if (event.data.success) {
+                            parentDialog.hide();
+                            frappe.show_alert({
+                                message: __('Google Calendar connected successfully!'),
+                                indicator: 'green'
+                            }, 5);
+                            window.removeEventListener('message', messageHandler);
+
+                            // Reload calendar to show synced events
+                            if (this.calendar) {
+                                this.calendar.refetchEvents();
+                            }
+                        } else if (event.data.error) {
+                            frappe.msgprint({
+                                title: __('Connection Failed'),
+                                message: __('Failed to connect: ') + event.data.error,
+                                indicator: 'red'
+                            });
+                            window.removeEventListener('message', messageHandler);
+                        }
+                    };
+
+                    window.addEventListener('message', messageHandler);
+
+                    // Handle popup closed without completion
+                    const checkPopupClosed = setInterval(() => {
+                        if (popup.closed) {
+                            clearInterval(checkPopupClosed);
+                            window.removeEventListener('message', messageHandler);
+                        }
+                    }, 1000);
+                }
+            },
+            error: (r) => {
+                frappe.msgprint({
+                    title: __('Error'),
+                    message: __('Failed to initiate Google Calendar connection. Please check Google Settings.'),
+                    indicator: 'red'
+                });
+            }
+        });
+    }
+
+    /**
+     * Connect Outlook Calendar
+     * Initiates OAuth flow for Outlook Calendar
+     */
+    connectOutlookCalendar(parentDialog) {
+        frappe.call({
+            method: 'meeting_manager.api.oauth_callbacks.get_outlook_oauth_url',
+            callback: (r) => {
+                if (r.message && r.message.authorization_url) {
+                    // Open OAuth popup
+                    const popup = window.open(
+                        r.message.authorization_url,
+                        'outlook_oauth',
+                        'width=600,height=700,menubar=no,toolbar=no,location=no'
+                    );
+
+                    // Listen for OAuth callback
+                    const messageHandler = (event) => {
+                        if (event.data.success) {
+                            parentDialog.hide();
+                            frappe.show_alert({
+                                message: __('Outlook Calendar connected successfully!'),
+                                indicator: 'green'
+                            }, 5);
+                            window.removeEventListener('message', messageHandler);
+
+                            // Reload calendar to show synced events
+                            if (this.calendar) {
+                                this.calendar.refetchEvents();
+                            }
+                        } else if (event.data.error) {
+                            frappe.msgprint({
+                                title: __('Connection Failed'),
+                                message: __('Failed to connect: ') + event.data.error,
+                                indicator: 'red'
+                            });
+                            window.removeEventListener('message', messageHandler);
+                        }
+                    };
+
+                    window.addEventListener('message', messageHandler);
+
+                    // Handle popup closed without completion
+                    const checkPopupClosed = setInterval(() => {
+                        if (popup.closed) {
+                            clearInterval(checkPopupClosed);
+                            window.removeEventListener('message', messageHandler);
+                        }
+                    }, 1000);
+                }
+            },
+            error: (r) => {
+                frappe.msgprint({
+                    title: __('Error'),
+                    message: __('Failed to initiate Outlook Calendar connection. Please check MM OAuth Settings.'),
+                    indicator: 'red'
+                });
+            }
+        });
     }
 }

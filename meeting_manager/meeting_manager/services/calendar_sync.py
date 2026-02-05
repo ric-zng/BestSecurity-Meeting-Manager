@@ -95,72 +95,126 @@ def sync_user_calendar_integration(integration_id):
 
 def sync_google_calendar(integration):
 	"""
-	Sync events from Google Calendar
-
-	This is a placeholder implementation. Full implementation requires:
-	1. Google OAuth 2.0 setup in Google Cloud Console
-	2. Google Calendar API client library
-	3. Token refresh mechanism
+	Sync events from Google Calendar (ACTUAL IMPLEMENTATION)
 
 	Args:
 		integration: MM Calendar Integration document
 	"""
-	# Check if we have valid credentials
-	if not integration.access_token:
-		frappe.throw("No access token available. Please reconnect your Google Calendar.")
+	from meeting_manager.meeting_manager.services.google_calendar_service import GoogleCalendarService
 
-	# TODO: Implement Google Calendar API integration
-	# For now, this is a placeholder
+	try:
+		frappe.logger().info(f"Syncing Google Calendar for user {integration.user}")
 
-	frappe.logger().info(f"Syncing Google Calendar for user {integration.user}")
+		# Initialize Google Calendar service
+		service = GoogleCalendarService(integration)
 
-	# Pseudo-code for actual implementation:
-	#
-	# 1. Check if access token is expired, refresh if needed
-	# 2. Call Google Calendar API to fetch events (next 60 days)
-	# 3. For each event:
-	#    - Calculate sync_hash (MD5 of event data)
-	#    - Check if event exists in MM Calendar Event Sync
-	#    - If new or changed: Create/Update MM Calendar Event Sync record
-	# 4. Delete MM Calendar Event Sync records for events no longer in Google Calendar
+		# Calculate date range
+		start_date = add_to_date(now_datetime(), days=-integration.sync_past_days)
+		end_date = add_to_date(now_datetime(), days=integration.sync_future_days)
 
-	# Placeholder: Log that sync would happen here
-	frappe.logger().debug(
-		f"Google Calendar sync for {integration.user} - "
-		f"Would sync events from {integration.calendar_id or 'primary'}"
-	)
+		# Fetch events from Google Calendar
+		events = service.fetch_events(start_date, end_date, integration.calendar_id or 'primary')
 
-	# Example of what actual sync would look like:
-	# events = fetch_google_calendar_events(integration)
-	# process_calendar_events(integration, events)
+		# Process events (create/update/delete sync records)
+		process_calendar_events(integration, events)
+
+		# Update integration status
+		frappe.db.set_value(
+			"MM Calendar Integration",
+			integration.name,
+			{
+				"last_sync": now_datetime(),
+				"sync_status": "Success",
+				"sync_error_log": ""
+			},
+			update_modified=False
+		)
+
+		frappe.logger().info(
+			f"Google Calendar sync completed for {integration.user}. "
+			f"Synced {len(events)} events."
+		)
+
+	except Exception as e:
+		frappe.logger().error(f"Google Calendar sync error for {integration.user}: {str(e)}")
+		frappe.log_error(
+			title=f"Google Calendar Sync Error - {integration.user}",
+			message=str(e)
+		)
+
+		# Update integration with error status
+		frappe.db.set_value(
+			"MM Calendar Integration",
+			integration.name,
+			{
+				"sync_status": "Failed",
+				"sync_error_log": str(e)[:1000]
+			},
+			update_modified=False
+		)
+		raise
 
 
 def sync_outlook_calendar(integration):
 	"""
-	Sync events from Microsoft Outlook Calendar
-
-	This is a placeholder implementation. Full implementation requires:
-	1. Azure AD app registration
-	2. Microsoft Graph API client library
-	3. Token refresh mechanism
+	Sync events from Microsoft Outlook Calendar (ACTUAL IMPLEMENTATION)
 
 	Args:
 		integration: MM Calendar Integration document
 	"""
-	if not integration.access_token:
-		frappe.throw("No access token available. Please reconnect your Outlook Calendar.")
+	from meeting_manager.meeting_manager.services.outlook_service import OutlookCalendarService
 
-	frappe.logger().info(f"Syncing Outlook Calendar for user {integration.user}")
+	try:
+		frappe.logger().info(f"Syncing Outlook Calendar for user {integration.user}")
 
-	# Placeholder: Log that sync would happen here
-	frappe.logger().debug(
-		f"Outlook Calendar sync for {integration.user} - "
-		f"Would sync events from calendar {integration.calendar_id or 'default'}"
-	)
+		# Initialize Outlook Calendar service
+		service = OutlookCalendarService(integration)
 
-	# Example of what actual sync would look like:
-	# events = fetch_outlook_calendar_events(integration)
-	# process_calendar_events(integration, events)
+		# Calculate date range
+		start_date = add_to_date(now_datetime(), days=-integration.sync_past_days)
+		end_date = add_to_date(now_datetime(), days=integration.sync_future_days)
+
+		# Fetch events from Outlook Calendar
+		events = service.fetch_events(start_date, end_date, integration.calendar_id)
+
+		# Process events (create/update/delete sync records)
+		process_calendar_events(integration, events)
+
+		# Update integration status
+		frappe.db.set_value(
+			"MM Calendar Integration",
+			integration.name,
+			{
+				"last_sync": now_datetime(),
+				"sync_status": "Success",
+				"sync_error_log": ""
+			},
+			update_modified=False
+		)
+
+		frappe.logger().info(
+			f"Outlook Calendar sync completed for {integration.user}. "
+			f"Synced {len(events)} events."
+		)
+
+	except Exception as e:
+		frappe.logger().error(f"Outlook Calendar sync error for {integration.user}: {str(e)}")
+		frappe.log_error(
+			title=f"Outlook Calendar Sync Error - {integration.user}",
+			message=str(e)
+		)
+
+		# Update integration with error status
+		frappe.db.set_value(
+			"MM Calendar Integration",
+			integration.name,
+			{
+				"sync_status": "Failed",
+				"sync_error_log": str(e)[:1000]
+			},
+			update_modified=False
+		)
+		raise
 
 
 def sync_ical_calendar(integration):
@@ -412,7 +466,7 @@ def refresh_outlook_token(integration):
 
 def create_calendar_event_in_external(booking):
 	"""
-	Create/update a booking in the assigned member's external calendar
+	Create/update a booking in the assigned member's external calendar (ACTUAL IMPLEMENTATION)
 
 	This is called when a booking is created or updated in Meeting Manager
 	to push the event to the member's Google Calendar/Outlook
@@ -420,26 +474,65 @@ def create_calendar_event_in_external(booking):
 	Args:
 		booking: MM Meeting Booking document
 	"""
+	if not booking.assigned_to:
+		return
+
 	# Get member's active calendar integrations with two-way sync
 	integrations = frappe.get_all(
 		"MM Calendar Integration",
 		filters={
 			"user": booking.assigned_to,
 			"is_active": 1,
-			"sync_direction": "Two-way"
+			"sync_direction": "Two-way (Read & Write)"
 		},
 		fields=["name", "integration_type"]
 	)
 
 	for integration in integrations:
 		try:
+			# Prepare event data
+			event_data = {
+				'summary': f"{booking.meeting_type} - {booking.customer_name}",
+				'start': booking.scheduled_datetime,
+				'end': add_to_date(booking.scheduled_datetime, minutes=booking.duration or 30),
+				'description': f"Meeting Manager Booking: {booking.name}\nCustomer: {booking.customer_name}"
+			}
+
+			external_event_id = None
+
 			if integration.integration_type == "Google Calendar":
-				# TODO: Create event in Google Calendar
-				pass
+				from meeting_manager.meeting_manager.services.google_calendar_service import GoogleCalendarService
+				service = GoogleCalendarService(integration.name)
+				external_event_id = service.create_event(event_data)
+
 			elif integration.integration_type == "Outlook Calendar":
-				# TODO: Create event in Outlook
-				pass
+				from meeting_manager.meeting_manager.services.outlook_service import OutlookCalendarService
+				service = OutlookCalendarService(integration.name)
+				external_event_id = service.create_event(event_data)
+
 			# iCal is read-only, skip
+
+			# Create MM Calendar Event Sync record to track the external event
+			if external_event_id:
+				sync_doc = frappe.get_doc({
+					'doctype': 'MM Calendar Event Sync',
+					'user': booking.assigned_to,
+					'calendar_integration': integration.name,
+					'external_event_id': external_event_id,
+					'event_title': event_data['summary'],
+					'start_datetime': event_data['start'],
+					'end_datetime': event_data['end'],
+					'meeting_booking': booking.name,
+					'sync_direction': 'Outbound',
+					'sync_status': 'Synced'
+				})
+				sync_doc.insert(ignore_permissions=True)
+				frappe.db.commit()
+
+				frappe.logger().info(
+					f"Created event in {integration.integration_type} for booking {booking.name}"
+				)
+
 		except Exception as e:
 			frappe.log_error(
 				title=f"Failed to create event in {integration.integration_type}",
@@ -449,11 +542,49 @@ def create_calendar_event_in_external(booking):
 
 def delete_calendar_event_from_external(booking):
 	"""
-	Delete a booking from external calendar when cancelled
+	Delete a booking from external calendar when cancelled (ACTUAL IMPLEMENTATION)
 
 	Args:
 		booking: MM Meeting Booking document
 	"""
-	# Similar to create_calendar_event_in_external but for deletion
-	# TODO: Implement deletion in external calendars
-	pass
+	if not booking.assigned_to:
+		return
+
+	# Find linked calendar event syncs for this booking
+	synced_events = frappe.get_all(
+		"MM Calendar Event Sync",
+		filters={
+			"meeting_booking": booking.name,
+			"sync_direction": "Outbound"
+		},
+		fields=["name", "calendar_integration", "external_event_id"]
+	)
+
+	for sync_event in synced_events:
+		try:
+			# Get integration details
+			integration = frappe.get_doc("MM Calendar Integration", sync_event.calendar_integration)
+
+			if integration.integration_type == "Google Calendar":
+				from meeting_manager.meeting_manager.services.google_calendar_service import GoogleCalendarService
+				service = GoogleCalendarService(integration)
+				service.delete_event(sync_event.external_event_id)
+
+			elif integration.integration_type == "Outlook Calendar":
+				from meeting_manager.meeting_manager.services.outlook_service import OutlookCalendarService
+				service = OutlookCalendarService(integration)
+				service.delete_event(sync_event.external_event_id)
+
+			# Delete the sync record
+			frappe.delete_doc("MM Calendar Event Sync", sync_event.name, ignore_permissions=True)
+			frappe.db.commit()
+
+			frappe.logger().info(
+				f"Deleted event from {integration.integration_type} for booking {booking.name}"
+			)
+
+		except Exception as e:
+			frappe.log_error(
+				title=f"Failed to delete event from external calendar",
+				message=f"Booking: {booking.name}, Sync Event: {sync_event.name}, Error: {str(e)}"
+			)

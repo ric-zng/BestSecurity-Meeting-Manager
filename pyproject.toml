@@ -9,6 +9,15 @@ readme = "README.md"
 dynamic = ["version"]
 dependencies = [
     # "frappe~=15.0.0" # Installed and managed by bench.
+    # Google Calendar OAuth & API
+    "google-auth>=2.16.0,<3.0.0",
+    "google-auth-oauthlib>=1.0.0,<2.0.0",
+    "google-api-python-client>=2.108.0,<3.0.0",
+    # Microsoft Outlook OAuth & API
+    "msal>=1.25.0,<2.0.0",
+    # General HTTP & Calendar
+    "requests>=2.31.0",
+    "icalendar>=5.0.11",
 ]
 
 [build-system]

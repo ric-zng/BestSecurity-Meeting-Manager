@@ -1,0 +1,73 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "creation": "2026-02-05 12:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "outlook_section",
+    "enable_outlook",
+    "outlook_client_id",
+    "outlook_client_secret",
+    "outlook_tenant_id"
+  ],
+  "fields": [
+    {
+      "fieldname": "outlook_section",
+      "fieldtype": "Section Break",
+      "label": "Microsoft Outlook Calendar"
+    },
+    {
+      "default": "0",
+      "fieldname": "enable_outlook",
+      "fieldtype": "Check",
+      "label": "Enable Outlook Integration",
+      "description": "Enable OAuth 2.0 integration with Microsoft Outlook Calendar"
+    },
+    {
+      "depends_on": "enable_outlook",
+      "fieldname": "outlook_client_id",
+      "fieldtype": "Data",
+      "label": "Outlook Client ID",
+      "description": "Application (client) ID from Azure AD App Registration"
+    },
+    {
+      "depends_on": "enable_outlook",
+      "fieldname": "outlook_client_secret",
+      "fieldtype": "Password",
+      "label": "Outlook Client Secret",
+      "description": "Client secret from Azure AD (encrypted)"
+    },
+    {
+      "default": "common",
+      "depends_on": "enable_outlook",
+      "fieldname": "outlook_tenant_id",
+      "fieldtype": "Data",
+      "label": "Outlook Tenant ID",
+      "description": "Azure AD tenant ID (use 'common' for multi-tenant support)"
+    }
+  ],
+  "index_web_pages_for_search": 1,
+  "issingle": 1,
+  "links": [],
+  "modified": "2026-02-05 12:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Meeting Manager",
+  "name": "MM OAuth Settings",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "email": 1,
+      "print": 1,
+      "read": 1,
+      "role": "System Manager",
+      "share": 1,
+      "write": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1
+}

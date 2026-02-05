@@ -353,6 +353,17 @@ class MMMeetingBooking(Document):
 				description=f"Booking created for {self.meeting_title}"
 			)
 
+			# Push new booking to external calendars (two-way sync)
+			if self.assigned_to:
+				try:
+					from meeting_manager.meeting_manager.services.calendar_sync import create_calendar_event_in_external
+					create_calendar_event_in_external(self)
+				except Exception as e:
+					frappe.log_error(
+						title=f"Calendar Sync Error - New Booking",
+						message=f"Failed to push booking {self.name} to external calendar: {str(e)}"
+					)
+
 		# Track assignment changes
 		if not self.is_new():
 			old_doc = self.get_doc_before_save()
@@ -407,3 +418,13 @@ class MMMeetingBooking(Document):
 			event_type="Cancelled",
 			description=f"Booking cancelled. Reason: {self.cancellation_reason or 'Not provided'}"
 		)
+
+		# Delete from external calendars (two-way sync)
+		try:
+			from meeting_manager.meeting_manager.services.calendar_sync import delete_calendar_event_from_external
+			delete_calendar_event_from_external(self)
+		except Exception as e:
+			frappe.log_error(
+				title=f"Calendar Sync Error - Cancel Booking",
+				message=f"Failed to delete booking {self.name} from external calendar: {str(e)}"
+			)

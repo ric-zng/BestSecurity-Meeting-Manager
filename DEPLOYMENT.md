@@ -103,10 +103,7 @@ rm -rf archived/apps/meeting_manager*
 
 # Fresh install
 bench get-app https://github.com/ric-zng/BestSecurity-Meeting-Manager.git --branch test-rick
-bench --site bs-infra.dk install-app meeting_manager
-bench --site bs-infra.dk migrate
-bench --site bs-infra.dk clear-cache
-bench restart
+bench --site bs-infra.dk install-app meeting_managerf
 ```
 
 ## Troubleshooting
