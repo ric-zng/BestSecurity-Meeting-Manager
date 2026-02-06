@@ -1,0 +1,50 @@
+{
+    "frappe": {
+        "resolution": {
+            "commit_hash": null,
+            "branch": null
+        },
+        "required": [],
+        "idx": 1,
+        "version": "15.94.1"
+    },
+    "meeting_manager": {
+        "resolution": {
+            "commit_hash": null,
+            "branch": null
+        },
+        "required": [],
+        "idx": 2,
+        "version": "0.0.1"
+    },
+    "erpnext": {
+        "is_repo": true,
+        "resolution": {
+            "commit_hash": "1740fce6c8d6896e2b01a89564b5ec06bed2cd6c",
+            "branch": "version-15"
+        },
+        "required": [],
+        "idx": 3,
+        "version": "15.93.2"
+    },
+    "telephony": {
+        "is_repo": true,
+        "resolution": {
+            "commit_hash": "00ca23964ac5847464ce9e03f8f9b32543dff006",
+            "branch": "develop"
+        },
+        "required": [],
+        "idx": 4,
+        "version": "0.0.1"
+    },
+    "helpdesk": {
+        "is_repo": true,
+        "resolution": {
+            "commit_hash": "db5b0cf638f4cbe66ad9a530ed3b4972043b18c3",
+            "branch": "version-14"
+        },
+        "required": [],
+        "idx": 5,
+        "version": "0.10.0"
+    }
+}
