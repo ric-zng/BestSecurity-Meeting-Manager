@@ -21,6 +21,15 @@ add_to_apps_screen = [
 	}
 ]
 
+standard_navbar_items = [
+	{
+		"item_label": "Workspace",
+		"item_type": "Route",
+		"route": "/app/meeting-manager",
+		"is_standard": 1,
+	}
+]
+
 # Includes in <head>
 # ------------------
 
@@ -30,7 +39,7 @@ add_to_apps_screen = [
 
 # include js, css files in header of web template
 # web_include_css = "/assets/meeting_manager/css/meeting_manager.css"
-# web_include_js = "/assets/meeting_manager/js/meeting_manager.js"
+web_include_js = "/assets/meeting_manager/js/meeting_manager.js"
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "meeting_manager/public/scss/website"
