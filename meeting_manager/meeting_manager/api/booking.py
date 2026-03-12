@@ -692,7 +692,7 @@ def create_self_booking(booking_data):
 			"meeting_type": str (Meeting Type ID),
 			"scheduled_date": str (YYYY-MM-DD),
 			"scheduled_start_time": str (HH:MM),
-			"customer_id": str (optional - existing MM Customer ID),
+			"customer_id": str (optional - existing Contact ID),
 			"customer_name": str (required if no customer_id),
 			"customer_email": str (required if no customer_id),
 			"customer_phone": str (optional),
@@ -795,16 +795,24 @@ def create_self_booking(booking_data):
 	customer_phone_display = ""
 
 	if customer_id:
-		# Use existing customer
-		customer_doc = frappe.get_doc("MM Customer", customer_id)
-		customer_name_display = customer_doc.customer_name
-		customer_email_display = customer_doc.primary_email
-		customer_phone_display = customer_doc.get_primary_phone() or ""
+		# Use existing contact
+		customer_doc = frappe.get_doc("Contact", customer_id)
+		customer_name_display = customer_doc.full_name or customer_doc.first_name
+		customer_email_display = customer_doc.email_id
+		# Get primary phone from Contact Phone child table
+		customer_phone_display = ""
+		if customer_doc.phone_nos:
+			for p in customer_doc.phone_nos:
+				if p.is_primary_phone:
+					customer_phone_display = p.phone
+					break
+			if not customer_phone_display:
+				customer_phone_display = customer_doc.phone_nos[0].phone if customer_doc.phone_nos else ""
 
 		# Update CVR and company name if provided
 		customer_updated = False
-		if booking_data.get("customer_cvr") and customer_doc.cvr_number != booking_data.get("customer_cvr"):
-			customer_doc.cvr_number = booking_data.get("customer_cvr")
+		if booking_data.get("customer_cvr") and customer_doc.mm_cvr_number != booking_data.get("customer_cvr"):
+			customer_doc.mm_cvr_number = booking_data.get("customer_cvr")
 			customer_updated = True
 		if booking_data.get("customer_company") and customer_doc.company_name != booking_data.get("customer_company"):
 			customer_doc.company_name = booking_data.get("customer_company")
@@ -813,37 +821,49 @@ def create_self_booking(booking_data):
 			customer_doc.save(ignore_permissions=True)
 	else:
 		# Check if customer already exists by email
-		from meeting_manager.meeting_manager.doctype.mm_customer.mm_customer import MMCustomer
-		existing_customer_id = MMCustomer.find_by_email(booking_data["customer_email"])
+		from meeting_manager.meeting_manager.services.customer_service import get_customer_by_email
+		existing_customer = get_customer_by_email(booking_data["customer_email"])
 
-		if existing_customer_id:
-			# Link to existing customer
-			customer_doc = frappe.get_doc("MM Customer", existing_customer_id)
-			customer_name_display = customer_doc.customer_name
-			customer_email_display = customer_doc.primary_email
-			customer_phone_display = customer_doc.get_primary_phone() or ""
+		if existing_customer:
+			# Link to existing contact
+			customer_doc = existing_customer
+			customer_name_display = customer_doc.full_name or customer_doc.first_name
+			customer_email_display = customer_doc.email_id
+			customer_phone_display = ""
+			if customer_doc.phone_nos:
+				for p in customer_doc.phone_nos:
+					if p.is_primary_phone:
+						customer_phone_display = p.phone
+						break
+				if not customer_phone_display:
+					customer_phone_display = customer_doc.phone_nos[0].phone if customer_doc.phone_nos else ""
 		else:
-			# Create new customer
+			# Create new contact
 			new_customer = frappe.get_doc({
-				"doctype": "MM Customer",
-				"customer_name": booking_data["customer_name"],
-				"primary_email": booking_data["customer_email"],
-				"cvr_number": booking_data.get("customer_cvr"),
-				"company_name": booking_data.get("customer_company")
+				"doctype": "Contact",
+				"first_name": booking_data["customer_name"],
+				"mm_cvr_number": booking_data.get("customer_cvr"),
+				"company_name": booking_data.get("customer_company"),
+				"mm_is_active": 1
+			})
+
+			# Add email
+			new_customer.append("email_ids", {
+				"email_id": booking_data["customer_email"],
+				"is_primary": 1
 			})
 
 			# Add phone if provided
 			if booking_data.get("customer_phone"):
-				new_customer.append("phone_numbers", {
-					"phone_number": booking_data["customer_phone"],
-					"phone_type": "Primary",
-					"is_primary": 1
+				new_customer.append("phone_nos", {
+					"phone": booking_data["customer_phone"],
+					"is_primary_phone": 1
 				})
 
 			new_customer.insert(ignore_permissions=True)
 			customer_doc = new_customer
-			customer_name_display = new_customer.customer_name
-			customer_email_display = new_customer.primary_email
+			customer_name_display = new_customer.full_name or new_customer.first_name
+			customer_email_display = new_customer.email_id
 			customer_phone_display = booking_data.get("customer_phone", "")
 
 	# Generate meeting title
@@ -1770,28 +1790,28 @@ def search_customers(query):
 	query_lower = query.lower()
 	query_pattern = f"%{query_lower}%"
 
-	# Search customers by name, primary_email, CVR, company, or in child tables
+	# Search contacts by name, email, CVR, company, or in child tables
 	customers = frappe.db.sql("""
 		SELECT DISTINCT
 			c.name as id,
-			c.customer_name as name,
-			c.primary_email as email,
-			(SELECT cp.phone_number FROM `tabMM Customer Phone` cp
-			 WHERE cp.parent = c.name AND cp.is_primary = 1 LIMIT 1) as phone,
-			c.cvr_number,
+			IFNULL(c.full_name, c.first_name) as name,
+			c.email_id as email,
+			(SELECT cp.phone FROM `tabContact Phone` cp
+			 WHERE cp.parent = c.name AND cp.is_primary_phone = 1 LIMIT 1) as phone,
+			c.mm_cvr_number as cvr_number,
 			c.company_name,
-			c.total_bookings
-		FROM `tabMM Customer` c
-		LEFT JOIN `tabMM Customer Email` ce ON ce.parent = c.name
-		LEFT JOIN `tabMM Customer Phone` cp ON cp.parent = c.name
+			c.mm_total_bookings as total_bookings
+		FROM `tabContact` c
+		LEFT JOIN `tabContact Email` ce ON ce.parent = c.name
+		LEFT JOIN `tabContact Phone` cp ON cp.parent = c.name
 		WHERE
-			LOWER(c.customer_name) LIKE %(pattern)s
-			OR LOWER(c.primary_email) LIKE %(pattern)s
-			OR LOWER(ce.email_address) LIKE %(pattern)s
-			OR LOWER(c.cvr_number) LIKE %(pattern)s
+			LOWER(IFNULL(c.full_name, c.first_name)) LIKE %(pattern)s
+			OR LOWER(c.email_id) LIKE %(pattern)s
+			OR LOWER(ce.email_id) LIKE %(pattern)s
+			OR LOWER(c.mm_cvr_number) LIKE %(pattern)s
 			OR LOWER(c.company_name) LIKE %(pattern)s
-			OR REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(cp.phone_number, ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') LIKE %(pattern)s
-		ORDER BY c.customer_name
+			OR REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(cp.phone, ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') LIKE %(pattern)s
+		ORDER BY IFNULL(c.full_name, c.first_name)
 		LIMIT 10
 	""", {"pattern": query_pattern}, as_dict=True)
 
@@ -1815,22 +1835,23 @@ def get_recent_customers(limit=10):
 
 	limit = int(limit)
 
-	# Get recent customers ordered by last booking date, then creation
+	# Get recent contacts ordered by last booking date, then creation
 	customers = frappe.db.sql("""
 		SELECT
 			c.name as id,
-			c.customer_name as name,
-			c.primary_email as email,
-			(SELECT cp.phone_number FROM `tabMM Customer Phone` cp
-			 WHERE cp.parent = c.name AND cp.is_primary = 1 LIMIT 1) as phone,
-			c.cvr_number,
+			IFNULL(c.full_name, c.first_name) as name,
+			c.email_id as email,
+			(SELECT cp.phone FROM `tabContact Phone` cp
+			 WHERE cp.parent = c.name AND cp.is_primary_phone = 1 LIMIT 1) as phone,
+			c.mm_cvr_number as cvr_number,
 			c.company_name,
-			c.total_bookings,
-			c.last_booking_date
-		FROM `tabMM Customer` c
+			c.mm_total_bookings as total_bookings,
+			c.mm_last_booking_date as last_booking_date
+		FROM `tabContact` c
+		WHERE c.mm_total_bookings > 0 OR c.mm_is_active = 1
 		ORDER BY
-			CASE WHEN c.last_booking_date IS NULL THEN 1 ELSE 0 END,
-			c.last_booking_date DESC,
+			CASE WHEN c.mm_last_booking_date IS NULL THEN 1 ELSE 0 END,
+			c.mm_last_booking_date DESC,
 			c.creation DESC
 		LIMIT %(limit)s
 	""", {"limit": limit}, as_dict=True)

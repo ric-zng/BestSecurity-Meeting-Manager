@@ -93,13 +93,21 @@ def build_booking_context(booking, recipient_name: str = None, extra_context: di
 	company = ""
 
 	if booking.customer:
-		customer = frappe.get_doc("MM Customer", booking.customer)
-		customer_name = customer.customer_name or ""
+		customer = frappe.get_doc("Contact", booking.customer)
+		customer_name = customer.full_name or customer.first_name or ""
 		customer_firstname = customer_name.split()[0] if customer_name else ""
 		company = customer.company_name or ""
-		customer_email = customer.primary_email or booking.customer_email_at_booking or ""
-		# Use get_primary_phone() method if available, otherwise fall back
-		customer_phone = (customer.get_primary_phone() if hasattr(customer, 'get_primary_phone') else "") or booking.customer_phone_at_booking or ""
+		customer_email = customer.email_id or booking.customer_email_at_booking or ""
+		# Get primary phone from Contact Phone child table
+		primary_phone = ""
+		if customer.phone_nos:
+			for p in customer.phone_nos:
+				if p.is_primary_phone:
+					primary_phone = p.phone
+					break
+			if not primary_phone:
+				primary_phone = customer.phone_nos[0].phone if customer.phone_nos else ""
+		customer_phone = primary_phone or booking.customer_phone_at_booking or ""
 	else:
 		customer_email = booking.customer_email_at_booking or ""
 		customer_phone = booking.customer_phone_at_booking or ""
@@ -279,8 +287,8 @@ def send_booking_confirmation(booking_id: str, notify_customer: bool = True, not
 		if notify_customer and not booking.is_internal:
 			customer_email = booking.customer_email_at_booking
 			if not customer_email and booking.customer:
-				customer = frappe.get_doc("MM Customer", booking.customer)
-				customer_email = customer.primary_email
+				customer = frappe.get_doc("Contact", booking.customer)
+				customer_email = customer.email_id
 
 			if customer_email:
 				context = build_booking_context(booking)
@@ -358,8 +366,8 @@ def send_reschedule_notification(
 		if notify_customer and not booking.is_internal:
 			customer_email = booking.customer_email_at_booking
 			if not customer_email and booking.customer:
-				customer = frappe.get_doc("MM Customer", booking.customer)
-				customer_email = customer.primary_email
+				customer = frappe.get_doc("Contact", booking.customer)
+				customer_email = customer.email_id
 
 			if customer_email:
 				context = build_booking_context(booking, extra_context=extra_context)
@@ -466,8 +474,8 @@ def send_reassignment_notification(
 		if notify_customer and not booking.is_internal:
 			customer_email = booking.customer_email_at_booking
 			if not customer_email and booking.customer:
-				customer = frappe.get_doc("MM Customer", booking.customer)
-				customer_email = customer.primary_email
+				customer = frappe.get_doc("Contact", booking.customer)
+				customer_email = customer.email_id
 
 			if customer_email:
 				context = build_booking_context(booking, extra_context=extra_context)
@@ -579,8 +587,8 @@ def send_cancellation_notification(
 		if notify_customer and not booking.is_internal:
 			customer_email = booking.customer_email_at_booking
 			if not customer_email and booking.customer:
-				customer = frappe.get_doc("MM Customer", booking.customer)
-				customer_email = customer.primary_email
+				customer = frappe.get_doc("Contact", booking.customer)
+				customer_email = customer.email_id
 
 			if customer_email:
 				context = build_booking_context(booking, extra_context=extra_context)
@@ -814,8 +822,8 @@ def send_template_email(booking_id: str, template_name: str = None, email_type: 
 
 		customer_email = booking.customer_email_at_booking
 		if not customer_email and booking.customer:
-			customer = frappe.get_doc("MM Customer", booking.customer)
-			customer_email = customer.primary_email
+			customer = frappe.get_doc("Contact", booking.customer)
+			customer_email = customer.email_id
 
 		if not customer_email:
 			return {"success": False, "message": "No recipient email found"}

@@ -429,7 +429,7 @@ def get_calendar_events(start, end, departments=None, focus_department=None,
         # Get customer name
         customer_name = None
         if meeting.customer:
-            customer_name = frappe.db.get_value("MM Customer", meeting.customer, "customer_name")
+            customer_name = frappe.db.get_value("Contact", meeting.customer, "full_name")
         if not customer_name:
             customer_name = meeting.customer_email_at_booking or "Guest"
 
@@ -1569,16 +1569,16 @@ def get_booking_details(booking_id):
     customer_data = None
     if booking.customer:
         customer_info = frappe.db.get_value(
-            "MM Customer",
+            "Contact",
             booking.customer,
-            ["customer_name", "primary_email"],
+            ["full_name", "email_id"],
             as_dict=True
         )
         if customer_info:
             customer_data = {
                 "name": booking.customer,
-                "customer_name": customer_info.customer_name,
-                "primary_email": customer_info.primary_email
+                "customer_name": customer_info.full_name,
+                "primary_email": customer_info.email_id
             }
 
     # Check permissions
@@ -1826,17 +1826,17 @@ def create_slot_booking(booking_data):
     customer_email_display = None
 
     if customer_id:
-        # Use existing customer
-        if not frappe.db.exists("MM Customer", customer_id):
+        # Use existing contact
+        if not frappe.db.exists("Contact", customer_id):
             return {"success": False, "message": _("Customer not found")}
-        customer_doc = frappe.get_doc("MM Customer", customer_id)
-        customer_name_display = customer_doc.customer_name
-        customer_email_display = customer_doc.primary_email
+        customer_doc = frappe.get_doc("Contact", customer_id)
+        customer_name_display = customer_doc.full_name or customer_doc.first_name
+        customer_email_display = customer_doc.email_id
 
         # Update CVR and company name if provided
         customer_updated = False
-        if customer_cvr and customer_doc.cvr_number != customer_cvr:
-            customer_doc.cvr_number = customer_cvr
+        if customer_cvr and customer_doc.mm_cvr_number != customer_cvr:
+            customer_doc.mm_cvr_number = customer_cvr
             customer_updated = True
         if customer_company and customer_doc.company_name != customer_company:
             customer_doc.company_name = customer_company
@@ -1845,36 +1845,41 @@ def create_slot_booking(booking_data):
             customer_doc.save(ignore_permissions=True)
     else:
         # Check if customer already exists by email
-        from meeting_manager.meeting_manager.doctype.mm_customer.mm_customer import MMCustomer
-        existing_customer_id = MMCustomer.find_by_email(customer_email)
+        from meeting_manager.meeting_manager.services.customer_service import get_customer_by_email
+        existing_customer = get_customer_by_email(customer_email)
 
-        if existing_customer_id:
-            # Link to existing customer
-            customer_doc = frappe.get_doc("MM Customer", existing_customer_id)
-            customer_name_display = customer_doc.customer_name
-            customer_email_display = customer_doc.primary_email
+        if existing_customer:
+            # Link to existing contact
+            customer_doc = existing_customer
+            customer_name_display = customer_doc.full_name or customer_doc.first_name
+            customer_email_display = customer_doc.email_id
         else:
-            # Create new customer
+            # Create new contact
             new_customer = frappe.get_doc({
-                "doctype": "MM Customer",
-                "customer_name": customer_name,
-                "primary_email": customer_email,
-                "cvr_number": customer_cvr,
-                "company_name": customer_company
+                "doctype": "Contact",
+                "first_name": customer_name,
+                "mm_cvr_number": customer_cvr,
+                "company_name": customer_company,
+                "mm_is_active": 1
+            })
+
+            # Add email
+            new_customer.append("email_ids", {
+                "email_id": customer_email,
+                "is_primary": 1
             })
 
             # Add phone if provided
             if customer_phone:
-                new_customer.append("phone_numbers", {
-                    "phone_number": customer_phone,
-                    "phone_type": "Primary",
-                    "is_primary": 1
+                new_customer.append("phone_nos", {
+                    "phone": customer_phone,
+                    "is_primary_phone": 1
                 })
 
             new_customer.insert(ignore_permissions=True)
             customer_doc = new_customer
-            customer_name_display = new_customer.customer_name
-            customer_email_display = new_customer.primary_email
+            customer_name_display = new_customer.full_name or new_customer.first_name
+            customer_email_display = new_customer.email_id
 
     # Create the booking
     try:

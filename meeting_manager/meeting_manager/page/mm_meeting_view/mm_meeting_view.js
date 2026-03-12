@@ -267,7 +267,7 @@ class MeetingViewPage {
                         <div class="mv-info">
                             <div class="mv-label">${__('Name')}</div>
                             <div class="mv-value">
-                                <a href="/app/mm-customer/${customer.name}" title="${__('View customer profile')}">
+                                <a href="/app/contact/${customer.name}" title="${__('View customer profile')}">
                                     ${frappe.utils.xss_sanitise(customer.customer_name)}
                                 </a>
                             </div>

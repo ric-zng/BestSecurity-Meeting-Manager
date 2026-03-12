@@ -162,25 +162,25 @@ class MMMeetingBooking(Document):
 			frappe.throw("Customer is required for external bookings.")
 
 		# Validate customer record exists
-		if not frappe.db.exists("MM Customer", self.customer):
+		if not frappe.db.exists("Contact", self.customer):
 			frappe.throw(f"Customer '{self.customer}' does not exist.")
 
 		# Cache customer email and phone at booking time for audit trail
-		customer_doc = frappe.get_doc("MM Customer", self.customer)
+		customer_doc = frappe.get_doc("Contact", self.customer)
 
-		# Cache primary email
-		self.customer_email_at_booking = customer_doc.primary_email
+		# Cache primary email (Contact's email_id is auto-set from email_ids child)
+		self.customer_email_at_booking = customer_doc.email_id
 
-		# Get and cache primary phone
-		primary_phone = customer_doc.get_primary_phone() if hasattr(customer_doc, 'get_primary_phone') else None
-		if not primary_phone and customer_doc.phone_numbers:
-			for phone in customer_doc.phone_numbers:
-				if phone.is_primary:
-					primary_phone = phone.phone_number
+		# Get and cache primary phone from Contact Phone child table
+		primary_phone = None
+		if customer_doc.phone_nos:
+			for phone in customer_doc.phone_nos:
+				if phone.is_primary_phone:
+					primary_phone = phone.phone
 					break
 			# If no primary, use first phone
-			if not primary_phone and customer_doc.phone_numbers:
-				primary_phone = customer_doc.phone_numbers[0].phone_number
+			if not primary_phone and customer_doc.phone_nos:
+				primary_phone = customer_doc.phone_nos[0].phone
 
 		self.customer_phone_at_booking = primary_phone or ""
 

@@ -16,7 +16,7 @@ add_to_apps_screen = [
 		"name": "meeting_manager",
 		"logo": "/assets/meeting_manager/images/meeting-manager-logo.svg",
 		"title": "Meeting Manager",
-		"route": "/app/meeting-manager",
+		"route": "/meeting-manager",
 		"has_permission": "meeting_manager.meeting_manager.utils.permissions.has_app_permission"
 	}
 ]
@@ -87,6 +87,8 @@ website_route_rules = [
 	{"from_route": "/meeting-booking/<department_slug>/<meeting_type_slug>", "to_route": "meeting-booking"},
 	{"from_route": "/meeting-booking/<department_slug>/<meeting_type_slug>/<date>", "to_route": "meeting-booking"},
 	{"from_route": "/meeting-booking/<department_slug>/<meeting_type_slug>/<date>/<time>", "to_route": "meeting-booking"},
+	# Vue SPA catch-all
+	{"from_route": "/meeting-manager/<path:app_path>", "to_route": "meeting-manager"},
 ]
 
 # automatically load and sync documents of this doctype from downstream apps
@@ -141,7 +143,7 @@ after_install = "meeting_manager.meeting_manager.setup.after_install"
 
 permission_query_conditions = {
 	"MM Meeting Booking": "meeting_manager.meeting_manager.utils.permissions.get_mm_meeting_booking_permission_query_conditions",
-	"MM Customer": "meeting_manager.meeting_manager.utils.permissions.get_mm_customer_permission_query_conditions",
+	"Contact": "meeting_manager.meeting_manager.utils.permissions.get_contact_permission_query_conditions",
 	"MM Department": "meeting_manager.meeting_manager.utils.permissions.get_mm_department_permission_query_conditions",
 	"MM Meeting Type": "meeting_manager.meeting_manager.utils.permissions.get_mm_meeting_type_permission_query_conditions",
 	"MM User Settings": "meeting_manager.meeting_manager.utils.permissions.get_mm_user_settings_permission_query_conditions",
@@ -151,7 +153,7 @@ permission_query_conditions = {
 
 has_permission = {
 	"MM Meeting Booking": "meeting_manager.meeting_manager.utils.permissions.has_mm_meeting_booking_permission",
-	"MM Customer": "meeting_manager.meeting_manager.utils.permissions.has_mm_customer_permission",
+	"Contact": "meeting_manager.meeting_manager.utils.permissions.has_contact_permission",
 	"MM Department": "meeting_manager.meeting_manager.utils.permissions.has_mm_department_permission",
 	"MM Meeting Type": "meeting_manager.meeting_manager.utils.permissions.has_mm_meeting_type_permission",
 	"MM User Settings": "meeting_manager.meeting_manager.utils.permissions.has_mm_user_settings_permission",
@@ -299,5 +301,12 @@ fixtures = [
 	},
 	{
 		"doctype": "MM Email Template"
+	},
+	{
+		"doctype": "Custom Field",
+		"filters": [["dt", "=", "Contact"], ["fieldname", "in", [
+			"mm_is_active", "mm_cvr_number", "mm_customer_notes",
+			"mm_total_bookings", "mm_last_booking_date"
+		]]]
 	}
 ]

@@ -5,6 +5,71 @@ import frappe
 import json
 
 
+def create_contact_custom_fields():
+	"""Create custom fields on the Contact doctype for Meeting Manager"""
+	from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
+
+	custom_fields = {
+		"Contact": [
+			{
+				"fieldname": "mm_is_active",
+				"fieldtype": "Check",
+				"label": "MM Active",
+				"insert_after": "status",
+				"default": "1",
+				"in_list_view": 1,
+				"description": "Whether this contact is active in Meeting Manager",
+			},
+			{
+				"fieldname": "mm_cvr_number",
+				"fieldtype": "Data",
+				"label": "CVR Number",
+				"insert_after": "company_name",
+				"description": "Danish business registration number (CVR)",
+			},
+			{
+				"fieldname": "mm_section_break",
+				"fieldtype": "Section Break",
+				"label": "Meeting Manager",
+				"insert_after": "mm_cvr_number",
+				"collapsible": 1,
+			},
+			{
+				"fieldname": "mm_customer_notes",
+				"fieldtype": "Text",
+				"label": "Customer Notes",
+				"insert_after": "mm_section_break",
+				"description": "Notes about this contact for meeting management",
+			},
+			{
+				"fieldname": "mm_col_break",
+				"fieldtype": "Column Break",
+				"insert_after": "mm_customer_notes",
+			},
+			{
+				"fieldname": "mm_total_bookings",
+				"fieldtype": "Int",
+				"label": "Total Bookings",
+				"insert_after": "mm_col_break",
+				"read_only": 1,
+				"default": "0",
+				"description": "Total number of meeting bookings",
+			},
+			{
+				"fieldname": "mm_last_booking_date",
+				"fieldtype": "Date",
+				"label": "Last Booking Date",
+				"insert_after": "mm_total_bookings",
+				"read_only": 1,
+				"description": "Date of the most recent booking",
+			},
+		]
+	}
+
+	create_custom_fields(custom_fields, update=True)
+	print("Custom fields created on Contact doctype for Meeting Manager")
+
+
 def create_self_book_page():
 	"""
 	Create the mm-self-book-meeting Page DocType if it doesn't exist
@@ -54,6 +119,9 @@ def after_install():
 		# Create MM roles first
 		from meeting_manager.meeting_manager.services.role_service import create_mm_roles
 		create_mm_roles()
+
+		# Create custom fields on Contact doctype
+		create_contact_custom_fields()
 
 		# Create self-book-meeting Page if it doesn't exist
 		create_self_book_page()

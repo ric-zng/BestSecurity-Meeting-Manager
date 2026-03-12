@@ -185,7 +185,7 @@
    "in_standard_filter": 1,
    "label": "Customer",
    "mandatory_depends_on": "eval:!doc.is_internal",
-   "options": "MM Customer"
+   "options": "Contact"
   },
   {
    "fieldname": "column_break_customer",

@@ -4,8 +4,9 @@
 """
 Customer Service Module
 
-Provides utilities for finding, creating, and managing MM Customer records.
-Used by public booking API to deduplicate customers based on email/phone.
+Provides utilities for finding, creating, and managing Contact records
+used as customers in Meeting Manager. Uses Frappe's built-in Contact doctype
+instead of a custom MM Customer doctype.
 """
 
 import frappe
@@ -14,13 +15,13 @@ import re
 
 def find_or_create_customer(email, phone=None, name=None):
     """
-    Find existing customer by email or phone, or create a new one.
+    Find existing contact by email or phone, or create a new one.
 
     Lookup Priority (Email takes priority over phone):
-    1. Search by email in primary_email field
-    2. Search by email in email_addresses child table
-    3. If email not found, search by phone in phone_numbers child table
-    4. If no match, create new customer
+    1. Search by email in Contact's email_id field
+    2. Search by email in Contact Email child table
+    3. If email not found, search by phone in Contact Phone child table
+    4. If no match, create new Contact
 
     Args:
         email (str): Customer email (primary identifier, required)
@@ -29,9 +30,9 @@ def find_or_create_customer(email, phone=None, name=None):
 
     Returns:
         dict: {
-            "customer_id": str,      # MM Customer document name
-            "created": bool,         # True if new customer was created
-            "customer": Document     # MM Customer document object
+            "customer_id": str,      # Contact document name
+            "created": bool,         # True if new contact was created
+            "customer": Document     # Contact document object
         }
     """
     if not email:
@@ -39,10 +40,10 @@ def find_or_create_customer(email, phone=None, name=None):
 
     email = email.strip().lower()
 
-    # 1. Search by email (primary_email field)
+    # 1. Search by email (Contact email_id field)
     customer_id = frappe.db.get_value(
-        "MM Customer",
-        filters={"primary_email": ["like", email]},
+        "Contact",
+        filters={"email_id": ["like", email]},
         fieldname="name"
     )
 
@@ -50,13 +51,13 @@ def find_or_create_customer(email, phone=None, name=None):
         return {
             "customer_id": customer_id,
             "created": False,
-            "customer": frappe.get_doc("MM Customer", customer_id)
+            "customer": frappe.get_doc("Contact", customer_id)
         }
 
-    # 2. Search by email in email_addresses child table
+    # 2. Search by email in Contact Email child table
     result = frappe.db.sql("""
-        SELECT parent FROM `tabMM Customer Email`
-        WHERE LOWER(email_address) = %s
+        SELECT parent FROM `tabContact Email`
+        WHERE LOWER(email_id) = %s
         LIMIT 1
     """, (email,), as_dict=True)
 
@@ -65,7 +66,7 @@ def find_or_create_customer(email, phone=None, name=None):
         return {
             "customer_id": customer_id,
             "created": False,
-            "customer": frappe.get_doc("MM Customer", customer_id)
+            "customer": frappe.get_doc("Contact", customer_id)
         }
 
     # 3. Search by phone if email not found
@@ -73,19 +74,18 @@ def find_or_create_customer(email, phone=None, name=None):
         phone_digits = re.sub(r'[\s\-\(\)\+]', '', phone)
 
         result = frappe.db.sql("""
-            SELECT parent FROM `tabMM Customer Phone`
-            WHERE REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone_number, ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') = %s
+            SELECT parent FROM `tabContact Phone`
+            WHERE REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') = %s
             LIMIT 1
         """, (phone_digits,), as_dict=True)
 
         if result:
             customer_id = result[0]['parent']
-            customer = frappe.get_doc("MM Customer", customer_id)
+            customer = frappe.get_doc("Contact", customer_id)
 
-            # Add the new email to this customer's email list
-            customer.append("email_addresses", {
-                "email_address": email,
-                "email_type": "Personal",
+            # Add the new email to this contact's email list
+            customer.append("email_ids", {
+                "email_id": email,
                 "is_primary": 0
             })
             customer.save(ignore_permissions=True)
@@ -96,29 +96,26 @@ def find_or_create_customer(email, phone=None, name=None):
                 "customer": customer
             }
 
-    # 4. Create new customer
+    # 4. Create new Contact
     customer_name = name.strip() if name else email.split('@')[0].replace('.', ' ').title()
 
     customer = frappe.get_doc({
-        "doctype": "MM Customer",
-        "customer_name": customer_name,
-        "primary_email": email,
-        "is_active": 1
+        "doctype": "Contact",
+        "first_name": customer_name,
+        "mm_is_active": 1
     })
 
-    # Add email to child table
-    customer.append("email_addresses", {
-        "email_address": email,
-        "email_type": "Primary",
+    # Add email to child table (Contact auto-sets email_id from primary row)
+    customer.append("email_ids", {
+        "email_id": email,
         "is_primary": 1
     })
 
     # Add phone if provided
     if phone:
-        customer.append("phone_numbers", {
-            "phone_number": phone,
-            "phone_type": "Mobile",
-            "is_primary": 1
+        customer.append("phone_nos", {
+            "phone": phone,
+            "is_primary_phone": 1
         })
 
     customer.insert(ignore_permissions=True)
@@ -133,51 +130,51 @@ def find_or_create_customer(email, phone=None, name=None):
 
 def get_customer_by_email(email):
     """
-    Get customer by email address.
+    Get contact by email address.
 
     Args:
         email (str): Email address to search for
 
     Returns:
-        Document or None: MM Customer document if found
+        Document or None: Contact document if found
     """
     if not email:
         return None
 
     email = email.strip().lower()
 
-    # Check primary_email first
+    # Check email_id first (primary email on Contact)
     customer_id = frappe.db.get_value(
-        "MM Customer",
-        filters={"primary_email": ["like", email]},
+        "Contact",
+        filters={"email_id": ["like", email]},
         fieldname="name"
     )
 
     if customer_id:
-        return frappe.get_doc("MM Customer", customer_id)
+        return frappe.get_doc("Contact", customer_id)
 
-    # Check email_addresses child table
+    # Check Contact Email child table
     result = frappe.db.sql("""
-        SELECT parent FROM `tabMM Customer Email`
-        WHERE LOWER(email_address) = %s
+        SELECT parent FROM `tabContact Email`
+        WHERE LOWER(email_id) = %s
         LIMIT 1
     """, (email,), as_dict=True)
 
     if result:
-        return frappe.get_doc("MM Customer", result[0]['parent'])
+        return frappe.get_doc("Contact", result[0]['parent'])
 
     return None
 
 
 def get_customer_by_phone(phone):
     """
-    Get customer by phone number.
+    Get contact by phone number.
 
     Args:
         phone (str): Phone number to search for
 
     Returns:
-        Document or None: MM Customer document if found
+        Document or None: Contact document if found
     """
     if not phone:
         return None
@@ -185,40 +182,58 @@ def get_customer_by_phone(phone):
     phone_digits = re.sub(r'[\s\-\(\)\+]', '', phone)
 
     result = frappe.db.sql("""
-        SELECT parent FROM `tabMM Customer Phone`
-        WHERE REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone_number, ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') = %s
+        SELECT parent FROM `tabContact Phone`
+        WHERE REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') = %s
         LIMIT 1
     """, (phone_digits,), as_dict=True)
 
     if result:
-        return frappe.get_doc("MM Customer", result[0]['parent'])
+        return frappe.get_doc("Contact", result[0]['parent'])
 
     return None
 
 
 def update_customer_booking_stats(customer_id):
     """
-    Update booking statistics for a customer.
+    Update booking statistics for a contact.
 
     Args:
-        customer_id (str): MM Customer document name
+        customer_id (str): Contact document name
     """
     if not customer_id:
         return
 
-    if not frappe.db.exists("MM Customer", customer_id):
+    if not frappe.db.exists("Contact", customer_id):
         return
 
-    customer = frappe.get_doc("MM Customer", customer_id)
-    customer.update_booking_stats()
+    # Count total bookings
+    total_bookings = frappe.db.count(
+        "MM Meeting Booking",
+        filters={"customer": customer_id}
+    )
+
+    # Get last booking date
+    last_booking = frappe.db.get_value(
+        "MM Meeting Booking",
+        filters={"customer": customer_id},
+        fieldname="start_datetime",
+        order_by="start_datetime desc"
+    )
+
+    last_booking_date = last_booking.date() if last_booking else None
+
+    frappe.db.set_value("Contact", customer_id, {
+        "mm_total_bookings": total_bookings,
+        "mm_last_booking_date": last_booking_date
+    }, update_modified=False)
 
 
 def get_customer_bookings(customer_id, limit=10):
     """
-    Get recent bookings for a customer.
+    Get recent bookings for a contact.
 
     Args:
-        customer_id (str): MM Customer document name
+        customer_id (str): Contact document name
         limit (int): Maximum number of bookings to return
 
     Returns:

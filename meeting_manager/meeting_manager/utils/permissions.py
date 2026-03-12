@@ -225,15 +225,17 @@ def has_mm_meeting_booking_permission(doc, ptype, user):
 
 
 # =============================================================================
-# MM CUSTOMER - Permission Query Conditions
+# CONTACT - Permission Query Conditions (scoped to MM roles)
 # =============================================================================
 
-def get_mm_customer_permission_query_conditions(user):
+def get_contact_permission_query_conditions(user):
 	"""
-	Filter MM Customer list based on user role:
+	Filter Contact list based on user role (scoped to MM roles only).
+	Non-MM users get no restriction (passthrough) to avoid breaking ERPNext/Helpdesk.
 	- System Manager: See all
-	- Department Leader: See customers who have bookings with their team
-	- Department Member: See customers from bookings they're assigned to
+	- Department Leader: See contacts who have bookings with their team
+	- Department Member: See contacts from bookings they're assigned to
+	- Non-MM users: No restriction (passthrough)
 	"""
 	if not user:
 		user = frappe.session.user
@@ -241,12 +243,16 @@ def get_mm_customer_permission_query_conditions(user):
 	if user == "Administrator" or is_system_manager(user):
 		return ""
 
+	# Passthrough for non-MM users (don't restrict ERPNext/Helpdesk Contact access)
+	if not is_department_leader(user) and not is_department_member(user):
+		return ""
+
 	if is_department_leader(user):
 		team_members = get_team_members(user)
 		if team_members:
 			members_str = ", ".join([frappe.db.escape(m) for m in team_members])
 			return f"""
-				`tabMM Customer`.name IN (
+				`tabContact`.name IN (
 					SELECT DISTINCT mb.customer FROM `tabMM Meeting Booking` mb
 					INNER JOIN `tabMM Meeting Booking Assigned User` au ON au.parent = mb.name
 					WHERE au.user IN ({members_str}) AND mb.customer IS NOT NULL
@@ -256,7 +262,7 @@ def get_mm_customer_permission_query_conditions(user):
 
 	if is_department_member(user):
 		return f"""
-			`tabMM Customer`.name IN (
+			`tabContact`.name IN (
 				SELECT DISTINCT mb.customer FROM `tabMM Meeting Booking` mb
 				INNER JOIN `tabMM Meeting Booking Assigned User` au ON au.parent = mb.name
 				WHERE au.user = {frappe.db.escape(user)} AND mb.customer IS NOT NULL
@@ -266,19 +272,23 @@ def get_mm_customer_permission_query_conditions(user):
 	return "1=0"
 
 
-def has_mm_customer_permission(doc, ptype, user):
-	"""Row-level permission check for MM Customer"""
+def has_contact_permission(doc, ptype, user):
+	"""Row-level permission check for Contact (scoped to MM roles only)"""
 	if not user:
 		user = frappe.session.user
 
 	if user == "Administrator" or is_system_manager(user):
 		return True
 
+	# Passthrough for non-MM users (don't restrict ERPNext/Helpdesk Contact access)
+	if not is_department_leader(user) and not is_department_member(user):
+		return True
+
 	# For create permission, allow if user has the role
 	if ptype == "create":
 		return is_department_leader(user)
 
-	# Check if user has access to any booking with this customer
+	# Check if user has access to any booking with this contact
 	customer_bookings = frappe.get_all(
 		"MM Meeting Booking",
 		filters={"customer": doc.name},
@@ -286,7 +296,7 @@ def has_mm_customer_permission(doc, ptype, user):
 	)
 
 	if not customer_bookings:
-		# New customer or no bookings - leaders can access
+		# New contact or no bookings - leaders can access
 		return is_department_leader(user)
 
 	if is_department_leader(user):

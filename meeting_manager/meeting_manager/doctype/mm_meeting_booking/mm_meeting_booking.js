@@ -41,9 +41,9 @@ function show_email_dialog(frm) {
 				// Get recipient email
 				let recipient = frm.doc.customer_email_at_booking || '';
 				if (!recipient && frm.doc.customer) {
-					frappe.db.get_value('MM Customer', frm.doc.customer, 'primary_email', (r) => {
-						if (r && r.primary_email) {
-							recipient = r.primary_email;
+					frappe.db.get_value('Contact', frm.doc.customer, 'email_id', (r) => {
+						if (r && r.email_id) {
+							recipient = r.email_id;
 						}
 					});
 				}

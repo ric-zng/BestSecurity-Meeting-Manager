@@ -106,8 +106,8 @@ class MMEmailTemplate(Document):
         company = ""
 
         if booking.customer:
-            customer = frappe.get_doc("MM Customer", booking.customer)
-            customer_name = customer.customer_name or ""
+            customer = frappe.get_doc("Contact", booking.customer)
+            customer_name = customer.full_name or customer.first_name or ""
             customer_firstname = customer_name.split()[0] if customer_name else ""
             company = customer.company_name or ""
 
@@ -214,8 +214,8 @@ def send_booking_email(booking_id: str, template_name: str = None, email_type: s
         # Get recipient email
         recipient = booking.customer_email_at_booking
         if not recipient and booking.customer:
-            customer = frappe.get_doc("MM Customer", booking.customer)
-            recipient = customer.primary_email
+            customer = frappe.get_doc("Contact", booking.customer)
+            recipient = customer.email_id
 
         if not recipient:
             return {"success": False, "message": "No recipient email address found"}
