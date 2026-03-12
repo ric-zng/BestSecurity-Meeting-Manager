@@ -141,7 +141,7 @@
             <button
               @click="copyUrl(doc.doc.public_booking_url)"
               :disabled="!doc.doc.public_booking_url"
-              class="rounded-lg border border-gray-300 bg-white p-2 text-gray-600 hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-750"
+              class="rounded-lg border border-gray-300 bg-white p-2 text-gray-600 hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
               title="Copy URL"
             >
               <FeatherIcon :name="copied ? 'check' : 'copy'" class="h-4 w-4" />
@@ -169,24 +169,23 @@
 
           <!-- Members Table -->
           <div v-if="members.length > 0" class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-            <table class="w-full">
+            <table class="w-full text-sm">
               <thead>
-                <tr class="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
-                  <th class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">User</th>
-                  <th class="w-16 px-4 py-2"></th>
+                <tr class="border-b border-gray-200 dark:border-gray-700">
+                  <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">User</th>
+                  <th class="w-16 bg-gray-50 px-4 py-3 dark:bg-gray-800/50"></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                 <tr
                   v-for="(member, idx) in members"
                   :key="idx"
-                  class="border-b border-gray-100 dark:border-gray-800/50"
-                  :class="idx % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50/50 dark:bg-gray-900/70'"
+                  class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
                 >
-                  <td class="px-4 py-2.5 text-sm text-gray-900 dark:text-white">
+                  <td class="px-4 py-3 text-gray-900 dark:text-gray-100">
                     {{ member.user }}
                   </td>
-                  <td class="px-4 py-2.5 text-right">
+                  <td class="px-4 py-3 text-right">
                     <button
                       @click="removeMember(idx)"
                       class="rounded p-1 text-red-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
@@ -251,7 +250,7 @@
           <div class="mt-6 flex items-center justify-end gap-3">
             <button
               @click="showDeleteModal = false"
-              class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-750"
+              class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
             >
               Cancel
             </button>

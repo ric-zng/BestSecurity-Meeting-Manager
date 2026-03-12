@@ -107,20 +107,19 @@
               <div v-else class="overflow-x-auto">
                 <table class="w-full text-sm">
                   <thead>
-                    <tr class="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50">
-                      <th class="px-5 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Member</th>
-                      <th class="px-5 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Email</th>
-                      <th class="px-5 py-3 text-center font-medium text-gray-500 dark:text-gray-400">Assignments</th>
-                      <th class="px-5 py-3 text-center font-medium text-gray-500 dark:text-gray-400">Status</th>
-                      <th class="px-5 py-3 text-right font-medium text-gray-500 dark:text-gray-400">Actions</th>
+                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                      <th class="bg-gray-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Member</th>
+                      <th class="bg-gray-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Email</th>
+                      <th class="bg-gray-50 px-5 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Assignments</th>
+                      <th class="bg-gray-50 px-5 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Status</th>
+                      <th class="bg-gray-50 px-5 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                     <tr
                       v-for="member in dept._members"
                       :key="member.user_id"
-                      class="border-b border-gray-100 transition-colors hover:bg-gray-50 last:border-0 dark:border-gray-800 dark:hover:bg-gray-800/30"
-                      :class="{ 'odd:bg-white even:bg-gray-50/50 dark:odd:bg-gray-900 dark:even:bg-gray-800/20': true }"
+                      class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
                     >
                       <td class="px-5 py-3">
                         <div class="flex items-center gap-3">

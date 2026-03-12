@@ -97,38 +97,37 @@
 
       <!-- Desktop table -->
       <div v-else class="hidden sm:block">
-        <table class="w-full">
+        <table class="w-full text-sm">
           <thead>
-            <tr class="border-b border-gray-200 bg-gray-50 text-left dark:border-gray-800 dark:bg-gray-900/50">
-              <th class="px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Department</th>
-              <th class="px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Leader</th>
-              <th class="px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Algorithm</th>
-              <th class="px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Timezone</th>
-              <th class="px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
-              <th class="w-10 px-4 py-2.5"></th>
+            <tr class="border-b border-gray-200 dark:border-gray-700">
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Department</th>
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Leader</th>
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Algorithm</th>
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Timezone</th>
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Status</th>
+              <th class="w-10 bg-gray-50 px-4 py-3 dark:bg-gray-800/50"></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
             <tr
               v-for="(dept, idx) in departments.data"
               :key="dept.name"
               @click="goToDepartment(dept.name)"
-              class="cursor-pointer border-b border-gray-100 transition-colors hover:bg-gray-50 dark:border-gray-800/50 dark:hover:bg-gray-800/50"
-              :class="idx % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50/50 dark:bg-gray-900/70'"
+              class="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
             >
               <td class="px-4 py-3">
-                <div class="text-sm font-medium text-gray-900 dark:text-white">{{ dept.department_name }}</div>
+                <div class="font-medium text-gray-900 dark:text-white">{{ dept.department_name }}</div>
                 <div class="text-xs text-gray-500 dark:text-gray-400">{{ dept.department_slug }}</div>
               </td>
-              <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
                 {{ dept.department_leader || '-' }}
               </td>
-              <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-                <span class="inline-flex rounded bg-gray-100 px-1.5 py-0.5 text-xs dark:bg-gray-800">
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+                <span class="inline-flex rounded bg-gray-100 px-1.5 py-0.5 text-xs dark:bg-gray-800 dark:text-gray-400">
                   {{ dept.assignment_algorithm || 'Round Robin' }}
                 </span>
               </td>
-              <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+              <td class="px-4 py-3 text-gray-500 dark:text-gray-400">
                 {{ dept.timezone || '-' }}
               </td>
               <td class="px-4 py-3">
@@ -229,7 +228,7 @@
           <div class="mt-6 flex items-center justify-end gap-3">
             <button
               @click="showNewModal = false"
-              class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-750"
+              class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
             >
               Cancel
             </button>

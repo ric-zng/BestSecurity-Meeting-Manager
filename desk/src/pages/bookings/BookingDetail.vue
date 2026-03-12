@@ -62,6 +62,28 @@
           </div>
         </div>
         <div class="flex flex-wrap items-center gap-2">
+          <!-- Prev/Next Navigation -->
+          <div class="flex items-center gap-1">
+            <Tooltip :text="prevId ? `Previous: ${prevId}` : 'No previous booking'">
+              <button
+                @click="goToPrevious"
+                :disabled="!hasPrevious"
+                class="rounded-full p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+              >
+                <FeatherIcon name="chevron-left" class="h-4 w-4" />
+              </button>
+            </Tooltip>
+            <Tooltip :text="nextId ? `Next: ${nextId}` : 'No next booking'">
+              <button
+                @click="goToNext"
+                :disabled="!hasNext"
+                class="rounded-full p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+              >
+                <FeatherIcon name="chevron-right" class="h-4 w-4" />
+              </button>
+            </Tooltip>
+          </div>
+
           <Button
             v-if="permissions.can_edit"
             variant="subtle"
@@ -85,7 +107,7 @@
           <Button
             v-if="permissions.can_reassign"
             variant="subtle"
-            @click="openReassignModal"
+            @click="showReassignModal = true"
           >
             <template #prefix>
               <FeatherIcon name="user-plus" class="h-4 w-4" />
@@ -405,265 +427,50 @@
       </div>
     </div>
 
-    <!-- Change Status Modal -->
-    <TransitionRoot :show="showStatusModal" as="template">
-      <HDialog class="relative z-50" @close="showStatusModal = false">
-        <TransitionChild
-          as="template"
-          enter="duration-200 ease-out" enter-from="opacity-0" enter-to="opacity-100"
-          leave="duration-150 ease-in" leave-from="opacity-100" leave-to="opacity-0"
-        >
-          <div class="fixed inset-0 bg-black/30 dark:bg-black/50" />
-        </TransitionChild>
-        <div class="fixed inset-0 flex items-center justify-center p-4">
-          <TransitionChild
-            as="template"
-            enter="duration-200 ease-out" enter-from="opacity-0 scale-95" enter-to="opacity-100 scale-100"
-            leave="duration-150 ease-in" leave-from="opacity-100 scale-100" leave-to="opacity-0 scale-95"
-          >
-            <DialogPanel class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-900">
-              <DialogTitle class="text-base font-semibold text-gray-900 dark:text-white">
-                Change Status
-              </DialogTitle>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Update the booking status for {{ booking.name }}.
-              </p>
-              <div class="mt-4 space-y-4">
-                <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">New Status</label>
-                  <select
-                    v-model="statusForm.newStatus"
-                    class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                  >
-                    <option value="" disabled>Select status...</option>
-                    <option v-for="s in validStatuses" :key="s" :value="s">{{ s }}</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Notes (optional)</label>
-                  <textarea
-                    v-model="statusForm.notes"
-                    rows="3"
-                    class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                    placeholder="Add a note about this status change..."
-                  />
-                </div>
-              </div>
-              <div class="mt-6 flex justify-end gap-2">
-                <Button variant="subtle" label="Cancel" @click="showStatusModal = false" />
-                <Button
-                  variant="solid"
-                  label="Update Status"
-                  :loading="updateStatusResource.loading"
-                  :disabled="!statusForm.newStatus"
-                  @click="handleUpdateStatus"
-                />
-              </div>
-            </DialogPanel>
-          </TransitionChild>
-        </div>
-      </HDialog>
-    </TransitionRoot>
+    <!-- Action Modals -->
+    <ChangeStatusModal
+      :show="showStatusModal"
+      :booking="booking"
+      @close="showStatusModal = false"
+      @success="bookingResource.reload()"
+    />
 
-    <!-- Reschedule Modal -->
-    <TransitionRoot :show="showRescheduleModal" as="template">
-      <HDialog class="relative z-50" @close="showRescheduleModal = false">
-        <TransitionChild
-          as="template"
-          enter="duration-200 ease-out" enter-from="opacity-0" enter-to="opacity-100"
-          leave="duration-150 ease-in" leave-from="opacity-100" leave-to="opacity-0"
-        >
-          <div class="fixed inset-0 bg-black/30 dark:bg-black/50" />
-        </TransitionChild>
-        <div class="fixed inset-0 flex items-center justify-center p-4">
-          <TransitionChild
-            as="template"
-            enter="duration-200 ease-out" enter-from="opacity-0 scale-95" enter-to="opacity-100 scale-100"
-            leave="duration-150 ease-in" leave-from="opacity-100 scale-100" leave-to="opacity-0 scale-95"
-          >
-            <DialogPanel class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-900">
-              <DialogTitle class="text-base font-semibold text-gray-900 dark:text-white">
-                Reschedule Booking
-              </DialogTitle>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Pick a new date and time for this booking.
-              </p>
-              <div class="mt-4 space-y-4">
-                <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">New Date</label>
-                  <input
-                    v-model="rescheduleForm.newDate"
-                    type="date"
-                    class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">New Time</label>
-                  <input
-                    v-model="rescheduleForm.newTime"
-                    type="time"
-                    class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Reason (optional)</label>
-                  <textarea
-                    v-model="rescheduleForm.reason"
-                    rows="2"
-                    class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                    placeholder="Reason for rescheduling..."
-                  />
-                </div>
-              </div>
-              <div class="mt-6 flex justify-end gap-2">
-                <Button variant="subtle" label="Cancel" @click="showRescheduleModal = false" />
-                <Button
-                  variant="solid"
-                  label="Reschedule"
-                  :loading="rescheduleResource.loading"
-                  :disabled="!rescheduleForm.newDate || !rescheduleForm.newTime"
-                  @click="handleReschedule"
-                />
-              </div>
-            </DialogPanel>
-          </TransitionChild>
-        </div>
-      </HDialog>
-    </TransitionRoot>
+    <RescheduleModal
+      :show="showRescheduleModal"
+      :booking="booking"
+      @close="showRescheduleModal = false"
+      @success="bookingResource.reload()"
+    />
 
-    <!-- Reassign Modal -->
-    <TransitionRoot :show="showReassignModal" as="template">
-      <HDialog class="relative z-50" @close="showReassignModal = false">
-        <TransitionChild
-          as="template"
-          enter="duration-200 ease-out" enter-from="opacity-0" enter-to="opacity-100"
-          leave="duration-150 ease-in" leave-from="opacity-100" leave-to="opacity-0"
-        >
-          <div class="fixed inset-0 bg-black/30 dark:bg-black/50" />
-        </TransitionChild>
-        <div class="fixed inset-0 flex items-center justify-center p-4">
-          <TransitionChild
-            as="template"
-            enter="duration-200 ease-out" enter-from="opacity-0 scale-95" enter-to="opacity-100 scale-100"
-            leave="duration-150 ease-in" leave-from="opacity-100 scale-100" leave-to="opacity-0 scale-95"
-          >
-            <DialogPanel class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-900">
-              <DialogTitle class="text-base font-semibold text-gray-900 dark:text-white">
-                Reassign Booking
-              </DialogTitle>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Select a team member to reassign this booking to.
-              </p>
-              <div class="mt-4 space-y-4">
-                <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Assign To</label>
-                  <select
-                    v-model="reassignForm.newAssignedTo"
-                    class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                  >
-                    <option value="" disabled>Select team member...</option>
-                    <option
-                      v-for="m in departmentMembers"
-                      :key="m.user"
-                      :value="m.user"
-                    >
-                      {{ m.full_name || m.user }}
-                    </option>
-                  </select>
-                  <div v-if="membersResource.loading" class="mt-1 flex items-center gap-1 text-xs text-gray-400">
-                    <LoadingSpinner size="sm" />
-                    Loading members...
-                  </div>
-                </div>
-                <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Reason (optional)</label>
-                  <textarea
-                    v-model="reassignForm.reason"
-                    rows="2"
-                    class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                    placeholder="Reason for reassignment..."
-                  />
-                </div>
-              </div>
-              <div class="mt-6 flex justify-end gap-2">
-                <Button variant="subtle" label="Cancel" @click="showReassignModal = false" />
-                <Button
-                  variant="solid"
-                  label="Reassign"
-                  :loading="reassignResource.loading"
-                  :disabled="!reassignForm.newAssignedTo"
-                  @click="handleReassign"
-                />
-              </div>
-            </DialogPanel>
-          </TransitionChild>
-        </div>
-      </HDialog>
-    </TransitionRoot>
+    <ReassignModal
+      :show="showReassignModal"
+      :booking="booking"
+      :department-name="department?.name"
+      @close="showReassignModal = false"
+      @success="bookingResource.reload()"
+    />
 
-    <!-- Cancel Confirmation Dialog -->
-    <TransitionRoot :show="showCancelDialog" as="template">
-      <HDialog class="relative z-50" @close="showCancelDialog = false">
-        <TransitionChild
-          as="template"
-          enter="duration-200 ease-out" enter-from="opacity-0" enter-to="opacity-100"
-          leave="duration-150 ease-in" leave-from="opacity-100" leave-to="opacity-0"
-        >
-          <div class="fixed inset-0 bg-black/30 dark:bg-black/50" />
-        </TransitionChild>
-        <div class="fixed inset-0 flex items-center justify-center p-4">
-          <TransitionChild
-            as="template"
-            enter="duration-200 ease-out" enter-from="opacity-0 scale-95" enter-to="opacity-100 scale-100"
-            leave="duration-150 ease-in" leave-from="opacity-100 scale-100" leave-to="opacity-0 scale-95"
-          >
-            <DialogPanel class="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl dark:bg-gray-900">
-              <div class="flex items-start gap-3">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
-                  <FeatherIcon name="alert-triangle" class="h-5 w-5 text-red-600 dark:text-red-400" />
-                </div>
-                <div>
-                  <DialogTitle class="text-base font-semibold text-gray-900 dark:text-white">
-                    Cancel Booking
-                  </DialogTitle>
-                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Are you sure you want to cancel <strong>{{ booking.name }}</strong>? This action cannot be undone.
-                  </p>
-                </div>
-              </div>
-              <div class="mt-6 flex justify-end gap-2">
-                <Button variant="subtle" label="Keep Booking" @click="showCancelDialog = false" />
-                <Button
-                  theme="red"
-                  variant="solid"
-                  label="Cancel Booking"
-                  :loading="cancelResource.loading"
-                  @click="handleCancel"
-                />
-              </div>
-            </DialogPanel>
-          </TransitionChild>
-        </div>
-      </HDialog>
-    </TransitionRoot>
+    <CancelBookingModal
+      :show="showCancelDialog"
+      :booking="booking"
+      @close="showCancelDialog = false"
+      @success="bookingResource.reload()"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, reactive, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { createResource, toast } from 'frappe-ui'
-import {
-  Dialog as HDialog,
-  DialogPanel,
-  DialogTitle,
-  TransitionRoot,
-  TransitionChild,
-} from '@headlessui/vue'
+import { createResource, toast, Tooltip } from 'frappe-ui'
+import { useBookingNavigation } from '@/composables/useBookingNavigation'
 import StatusBadge from '@/components/shared/StatusBadge.vue'
-import LoadingSpinner from '@/components/shared/LoadingSpinner.vue'
 import ErrorState from '@/components/shared/ErrorState.vue'
 import { useAuthStore } from '@/stores/auth'
+import ChangeStatusModal from '@/components/bookings/ChangeStatusModal.vue'
+import RescheduleModal from '@/components/bookings/RescheduleModal.vue'
+import ReassignModal from '@/components/bookings/ReassignModal.vue'
+import CancelBookingModal from '@/components/bookings/CancelBookingModal.vue'
 
 const props = defineProps({
   bookingId: String,
@@ -672,6 +479,29 @@ const props = defineProps({
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+
+// ---- Booking Navigation ----
+const {
+  loadBookings,
+  updateCurrentIndex,
+  goToNext,
+  goToPrevious,
+  hasNext,
+  hasPrevious,
+  nextId,
+  prevId,
+} = useBookingNavigation()
+
+onMounted(() => {
+  loadBookings()
+})
+
+watch(
+  () => route.params.id || route.params.bookingId,
+  () => {
+    updateCurrentIndex()
+  }
+)
 
 // ---- Data fetching ----
 
@@ -691,31 +521,6 @@ const internalParticipants = computed(() => data.value?.internal_participants ||
 const externalParticipants = computed(() => data.value?.external_participants || [])
 const permissions = computed(() => data.value?.permissions || {})
 const userContext = computed(() => data.value?.user_context || {})
-
-// ---- Status options ----
-
-const allStatuses = [
-  'New Appointment',
-  'New Booking',
-  'Booking Started',
-  'Sale Approved',
-  'Booking Approved Not Sale',
-  'Call Customer About Sale',
-  'No Answer 1-3',
-  'No Answer 4-5',
-  'Customer Unsure',
-  'No Contact About Offer',
-  'Cancelled',
-  'Optimising Not Possible',
-  'Not Possible',
-  'Rebook',
-  'Rebook Earlier',
-  'Consent Sent Awaiting',
-]
-
-const validStatuses = computed(() =>
-  allStatuses.filter((s) => s !== booking.value.booking_status)
-)
 
 // ---- Formatting helpers ----
 
@@ -807,150 +612,10 @@ async function copyToClipboard(text, label) {
   }
 }
 
-// ---- Change Status ----
+// ---- Modal visibility ----
 
 const showStatusModal = ref(false)
-const statusForm = reactive({ newStatus: '', notes: '' })
-
-const updateStatusResource = createResource({
-  url: 'meeting_manager.meeting_manager.api.booking.update_booking_status',
-  onSuccess(res) {
-    if (res.success) {
-      toast({ title: 'Status updated successfully', icon: 'check' })
-      showStatusModal.value = false
-      statusForm.newStatus = ''
-      statusForm.notes = ''
-      bookingResource.reload()
-    } else {
-      toast.error(res.message || 'Failed to update status')
-    }
-  },
-  onError(err) {
-    toast.error(err.messages?.[0] || err.message || 'Failed to update status')
-  },
-})
-
-function handleUpdateStatus() {
-  updateStatusResource.submit({
-    booking_id: booking.value.name,
-    new_status: statusForm.newStatus,
-    notes: statusForm.notes || undefined,
-  })
-}
-
-// ---- Reschedule ----
-
 const showRescheduleModal = ref(false)
-const rescheduleForm = reactive({ newDate: '', newTime: '', reason: '' })
-
-// Pre-fill reschedule form with current date/time when modal opens
-watch(showRescheduleModal, (val) => {
-  if (val && booking.value.start_datetime) {
-    const dt = new Date(booking.value.start_datetime)
-    rescheduleForm.newDate = dt.toISOString().split('T')[0]
-    rescheduleForm.newTime = dt.toTimeString().substring(0, 5)
-  }
-})
-
-const rescheduleResource = createResource({
-  url: 'meeting_manager.meeting_manager.api.booking.reschedule_booking_internal',
-  onSuccess(res) {
-    if (res.success) {
-      toast({ title: 'Booking rescheduled successfully', icon: 'check' })
-      showRescheduleModal.value = false
-      rescheduleForm.newDate = ''
-      rescheduleForm.newTime = ''
-      rescheduleForm.reason = ''
-      bookingResource.reload()
-    } else {
-      toast.error(res.message || 'Failed to reschedule')
-    }
-  },
-  onError(err) {
-    toast.error(err.messages?.[0] || err.message || 'Failed to reschedule')
-  },
-})
-
-function handleReschedule() {
-  rescheduleResource.submit({
-    booking_id: booking.value.name,
-    new_date: rescheduleForm.newDate,
-    new_time: rescheduleForm.newTime,
-    reason: rescheduleForm.reason || undefined,
-  })
-}
-
-// ---- Reassign ----
-
 const showReassignModal = ref(false)
-const reassignForm = reactive({ newAssignedTo: '', reason: '' })
-const departmentMembers = ref([])
-
-const membersResource = createResource({
-  url: 'meeting_manager.meeting_manager.api.booking.get_department_members',
-  onSuccess(res) {
-    departmentMembers.value = res || []
-  },
-})
-
-function openReassignModal() {
-  reassignForm.newAssignedTo = ''
-  reassignForm.reason = ''
-  showReassignModal.value = true
-  if (department.value?.name) {
-    membersResource.submit({ department: department.value.name })
-  }
-}
-
-const reassignResource = createResource({
-  url: 'meeting_manager.meeting_manager.api.booking.reassign_booking',
-  onSuccess(res) {
-    if (res.success) {
-      toast({ title: 'Booking reassigned successfully', icon: 'check' })
-      showReassignModal.value = false
-      bookingResource.reload()
-    } else {
-      toast.error(res.message || 'Failed to reassign')
-    }
-  },
-  onError(err) {
-    toast.error(err.messages?.[0] || err.message || 'Failed to reassign')
-  },
-})
-
-function handleReassign() {
-  reassignResource.submit({
-    booking_id: booking.value.name,
-    new_assigned_to: reassignForm.newAssignedTo,
-    reason: reassignForm.reason || undefined,
-  })
-}
-
-// ---- Cancel ----
-
 const showCancelDialog = ref(false)
-
-const cancelResource = createResource({
-  url: 'meeting_manager.meeting_manager.api.booking.update_booking_status',
-  onSuccess(res) {
-    if (res.success) {
-      toast({ title: 'Booking cancelled', icon: 'check' })
-      showCancelDialog.value = false
-      bookingResource.reload()
-    } else {
-      toast.error(res.message || 'Failed to cancel booking')
-    }
-  },
-  onError(err) {
-    toast.error(err.messages?.[0] || err.message || 'Failed to cancel booking')
-  },
-})
-
-function handleCancel() {
-  cancelResource.submit({
-    booking_id: booking.value.name,
-    new_status: 'Cancelled',
-    notes: 'Cancelled from booking detail page',
-  })
-}
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-full flex-col">
+  <div class="relative flex h-full flex-col">
       <!-- Header -->
       <div class="flex flex-col gap-4 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-900 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -39,7 +39,7 @@
           <div class="relative min-w-[200px] flex-1 sm:max-w-xs">
             <FeatherIcon
               name="search"
-              class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+              class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500"
             />
             <input
               v-model="searchQuery"
@@ -53,7 +53,7 @@
           <div class="relative" ref="statusDropdownRef">
             <button
               @click="showStatusDropdown = !showStatusDropdown"
-              class="flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-750"
+              class="flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
             >
               <FeatherIcon name="tag" class="h-3.5 w-3.5" />
               Status
@@ -72,7 +72,7 @@
               <label
                 v-for="status in BOOKING_STATUSES"
                 :key="status"
-                class="flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-750"
+                class="flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
               >
                 <input
                   type="checkbox"
@@ -125,7 +125,7 @@
               type="date"
               class="rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:focus:border-gray-500 dark:focus:ring-gray-500"
             />
-            <span class="text-xs text-gray-400">to</span>
+            <span class="text-xs text-gray-400 dark:text-gray-500">to</span>
             <input
               v-model="dateTo"
               type="date"
@@ -143,38 +143,6 @@
             Clear filters
           </button>
         </div>
-      </div>
-
-      <!-- Bulk actions bar -->
-      <div
-        v-if="selectedRows.size > 0 && auth.isDepartmentLeader"
-        class="flex items-center gap-3 border-b border-gray-200 bg-gray-50 px-6 py-2 dark:border-gray-800 dark:bg-gray-900/50"
-      >
-        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-          {{ selectedRows.size }} selected
-        </span>
-        <div class="flex items-center gap-2">
-          <select
-            v-model="bulkStatus"
-            class="rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
-          >
-            <option value="">Change status...</option>
-            <option v-for="s in BOOKING_STATUSES" :key="s" :value="s">{{ s }}</option>
-          </select>
-          <button
-            v-if="bulkStatus"
-            @click="applyBulkStatusChange"
-            class="rounded-md bg-gray-900 px-2.5 py-1 text-xs font-medium text-white hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
-          >
-            Apply
-          </button>
-        </div>
-        <button
-          @click="selectedRows.clear()"
-          class="ml-auto text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-        >
-          Deselect all
-        </button>
       </div>
 
       <!-- Content -->
@@ -211,9 +179,9 @@
         <!-- Desktop table -->
         <div v-else class="hidden sm:block">
           <table class="w-full">
-            <thead>
-              <tr class="border-b border-gray-200 bg-gray-50 text-left dark:border-gray-800 dark:bg-gray-900/50">
-                <th v-if="auth.isDepartmentLeader" class="w-10 px-3 py-2">
+            <thead class="bg-gray-50 dark:bg-gray-800/50">
+              <tr>
+                <th v-if="auth.isDepartmentLeader" class="w-10 px-4 py-3">
                   <input
                     type="checkbox"
                     :checked="allVisibleSelected"
@@ -222,30 +190,27 @@
                     class="h-3.5 w-3.5 rounded border-gray-300 text-gray-900 focus:ring-gray-500 dark:border-gray-600 dark:bg-gray-700"
                   />
                 </th>
-                <th class="px-3 py-2 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Reference</th>
-                <th class="px-3 py-2 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Customer / Title</th>
-                <th class="px-3 py-2 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
-                <th class="px-3 py-2 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Date / Time</th>
-                <th class="px-3 py-2 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Duration</th>
-                <th class="px-3 py-2 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Assigned To</th>
-                <th class="px-3 py-2 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Service Type</th>
-                <th class="w-10 px-3 py-2"></th>
+                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Reference</th>
+                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Customer / Title</th>
+                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
+                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Date / Time</th>
+                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Duration</th>
+                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Assigned To</th>
+                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Service Type</th>
+                <th class="w-10 px-4 py-3"></th>
               </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
               <tr
-                v-for="(row, idx) in bookings.data"
+                v-for="row in bookings.data"
                 :key="row.name"
                 @click="goToBooking(row.name)"
-                class="cursor-pointer border-b border-gray-100 transition-colors hover:bg-gray-50 dark:border-gray-800/50 dark:hover:bg-gray-800/50"
+                class="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
                 :class="[
-                  idx % 2 === 0
-                    ? 'bg-white dark:bg-gray-900'
-                    : 'bg-gray-50/50 dark:bg-gray-900/70',
-                  selectedRows.has(row.name) ? '!bg-blue-50 dark:!bg-blue-950/30' : '',
+                  selectedRows.has(row.name) ? '!bg-blue-50 dark:!bg-blue-900/30' : '',
                 ]"
               >
-                <td v-if="auth.isDepartmentLeader" class="px-3 py-2.5" @click.stop>
+                <td v-if="auth.isDepartmentLeader" class="px-4 py-3" @click.stop>
                   <input
                     type="checkbox"
                     :checked="selectedRows.has(row.name)"
@@ -253,10 +218,10 @@
                     class="h-3.5 w-3.5 rounded border-gray-300 text-gray-900 focus:ring-gray-500 dark:border-gray-600 dark:bg-gray-700"
                   />
                 </td>
-                <td class="whitespace-nowrap px-3 py-2.5 text-sm font-medium text-gray-900 dark:text-white">
+                <td class="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
                   {{ row.booking_reference || row.name }}
                 </td>
-                <td class="px-3 py-2.5">
+                <td class="px-4 py-3">
                   <div class="text-sm text-gray-900 dark:text-white">
                     {{ row.customer || row.meeting_title || '-' }}
                   </div>
@@ -264,20 +229,20 @@
                     {{ row.customer_email_at_booking }}
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-3 py-2.5">
+                <td class="whitespace-nowrap px-4 py-3">
                   <StatusBadge :label="row.booking_status" :status="row.booking_status" />
                 </td>
-                <td class="whitespace-nowrap px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300">
+                <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
                   <div>{{ formatDate(row.start_datetime) }}</div>
                   <div class="text-xs text-gray-500 dark:text-gray-400">{{ formatTime(row.start_datetime) }} - {{ formatTime(row.end_datetime) }}</div>
                 </td>
-                <td class="whitespace-nowrap px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300">
+                <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
                   {{ row.duration ? `${row.duration} min` : '-' }}
                 </td>
-                <td class="px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300">
+                <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
                   {{ row._assigned_display || '-' }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-2.5">
+                <td class="whitespace-nowrap px-4 py-3">
                   <span
                     v-if="row.select_mkru"
                     class="inline-flex rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400"
@@ -286,10 +251,10 @@
                   </span>
                   <span v-else class="text-sm text-gray-400 dark:text-gray-500">-</span>
                 </td>
-                <td class="px-3 py-2.5 text-right" @click.stop>
+                <td class="px-4 py-3 text-right" @click.stop>
                   <button
                     @click="goToBooking(row.name)"
-                    class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                    class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
                   >
                     <FeatherIcon name="chevron-right" class="h-4 w-4" />
                   </button>
@@ -306,7 +271,7 @@
             :key="row.name"
             @click="goToBooking(row.name)"
             class="cursor-pointer rounded-lg border border-gray-200 bg-white p-3 transition-colors hover:border-gray-300 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700"
-            :class="[selectedRows.has(row.name) ? '!border-blue-300 !bg-blue-50 dark:!border-blue-700 dark:!bg-blue-950/30' : '']"
+            :class="[selectedRows.has(row.name) ? '!border-blue-300 !bg-blue-50 dark:!border-blue-700 dark:!bg-blue-900/30' : '']"
           >
             <div class="flex items-start justify-between">
               <div class="flex items-start gap-2">
@@ -341,7 +306,7 @@
               <span v-if="row.duration">{{ row.duration }} min</span>
               <span
                 v-if="row.select_mkru"
-                class="rounded bg-gray-100 px-1.5 py-0.5 dark:bg-gray-800"
+                class="rounded bg-gray-100 px-1.5 py-0.5 dark:bg-gray-800 dark:text-gray-400"
               >
                 {{ row.select_mkru }}
               </span>
@@ -411,6 +376,81 @@
       >
         <LoadingSpinner size="lg" />
       </div>
+
+      <!-- Floating Bulk Action Bar -->
+      <BulkActionBar
+        v-if="auth.isDepartmentLeader"
+        :selected-count="selectedRows.size"
+        :all-selected="allVisibleSelected"
+        @select-all="selectAllRows"
+        @deselect-all="deselectAllRows"
+      >
+        <template #actions>
+          <Menu as="div" class="relative">
+            <MenuButton class="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+              <FeatherIcon name="more-horizontal" class="h-4 w-4" />
+            </MenuButton>
+            <MenuItems class="absolute bottom-full left-0 mb-1 w-48 rounded-lg border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+              <!-- Change Status submenu -->
+              <MenuItem v-slot="{ active }">
+                <button
+                  @click="applyBulkStatus('Confirmed')"
+                  :class="active ? 'bg-gray-100 dark:bg-gray-700' : ''"
+                  class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 dark:text-gray-300"
+                >
+                  <FeatherIcon name="check-circle" class="h-4 w-4" />
+                  Confirmed
+                </button>
+              </MenuItem>
+              <MenuItem v-slot="{ active }">
+                <button
+                  @click="applyBulkStatus('Completed')"
+                  :class="active ? 'bg-gray-100 dark:bg-gray-700' : ''"
+                  class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 dark:text-gray-300"
+                >
+                  <FeatherIcon name="check-circle" class="h-4 w-4" />
+                  Completed
+                </button>
+              </MenuItem>
+              <MenuItem v-slot="{ active }">
+                <button
+                  @click="applyBulkStatus('Cancelled')"
+                  :class="active ? 'bg-gray-100 dark:bg-gray-700' : ''"
+                  class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 dark:text-gray-300"
+                >
+                  <FeatherIcon name="x-circle" class="h-4 w-4" />
+                  Cancelled
+                </button>
+              </MenuItem>
+              <MenuItem v-slot="{ active }">
+                <button
+                  @click="applyBulkStatus('No-Show')"
+                  :class="active ? 'bg-gray-100 dark:bg-gray-700' : ''"
+                  class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 dark:text-gray-300"
+                >
+                  <FeatherIcon name="user-x" class="h-4 w-4" />
+                  No-Show
+                </button>
+              </MenuItem>
+
+              <!-- Divider -->
+              <div class="my-1 border-t border-gray-200 dark:border-gray-700"></div>
+
+              <!-- Delete -->
+              <MenuItem v-slot="{ active }">
+                <button
+                  @click="bulkDelete"
+                  :class="active ? 'bg-red-50 dark:bg-red-900/30' : ''"
+                  class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 dark:text-red-400"
+                >
+                  <FeatherIcon name="trash-2" class="h-4 w-4" />
+                  Delete
+                </button>
+              </MenuItem>
+            </MenuItems>
+          </Menu>
+        </template>
+      </BulkActionBar>
     </div>
 </template>
 
@@ -418,10 +458,12 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { createListResource, call } from 'frappe-ui'
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { useAuthStore } from '@/stores/auth'
 import StatusBadge from '@/components/shared/StatusBadge.vue'
 import LoadingSpinner from '@/components/shared/LoadingSpinner.vue'
 import EmptyState from '@/components/shared/EmptyState.vue'
+import BulkActionBar from '@/components/shared/BulkActionBar.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -477,7 +519,6 @@ const currentPage = ref(1)
 
 // --- Selection state ---
 const selectedRows = ref(new Set())
-const bulkStatus = ref('')
 
 // --- Debounced search ---
 let searchTimeout = null
@@ -627,6 +668,16 @@ function toggleSelectAll() {
   }
 }
 
+function selectAllRows() {
+  if (bookings.data?.length) {
+    bookings.data.forEach((row) => selectedRows.value.add(row.name))
+  }
+}
+
+function deselectAllRows() {
+  selectedRows.value.clear()
+}
+
 function toggleRowSelect(name) {
   if (selectedRows.value.has(name)) {
     selectedRows.value.delete(name)
@@ -635,8 +686,8 @@ function toggleRowSelect(name) {
   }
 }
 
-async function applyBulkStatusChange() {
-  if (!bulkStatus.value || selectedRows.value.size === 0) return
+async function applyBulkStatus(status) {
+  if (!status || selectedRows.value.size === 0) return
 
   const names = Array.from(selectedRows.value)
   try {
@@ -645,14 +696,35 @@ async function applyBulkStatusChange() {
         doctype: 'MM Meeting Booking',
         name: name,
         fieldname: 'booking_status',
-        value: bulkStatus.value,
+        value: status,
       })
     }
-    bulkStatus.value = ''
     selectedRows.value.clear()
     bookings.reload()
   } catch (e) {
     console.error('Bulk status change failed:', e)
+  }
+}
+
+async function bulkDelete() {
+  if (selectedRows.value.size === 0) return
+
+  if (!confirm(`Are you sure you want to delete ${selectedRows.value.size} booking(s)? This action cannot be undone.`)) {
+    return
+  }
+
+  const names = Array.from(selectedRows.value)
+  try {
+    for (const name of names) {
+      await call('frappe.client.delete', {
+        doctype: 'MM Meeting Booking',
+        name: name,
+      })
+    }
+    selectedRows.value.clear()
+    bookings.reload()
+  } catch (e) {
+    console.error('Bulk delete failed:', e)
   }
 }
 

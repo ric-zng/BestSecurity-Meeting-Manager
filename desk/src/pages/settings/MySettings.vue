@@ -67,17 +67,17 @@
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b border-gray-200 dark:border-gray-700">
-                  <th class="pb-2 text-left font-medium text-gray-500 dark:text-gray-400">Day</th>
-                  <th class="pb-2 text-left font-medium text-gray-500 dark:text-gray-400">Start</th>
-                  <th class="pb-2 text-left font-medium text-gray-500 dark:text-gray-400">End</th>
-                  <th class="pb-2 text-center font-medium text-gray-500 dark:text-gray-400">Active</th>
+                  <th class="bg-gray-50 pb-2 pt-2 pl-2 text-left font-medium text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Day</th>
+                  <th class="bg-gray-50 pb-2 pt-2 text-left font-medium text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Start</th>
+                  <th class="bg-gray-50 pb-2 pt-2 text-left font-medium text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">End</th>
+                  <th class="bg-gray-50 pb-2 pt-2 text-center font-medium text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Active</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                 <tr
                   v-for="(day, index) in workingHours"
                   :key="day.day"
-                  class="border-b border-gray-100 last:border-0 dark:border-gray-800"
+                  class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
                   :class="{ 'opacity-40': !day.active }"
                 >
                   <td class="py-3 pr-4 font-medium text-gray-900 dark:text-white">

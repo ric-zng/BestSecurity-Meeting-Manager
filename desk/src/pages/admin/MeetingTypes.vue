@@ -106,33 +106,32 @@
 
       <!-- Desktop table -->
       <div v-else class="hidden sm:block">
-        <table class="w-full">
+        <table class="w-full text-sm">
           <thead>
-            <tr class="border-b border-gray-200 bg-gray-50 text-left dark:border-gray-800 dark:bg-gray-900/50">
-              <th class="px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Name</th>
-              <th class="px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Department</th>
-              <th class="px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Duration</th>
-              <th class="px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Location</th>
-              <th class="px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Visibility</th>
-              <th class="px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
-              <th class="w-10 px-4 py-2.5"></th>
+            <tr class="border-b border-gray-200 dark:border-gray-700">
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Name</th>
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Department</th>
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Duration</th>
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Location</th>
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Visibility</th>
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Status</th>
+              <th class="w-10 bg-gray-50 px-4 py-3 dark:bg-gray-800/50"></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
             <tr
               v-for="(mt, idx) in meetingTypes.data"
               :key="mt.name"
               @click="goToMeetingType(mt.name)"
-              class="cursor-pointer border-b border-gray-100 transition-colors hover:bg-gray-50 dark:border-gray-800/50 dark:hover:bg-gray-800/50"
-              :class="idx % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50/50 dark:bg-gray-900/70'"
+              class="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
             >
               <td class="px-4 py-3">
-                <div class="text-sm font-medium text-gray-900 dark:text-white">{{ mt.meeting_name }}</div>
+                <div class="font-medium text-gray-900 dark:text-white">{{ mt.meeting_name }}</div>
               </td>
-              <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
                 {{ mt.department || '-' }}
               </td>
-              <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
                 {{ mt.duration ? `${mt.duration} min` : '-' }}
               </td>
               <td class="px-4 py-3">
@@ -156,7 +155,7 @@
                   </span>
                   <span
                     v-if="!mt.is_public && !mt.is_internal"
-                    class="text-xs text-gray-400 dark:text-gray-500"
+                    class="text-xs text-gray-400 dark:text-gray-400"
                   >
                     -
                   </span>
@@ -283,7 +282,7 @@
           <div class="mt-6 flex items-center justify-end gap-3">
             <button
               @click="showNewModal = false"
-              class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-750"
+              class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
             >
               Cancel
             </button>

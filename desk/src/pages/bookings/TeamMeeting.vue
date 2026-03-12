@@ -177,82 +177,18 @@
       <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Select Date & Time</h2>
 
-        <!-- Month navigation -->
-        <div class="flex items-center justify-between mb-4">
-          <button
-            @click="changeMonth(-1)"
-            :disabled="!canGoPrevMonth"
-            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ monthLabel }}</h3>
-          <button
-            @click="changeMonth(1)"
-            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-
-        <div v-if="teamAvailableDates.loading" class="flex justify-center py-8">
-          <LoadingSpinner />
-        </div>
-
-        <!-- Date grid -->
-        <div v-else class="mb-6">
-          <div class="grid grid-cols-7 gap-1 mb-2">
-            <div v-for="day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']" :key="day"
-              class="text-center text-xs font-medium text-gray-500 dark:text-gray-400 py-1"
-            >{{ day }}</div>
-          </div>
-          <div class="grid grid-cols-7 gap-1">
-            <div v-for="(day, idx) in calendarDays" :key="idx">
-              <button
-                v-if="day.date"
-                @click="day.available && selectDate(day.date)"
-                :disabled="!day.available"
-                class="w-full aspect-square flex items-center justify-center text-sm rounded-lg transition-colors"
-                :class="dateButtonClass(day)"
-              >
-                {{ day.day }}
-              </button>
-              <div v-else class="w-full aspect-square"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Time slots -->
-        <div v-if="form.scheduled_date">
-          <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-            Available times for {{ formatDate(form.scheduled_date) }}
-          </h3>
-          <div v-if="teamAvailableSlots.loading" class="flex justify-center py-4">
-            <LoadingSpinner size="sm" />
-          </div>
-          <div v-else-if="teamAvailableSlots.data?.available_slots?.length" class="grid grid-cols-3 sm:grid-cols-4 gap-2">
-            <button
-              v-for="slot in teamAvailableSlots.data.available_slots"
-              :key="slot.start_time"
-              @click="selectTime(slot.start_time)"
-              class="px-3 py-2 text-sm rounded-lg border-2 font-medium transition-colors"
-              :class="
-                form.scheduled_start_time === slot.start_time
-                  ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-400'
-                  : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-              "
-            >
-              {{ formatTime(slot.start_time) }}
-            </button>
-          </div>
-          <div v-else class="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
-            No times available for all selected participants on this date.
-          </div>
-        </div>
+        <CalendarPicker
+          :availableDates="teamAvailableDates.data?.available_dates || []"
+          :availableSlots="teamAvailableSlots.data?.available_slots || []"
+          :datesLoading="teamAvailableDates.loading"
+          :slotsLoading="teamAvailableSlots.loading"
+          :selectedDate="form.scheduled_date"
+          :selectedSlot="form.scheduled_start_time"
+          noSlotsMessage="No times available for all selected participants on this date."
+          @update:selectedDate="selectDate"
+          @update:selectedSlot="selectTime"
+          @month-change="onMonthChange"
+        />
       </div>
       <div class="flex justify-between">
         <button @click="prevStep" class="px-6 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
@@ -320,26 +256,26 @@
       <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Review Team Meeting</h2>
 
-        <div class="space-y-4">
-          <div class="flex justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+        <div class="divide-y divide-gray-100 dark:divide-gray-700">
+          <div class="flex justify-between py-3">
             <span class="text-sm text-gray-500 dark:text-gray-400">Department</span>
             <span class="text-sm font-medium text-gray-900 dark:text-white">{{ selectedDeptName }}</span>
           </div>
-          <div class="flex justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+          <div class="flex justify-between py-3">
             <span class="text-sm text-gray-500 dark:text-gray-400">Meeting Type</span>
             <span class="text-sm font-medium text-gray-900 dark:text-white">{{ selectedMeetingTypeName }}</span>
           </div>
-          <div class="flex justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+          <div class="flex justify-between py-3">
             <span class="text-sm text-gray-500 dark:text-gray-400">Date & Time</span>
             <span class="text-sm font-medium text-gray-900 dark:text-white">
               {{ formatDate(form.scheduled_date) }} at {{ formatTime(form.scheduled_start_time) }}
             </span>
           </div>
-          <div class="flex justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+          <div class="flex justify-between py-3">
             <span class="text-sm text-gray-500 dark:text-gray-400">Duration</span>
             <span class="text-sm font-medium text-gray-900 dark:text-white">{{ selectedMeetingDuration }} minutes</span>
           </div>
-          <div class="py-3 border-b border-gray-100 dark:border-gray-700">
+          <div class="py-3">
             <span class="text-sm text-gray-500 dark:text-gray-400 block mb-2">Participants ({{ form.participants.length }})</span>
             <div class="flex flex-wrap gap-2">
               <span
@@ -351,7 +287,7 @@
               </span>
             </div>
           </div>
-          <div v-if="form.meeting_agenda" class="py-3 border-b border-gray-100 dark:border-gray-700">
+          <div v-if="form.meeting_agenda" class="py-3">
             <span class="text-sm text-gray-500 dark:text-gray-400 block mb-1">Agenda</span>
             <p class="text-sm text-gray-900 dark:text-white whitespace-pre-wrap">{{ form.meeting_agenda }}</p>
           </div>
@@ -364,9 +300,9 @@
 
       <div
         v-if="submitError"
-        class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4"
+        class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-sm"
       >
-        <p class="text-sm text-red-700 dark:text-red-400">{{ submitError }}</p>
+        <p class="text-red-700 dark:text-red-400">{{ submitError }}</p>
       </div>
 
       <div class="flex justify-between">
@@ -420,6 +356,7 @@ import { createResource, call } from "frappe-ui";
 import { useAuthStore } from "@/stores/auth";
 import StepProgress from "@/components/shared/StepProgress.vue";
 import LoadingSpinner from "@/components/shared/LoadingSpinner.vue";
+import CalendarPicker from "@/components/bookings/CalendarPicker.vue";
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -453,18 +390,9 @@ const wizardSteps = computed(() => [
   { id: "review", label: "Review", clickable: false },
 ]);
 
+// Calendar month tracking (for API params)
 const viewMonth = ref(new Date().getMonth() + 1);
 const viewYear = ref(new Date().getFullYear());
-
-const monthLabel = computed(() => {
-  const d = new Date(viewYear.value, viewMonth.value - 1, 1);
-  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-});
-
-const canGoPrevMonth = computed(() => {
-  const now = new Date();
-  return viewYear.value > now.getFullYear() || (viewYear.value === now.getFullYear() && viewMonth.value > now.getMonth() + 1);
-});
 
 // APIs
 const ledDepartments = createResource({
@@ -519,32 +447,6 @@ const participantNames = computed(() => {
   });
 });
 
-const calendarDays = computed(() => {
-  const year = viewYear.value;
-  const month = viewMonth.value - 1;
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  const startDow = (firstDay.getDay() + 6) % 7;
-  const daysInMonth = lastDay.getDate();
-
-  const availSet = new Set(teamAvailableDates.data?.available_dates || []);
-  const today = new Date().toISOString().split("T")[0];
-
-  const days = [];
-  for (let i = 0; i < startDow; i++) {
-    days.push({ date: null, day: null, available: false });
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    days.push({
-      date: dateStr,
-      day: d,
-      available: availSet.has(dateStr) && dateStr >= today,
-    });
-  }
-  return days;
-});
-
 function selectDepartment(dept) {
   form.department = dept.name;
   selectedDeptName.value = dept.department_name;
@@ -572,13 +474,9 @@ function selectTime(time) {
   form.scheduled_start_time = time;
 }
 
-function changeMonth(delta) {
-  let m = viewMonth.value + delta;
-  let y = viewYear.value;
-  if (m > 12) { m = 1; y++; }
-  if (m < 1) { m = 12; y--; }
-  viewMonth.value = m;
-  viewYear.value = y;
+function onMonthChange({ month, year }) {
+  viewMonth.value = month;
+  viewYear.value = year;
   teamAvailableDates.fetch();
 }
 
@@ -601,16 +499,6 @@ function goToStep(idx) {
   if (idx < currentStep.value) {
     currentStep.value = idx;
   }
-}
-
-function dateButtonClass(day) {
-  if (form.scheduled_date === day.date) {
-    return "bg-blue-600 text-white font-semibold";
-  }
-  if (day.available) {
-    return "text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium";
-  }
-  return "text-gray-300 dark:text-gray-600 cursor-not-allowed";
 }
 
 function formatDate(dateStr) {
