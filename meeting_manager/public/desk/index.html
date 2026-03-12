@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meeting Manager</title>
+    <script type="module" crossorigin src="/assets/meeting_manager/desk/assets/index-94bd1152.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/meeting_manager/desk/assets/vendor-vue-ed25b721.js">
+    <link rel="modulepreload" crossorigin href="/assets/meeting_manager/desk/assets/vendor-ui-bdd1a681.js">
+    <link rel="stylesheet" href="/assets/meeting_manager/desk/assets/index-017321b1.css">
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="modals"></div>
+    <div id="popovers"></div>
+    
+    <script>
+      window.site_name = "{{ site_name }}";
+    </script>
+  
+          <script>
+              {% for key in boot %}
+              window["{{ key }}"] = {{ boot[key] | tojson }};
+              {% endfor %}
+          </script>
+          </body>
+          
+</html>

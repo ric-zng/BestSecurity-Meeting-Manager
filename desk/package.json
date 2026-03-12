@@ -1,0 +1,38 @@
+{
+  "name": "meeting-manager-ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "@fullcalendar/core": "^6.1.10",
+    "@fullcalendar/daygrid": "^6.1.10",
+    "@fullcalendar/interaction": "^6.1.10",
+    "@fullcalendar/resource": "^6.1.10",
+    "@fullcalendar/resource-timegrid": "^6.1.10",
+    "@fullcalendar/resource-timeline": "^6.1.10",
+    "@fullcalendar/vue3": "^6.1.10",
+    "@headlessui/vue": "^1.7.22",
+    "@vueuse/core": "^13.8.0",
+    "frappe-ui": "0.1.192",
+    "pinia": "^2.0.33",
+    "socket.io-client": "^4.7.2",
+    "vue": "^3.5.14",
+    "vue-router": "^4.2.2"
+  },
+  "devDependencies": {
+    "@iconify-json/lucide": "^1.1.99",
+    "@vitejs/plugin-vue": "^4.2.3",
+    "autoprefixer": "^10.4.13",
+    "postcss": "^8.4.5",
+    "tailwindcss": "^3.4.15",
+    "typescript": "^5.0.2",
+    "unplugin-icons": "^0.16.1",
+    "unplugin-vue-components": "^0.25.2",
+    "vite": "^4.4.9"
+  }
+}
