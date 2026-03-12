@@ -12,6 +12,7 @@ declare module 'vue' {
     LoadingSpinner: typeof import('./src/components/shared/LoadingSpinner.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SidebarLink: typeof import('./src/components/SidebarLink.vue')['default']
     StatusBadge: typeof import('./src/components/shared/StatusBadge.vue')['default']
     StepProgress: typeof import('./src/components/shared/StepProgress.vue')['default']
   }

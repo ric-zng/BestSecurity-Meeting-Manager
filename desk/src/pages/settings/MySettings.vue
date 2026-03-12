@@ -1,6 +1,5 @@
 <template>
-  <AppLayout>
-    <div class="min-h-screen bg-gray-50 dark:bg-gray-950">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-950">
       <!-- Loading -->
       <LoadingSpinner v-if="loading" fullPage />
 
@@ -136,14 +135,12 @@
         </div>
       </div>
     </div>
-  </AppLayout>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { call } from 'frappe-ui'
 import { useAuthStore } from '@/stores/auth'
-import AppLayout from '@/layouts/AppLayout.vue'
 import LoadingSpinner from '@/components/shared/LoadingSpinner.vue'
 import ErrorState from '@/components/shared/ErrorState.vue'
 

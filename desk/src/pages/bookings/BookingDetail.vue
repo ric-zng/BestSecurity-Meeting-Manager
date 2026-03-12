@@ -1,5 +1,5 @@
 <template>
-  <AppLayout>
+  <div>
     <!-- Loading state -->
     <div v-if="bookingResource.loading && !data" class="p-6">
       <div class="mb-6 flex items-center gap-3">
@@ -646,7 +646,7 @@
         </div>
       </HDialog>
     </TransitionRoot>
-  </AppLayout>
+  </div>
 </template>
 
 <script setup>
@@ -660,7 +660,6 @@ import {
   TransitionRoot,
   TransitionChild,
 } from '@headlessui/vue'
-import AppLayout from '@/layouts/AppLayout.vue'
 import StatusBadge from '@/components/shared/StatusBadge.vue'
 import LoadingSpinner from '@/components/shared/LoadingSpinner.vue'
 import ErrorState from '@/components/shared/ErrorState.vue'

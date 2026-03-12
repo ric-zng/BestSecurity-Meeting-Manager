@@ -1,6 +1,5 @@
 <template>
-  <AppLayout>
-    <div class="flex h-full flex-col">
+  <div class="flex h-full flex-col">
       <!-- Header -->
       <div class="flex flex-col gap-4 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-900 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -413,7 +412,6 @@
         <LoadingSpinner size="lg" />
       </div>
     </div>
-  </AppLayout>
 </template>
 
 <script setup>
@@ -421,7 +419,6 @@ import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { createListResource, call } from 'frappe-ui'
 import { useAuthStore } from '@/stores/auth'
-import AppLayout from '@/layouts/AppLayout.vue'
 import StatusBadge from '@/components/shared/StatusBadge.vue'
 import LoadingSpinner from '@/components/shared/LoadingSpinner.vue'
 import EmptyState from '@/components/shared/EmptyState.vue'
