@@ -1,6 +1,6 @@
 <template>
   <router-link
-    :to="prefixedTo"
+    :to="to"
     class="flex h-7 cursor-pointer items-center rounded pl-2 pr-1 text-gray-800 dark:text-gray-300 duration-300 ease-in-out"
     :class="[
       expanded ? 'w-full' : 'w-8 justify-center',
@@ -37,17 +37,11 @@ const props = defineProps({
 
 const route = useRoute();
 
-const prefixedTo = computed(() => {
-  return props.to.startsWith("/meeting-manager") ? props.to : `/meeting-manager${props.to}`;
-});
-
 const isActive = computed(() => {
   const currentPath = route.path;
-  const targetPath = prefixedTo.value;
-  // Exact match or starts with (for nested routes)
+  const targetPath = props.to;
   if (currentPath === targetPath) return true;
-  // For paths like /meeting-manager/bookings matching /meeting-manager/bookings/123
-  if (targetPath !== "/meeting-manager/" && targetPath !== "/meeting-manager/calendar" && currentPath.startsWith(targetPath + "/")) return true;
+  if (targetPath !== "/" && targetPath !== "/calendar" && currentPath.startsWith(targetPath + "/")) return true;
   return false;
 });
 </script>
