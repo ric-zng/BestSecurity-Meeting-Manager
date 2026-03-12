@@ -7,9 +7,15 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    BulkActionBar: typeof import('./src/components/shared/BulkActionBar.vue')['default']
+    CalendarPicker: typeof import('./src/components/bookings/CalendarPicker.vue')['default']
+    CancelBookingModal: typeof import('./src/components/bookings/CancelBookingModal.vue')['default']
+    ChangeStatusModal: typeof import('./src/components/bookings/ChangeStatusModal.vue')['default']
     EmptyState: typeof import('./src/components/shared/EmptyState.vue')['default']
     ErrorState: typeof import('./src/components/shared/ErrorState.vue')['default']
     LoadingSpinner: typeof import('./src/components/shared/LoadingSpinner.vue')['default']
+    ReassignModal: typeof import('./src/components/bookings/ReassignModal.vue')['default']
+    RescheduleModal: typeof import('./src/components/bookings/RescheduleModal.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SidebarLink: typeof import('./src/components/SidebarLink.vue')['default']
