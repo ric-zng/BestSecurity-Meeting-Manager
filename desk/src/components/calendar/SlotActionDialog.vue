@@ -29,7 +29,7 @@
                 <div class="flex justify-between">
                   <dt class="text-gray-500 dark:text-gray-400">Time</dt>
                   <dd class="font-medium text-gray-900 dark:text-white">
-                    {{ slotInfo?.startTime }} &ndash; {{ slotInfo?.endTime }}
+                    {{ formattedStartTime }} &ndash; {{ formattedEndTime }}
                   </dd>
                 </div>
                 <div class="flex justify-between">
@@ -45,7 +45,7 @@
             <div class="mt-5 space-y-3">
               <button
                 class="flex w-full items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-left transition hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950 dark:hover:bg-blue-900"
-                @click="$emit('create-booking')"
+                @click="$emit('create-booking', slotInfo)"
               >
                 <svg class="h-5 w-5 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M5.25 12a.75.75 0 01.75-.75h3.25V8a.75.75 0 011.5 0v3.25H14a.75.75 0 010 1.5h-3.25V16a.75.75 0 01-1.5 0v-3.25H6a.75.75 0 01-.75-.75z" />
@@ -60,7 +60,7 @@
               <button
                 v-if="canBlockSlots"
                 class="flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-left transition hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
-                @click="$emit('block-slot')"
+                @click="$emit('block-slot', slotInfo)"
               >
                 <svg class="h-5 w-5 text-gray-600 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM6.28 7.72a.75.75 0 00-1.06 1.06l7.5 7.5a.75.75 0 101.06-1.06l-7.5-7.5z" clip-rule="evenodd" />
@@ -100,7 +100,7 @@ import { useAuthStore } from '@/stores/auth'
 
 const props = defineProps({
   show: Boolean,
-  slotInfo: Object,
+  slotInfo: Object, // { start: Date, end: Date, resourceId, resourceTitle }
 })
 
 defineEmits(['close', 'create-booking', 'block-slot'])
@@ -111,14 +111,20 @@ const canBlockSlots = computed(() => {
   return auth.isDepartmentLeader || auth.isSystemManager
 })
 
+function formatTime(date) {
+  if (!date) return ''
+  const d = date instanceof Date ? date : new Date(date)
+  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+}
+
 const formattedDate = computed(() => {
-  if (!props.slotInfo?.date) return ''
-  const d = new Date(props.slotInfo.date + 'T00:00:00')
+  if (!props.slotInfo?.start) return ''
+  const d = props.slotInfo.start instanceof Date ? props.slotInfo.start : new Date(props.slotInfo.start)
   return d.toLocaleDateString('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
+    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
   })
 })
+
+const formattedStartTime = computed(() => formatTime(props.slotInfo?.start))
+const formattedEndTime = computed(() => formatTime(props.slotInfo?.end))
 </script>

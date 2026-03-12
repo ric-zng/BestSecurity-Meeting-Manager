@@ -35,7 +35,7 @@
                 <div class="flex justify-between">
                   <dt class="text-gray-400">Time</dt>
                   <dd class="font-medium text-white">
-                    {{ slotInfo?.startTime }} &ndash; {{ slotInfo?.endTime }}
+                    {{ formatTime(slotInfo?.start) }} &ndash; {{ formatTime(slotInfo?.end) }}
                   </dd>
                 </div>
               </dl>
@@ -114,14 +114,34 @@ watch(() => props.show, (val) => {
   }
 })
 
+function toDate(val) {
+  if (!val) return null
+  return val instanceof Date ? val : new Date(val)
+}
+
+function formatTime(val) {
+  const d = toDate(val)
+  if (!d) return ''
+  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+}
+
+function toDateStr(val) {
+  const d = toDate(val)
+  if (!d) return ''
+  return d.toISOString().split('T')[0]
+}
+
+function toTimeStr(val) {
+  const d = toDate(val)
+  if (!d) return ''
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
 const formattedDate = computed(() => {
-  if (!props.slotInfo?.date) return ''
-  const d = new Date(props.slotInfo.date + 'T00:00:00')
+  const d = toDate(props.slotInfo?.start)
+  if (!d) return ''
   return d.toLocaleDateString('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
+    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
   })
 })
 
@@ -144,9 +164,9 @@ async function handleSubmit() {
       'meeting_manager.meeting_manager.page.mm_enhanced_calendar.api.create_blocked_slot',
       {
         user: props.slotInfo?.resourceId,
-        date: props.slotInfo?.date,
-        start_time: props.slotInfo?.startTime,
-        end_time: props.slotInfo?.endTime,
+        date: toDateStr(props.slotInfo?.start),
+        start_time: toTimeStr(props.slotInfo?.start),
+        end_time: toTimeStr(props.slotInfo?.end),
         reason: reason.value.trim(),
       }
     )

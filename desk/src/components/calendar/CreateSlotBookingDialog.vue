@@ -18,11 +18,11 @@
                 <div><span class="text-blue-600/70 dark:text-blue-400/70">Date</span>
                   <p class="font-medium text-blue-900 dark:text-blue-200">{{ formattedDate }}</p></div>
                 <div><span class="text-blue-600/70 dark:text-blue-400/70">Time</span>
-                  <p class="font-medium text-blue-900 dark:text-blue-200">{{ slotInfo?.startTime }} &ndash; {{ slotInfo?.endTime }}</p></div>
+                  <p class="font-medium text-blue-900 dark:text-blue-200">{{ formatTime(slotInfo?.start) }} &ndash; {{ formatTime(slotInfo?.end) }}</p></div>
                 <div><span class="text-blue-600/70 dark:text-blue-400/70">Host</span>
                   <p class="font-medium text-blue-900 dark:text-blue-200">{{ slotInfo?.resourceTitle || 'Unassigned' }}</p></div>
                 <div><span class="text-blue-600/70 dark:text-blue-400/70">Duration</span>
-                  <p class="font-medium text-blue-900 dark:text-blue-200">{{ slotInfo?.duration || '&mdash;' }} min</p></div>
+                  <p class="font-medium text-blue-900 dark:text-blue-200">{{ computedDuration }} min</p></div>
               </div>
             </div>
             <!-- Form -->
@@ -151,10 +151,40 @@ watch(() => form.department, async (dept) => {
   finally { loadingMeetingTypes.value = false }
 })
 
+function toDate(val) {
+  if (!val) return null
+  return val instanceof Date ? val : new Date(val)
+}
+
+function formatTime(val) {
+  const d = toDate(val)
+  if (!d) return ''
+  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+}
+
+function toDateStr(val) {
+  const d = toDate(val)
+  if (!d) return ''
+  return d.toISOString().split('T')[0]
+}
+
+function toTimeStr(val) {
+  const d = toDate(val)
+  if (!d) return ''
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
 const formattedDate = computed(() => {
-  if (!props.slotInfo?.date) return ''
-  const d = new Date(props.slotInfo.date + 'T00:00:00')
+  const d = toDate(props.slotInfo?.start)
+  if (!d) return ''
   return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+})
+
+const computedDuration = computed(() => {
+  const s = toDate(props.slotInfo?.start)
+  const e = toDate(props.slotInfo?.end)
+  if (!s || !e) return '—'
+  return Math.round((e.getTime() - s.getTime()) / 60000)
 })
 
 function debouncedSearch() {
@@ -190,8 +220,8 @@ async function handleSubmit() {
   submitting.value = true
   try {
     await call('meeting_manager.meeting_manager.page.mm_enhanced_calendar.api.create_slot_booking', {
-      assigned_to: props.slotInfo?.resourceId, date: props.slotInfo?.date,
-      start_time: props.slotInfo?.startTime, end_time: props.slotInfo?.endTime,
+      assigned_to: props.slotInfo?.resourceId, date: toDateStr(props.slotInfo?.start),
+      start_time: toTimeStr(props.slotInfo?.start), end_time: toTimeStr(props.slotInfo?.end),
       department: form.department, meeting_type: form.meetingType, service_type: form.serviceType,
       customer_name: form.customerName, customer_email: form.customerEmail,
       customer_phone: form.customerPhone || undefined, customer_company: form.customerCompany || undefined,

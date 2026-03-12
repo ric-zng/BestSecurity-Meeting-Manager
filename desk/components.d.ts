@@ -7,18 +7,26 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    BlockSlotDialog: typeof import('./src/components/calendar/BlockSlotDialog.vue')['default']
+    BookingDetailSidebar: typeof import('./src/components/calendar/BookingDetailSidebar.vue')['default']
     BulkActionBar: typeof import('./src/components/shared/BulkActionBar.vue')['default']
     CalendarPicker: typeof import('./src/components/bookings/CalendarPicker.vue')['default']
+    CalendarToolbar: typeof import('./src/components/calendar/CalendarToolbar.vue')['default']
     CancelBookingModal: typeof import('./src/components/bookings/CancelBookingModal.vue')['default']
     ChangeStatusModal: typeof import('./src/components/bookings/ChangeStatusModal.vue')['default']
+    CreateSlotBookingDialog: typeof import('./src/components/calendar/CreateSlotBookingDialog.vue')['default']
+    DragConfirmDialog: typeof import('./src/components/calendar/DragConfirmDialog.vue')['default']
     EmptyState: typeof import('./src/components/shared/EmptyState.vue')['default']
     ErrorState: typeof import('./src/components/shared/ErrorState.vue')['default']
+    EventTooltip: typeof import('./src/components/calendar/EventTooltip.vue')['default']
+    InfoRow: typeof import('./src/components/calendar/InfoRow.vue')['default']
     LoadingSpinner: typeof import('./src/components/shared/LoadingSpinner.vue')['default']
     ReassignModal: typeof import('./src/components/bookings/ReassignModal.vue')['default']
     RescheduleModal: typeof import('./src/components/bookings/RescheduleModal.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SidebarLink: typeof import('./src/components/SidebarLink.vue')['default']
+    SlotActionDialog: typeof import('./src/components/calendar/SlotActionDialog.vue')['default']
     StatusBadge: typeof import('./src/components/shared/StatusBadge.vue')['default']
     StepProgress: typeof import('./src/components/shared/StepProgress.vue')['default']
   }
