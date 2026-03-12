@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-full flex-col">
+  <div class="ec-root flex h-full flex-col">
     <!-- Toolbar -->
     <CalendarToolbar
       :current-view="currentView"
@@ -14,12 +14,12 @@
       :active-services="filters.services"
       @change-view="changeView"
       @toggle-orientation="handleToggleOrientation"
-      @toggle-department="toggleDepartment"
-      @set-focus-department="(d) => filters.focusDepartment = d"
-      @toggle-status="toggleStatus"
+      @update:selected-departments="filters.departments = $event"
+      @update:active-statuses="filters.statuses = $event"
       @update:active-services="filters.services = $event"
       @new-booking="router.push('/book')"
       @navigate="handleNavigate"
+      @jump-to-date="handleJumpToDate"
     >
       <template #title>
         <h2 class="text-base font-semibold text-gray-900 dark:text-white" v-text="calendarTitle" />
@@ -74,7 +74,6 @@ const auth = useAuthStore();
 const {
   currentView, orientation, filters, allStatuses,
   serviceTypes, activeViews, toggleOrientation,
-  toggleStatus, toggleDepartment,
 } = useCalendarState();
 const { canSelectSlot, canManageBlockedSlot, canModifyEvent } = useCalendarPermissions();
 
@@ -102,6 +101,10 @@ function handleNavigate(action) {
   if (action === "prev") calendar.prev();
   else if (action === "next") calendar.next();
   else if (action === "today") calendar.today();
+}
+
+function handleJumpToDate(dateStr) {
+  if (calendar) calendar.gotoDate(dateStr);
 }
 
 function changeView(viewKey) {
@@ -289,48 +292,90 @@ watch(filters, () => {
 </script>
 
 <style>
-/* FullCalendar dark mode overrides */
-.dark .fc {
+/* ── FullCalendar Dark Mode ─────────────────────────────────────────────────── */
+.dark .fc,
+.ec-root.dark .fc {
   --fc-border-color: #374151;
-  --fc-page-bg-color: #1f2937;
-  --fc-neutral-bg-color: #111827;
+  --fc-page-bg-color: #111827;
+  --fc-neutral-bg-color: #1f2937;
   --fc-list-event-hover-bg-color: #1f2937;
-  --fc-today-bg-color: rgba(59, 130, 246, 0.1);
+  --fc-today-bg-color: rgba(59, 130, 246, 0.08);
   --fc-now-indicator-color: #3b82f6;
+  --fc-event-bg-color: #1e40af;
+  --fc-event-border-color: #1e40af;
 }
-.dark .fc .fc-col-header-cell,
-.dark .fc .fc-timegrid-axis,
-.dark .fc .fc-datagrid-day-number,
-.dark .fc .fc-col-header-cell-cushion { color: #d1d5db; }
-.dark .fc .fc-button-primary { background-color: #374151; border-color: #4b5563; color: #d1d5db; }
-.dark .fc .fc-button-primary:hover { background-color: #4b5563; }
-.dark .fc .fc-button-primary:not(:disabled).fc-button-active { background-color: #2563eb; border-color: #2563eb; }
-.dark .fc .fc-toolbar-title { color: #f3f4f6; }
-.dark .fc .fc-resource-area .fc-datagrid-cell-main { color: #d1d5db; }
-.dark .fc td, .dark .fc th { border-color: #374151; }
 
-/* Event styling */
+/* Calendar grid background */
+.dark .fc .fc-view-harness,
+.dark .fc .fc-timegrid-slot,
+.dark .fc .fc-timegrid-col {
+  background-color: #111827;
+}
+
+/* Resource area + datagrid */
+.dark .fc .fc-datagrid-cell-frame,
+.dark .fc .fc-resource-area {
+  background-color: #1f2937;
+}
+
+/* Column headers */
+.dark .fc .fc-col-header-cell {
+  background-color: #1f2937;
+}
+
+/* All text in dark mode */
+.dark .fc .fc-col-header-cell-cushion,
+.dark .fc .fc-timegrid-axis-cushion,
+.dark .fc .fc-timegrid-slot-label-cushion,
+.dark .fc .fc-datagrid-cell-main,
+.dark .fc .fc-resource-area .fc-datagrid-cell-main {
+  color: #d1d5db;
+}
+
+/* All borders */
+.dark .fc td,
+.dark .fc th,
+.dark .fc .fc-scrollgrid {
+  border-color: #374151;
+}
+
+/* Divider line */
+.dark .fc .fc-timegrid-divider {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+/* Scrollbar */
+.dark .fc .fc-scroller {
+  scrollbar-color: #4b5563 #1f2937;
+}
+
+/* ── Event Styling ──────────────────────────────────────────────────────────── */
 .fc-event { cursor: pointer; border-radius: 4px; font-size: 0.75rem; }
 
-/* Blocked slots */
 .ec-blocked-slot { background: #1a1a1a !important; color: white !important; border-left: 4px solid #ef4444 !important; z-index: 5; }
 .dark .ec-blocked-slot { background: #2d2d2d !important; }
 
-/* Team meetings */
 .ec-team-meeting { border-left: 4px solid #a855f7 !important; }
-
-/* Own bookings */
 .ec-own-booking { box-shadow: inset 0 0 0 2px rgba(34, 197, 94, 0.4); }
-
-/* Non-draggable */
 .ec-non-draggable { opacity: 0.8; cursor: default !important; }
-
-/* Resource self highlight */
 .ec-resource-self .fc-datagrid-cell-main { color: #22c55e; font-weight: 600; }
 
-/* Business hours background */
-.ec-nonworking-block { background: #cbd5e1 !important; opacity: 0.6; }
-.ec-dayoff-block { background: #e2e8f0 !important; opacity: 0.7; }
-.dark .ec-nonworking-block { background: #1e293b !important; opacity: 0.4; }
-.dark .ec-dayoff-block { background: #0f172a !important; opacity: 0.5; }
+/* ── Unavailable / Non-working Time (striped pattern) ───────────────────────── */
+.ec-nonworking-block {
+  background: repeating-linear-gradient(45deg, #e2e8f0, #e2e8f0 4px, #cbd5e1 4px, #cbd5e1 8px) !important;
+  opacity: 0.5;
+}
+.ec-dayoff-block {
+  background: repeating-linear-gradient(45deg, #f1f5f9, #f1f5f9 4px, #e2e8f0 4px, #e2e8f0 8px) !important;
+  opacity: 0.6;
+}
+.dark .ec-nonworking-block {
+  background: repeating-linear-gradient(45deg, #1e293b, #1e293b 4px, #0f172a 4px, #0f172a 8px) !important;
+  opacity: 0.6;
+}
+.dark .ec-dayoff-block {
+  background: repeating-linear-gradient(45deg, #0f172a, #0f172a 4px, #020617 4px, #020617 8px) !important;
+  opacity: 0.7;
+}
 </style>

@@ -21,6 +21,7 @@ declare module 'vue' {
     EventTooltip: typeof import('./src/components/calendar/EventTooltip.vue')['default']
     InfoRow: typeof import('./src/components/calendar/InfoRow.vue')['default']
     LoadingSpinner: typeof import('./src/components/shared/LoadingSpinner.vue')['default']
+    MultiSelectDropdown: typeof import('./src/components/calendar/MultiSelectDropdown.vue')['default']
     ReassignModal: typeof import('./src/components/bookings/ReassignModal.vue')['default']
     RescheduleModal: typeof import('./src/components/bookings/RescheduleModal.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
