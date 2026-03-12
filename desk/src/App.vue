@@ -163,7 +163,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { useNavigation } from "@/composables/useNavigation";
 import { useDarkMode } from "@/composables/useDarkMode";
@@ -177,20 +177,8 @@ const sidebarExpanded = ref(
   localStorage.getItem("mm_sidebar_expanded") !== "false"
 );
 
-// Persist sidebar state
-const setSidebarExpanded = (val) => {
-  sidebarExpanded.value = val;
-  localStorage.setItem("mm_sidebar_expanded", val);
-};
-
-// Override the ref setter
-const origExpanded = sidebarExpanded;
-Object.defineProperty(sidebarExpanded, 'value', {
-  get() { return origExpanded.value; },
-  set(val) {
-    origExpanded.value = val;
-    localStorage.setItem("mm_sidebar_expanded", val);
-  }
+watch(sidebarExpanded, (val) => {
+  localStorage.setItem("mm_sidebar_expanded", String(val));
 });
 
 const sidebarWidth = computed(() => sidebarExpanded.value ? "224px" : "50px");
