@@ -21,15 +21,22 @@ export async function fetchResources(
     if (filters.departments.length) params.departments = JSON.stringify(filters.departments);
     if (filters.focusDepartment) params.focus_department = filters.focusDepartment;
     const res = await call(`${API_BASE}.get_calendar_resources`, params);
+    // Cache resource IDs for business hours fetch
+    cachedResourceIds = (res || []).map((r: any) => r.id);
     successCb(res || []);
   } catch (e) {
     failureCb(e);
   }
 }
 
-// ── Business-hours background events ───────────────────────────────────────
+// Keep resource IDs in sync for business hours
+let cachedResourceIds: string[] = [];
+
+// ── Business-hours → background events ─────────────────────────────────────
+// API returns: { resourceId: { businessHours: [...], dateOverrides: [...] } }
+// We convert non-working gaps into background events per resource per day.
 export function generateBusinessHoursEvents(
-  bhData: any[],
+  bhData: Record<string, { businessHours: any[]; dateOverrides: any[] }>,
   startDate: string,
   endDate: string,
 ): any[] {
@@ -37,45 +44,107 @@ export function generateBusinessHoursEvents(
   const start = new Date(startDate);
   const end = new Date(endDate);
 
-  for (const resource of bhData) {
-    const rid = resource.resource_id;
-    const hours = resource.business_hours || {};
+  for (const [resourceId, data] of Object.entries(bhData)) {
+    if (!data || !data.businessHours) continue;
+
+    // Build a lookup: dayOfWeek → [{startTime, endTime}]
+    const weeklyHours = buildWeeklyHoursMap(data.businessHours);
+
+    // Build override lookup: dateStr → slots[] | "off"
+    const overrideMap = buildOverrideMap(data.dateOverrides || []);
 
     for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-      const dayName = d.toLocaleDateString("en-US", { weekday: "long" });
-      const dateStr = d.toISOString().split("T")[0];
-      const dayHours = hours[dayName];
+      const dateStr = toDateStr(d);
+      const fcDow = d.getDay(); // 0=Sun
 
-      if (!dayHours || !dayHours.length) {
-        events.push({
-          id: `dayoff-${rid}-${dateStr}`,
-          resourceId: rid,
-          start: `${dateStr}T06:00:00`,
-          end: `${dateStr}T22:00:00`,
-          display: "background",
-          title: "Day Off",
-          className: "ec-dayoff-block",
-        });
+      // Check date override first
+      const override = overrideMap[dateStr];
+      if (override === "off") {
+        // Entire day off
+        events.push(dayOffEvent(resourceId, dateStr));
         continue;
       }
 
-      addNonWorkingGaps(events, rid, dateStr, dayHours);
+      // Use override slots if present, else weekly schedule
+      const slots = override || weeklyHours[fcDow];
+
+      if (!slots || slots.length === 0) {
+        events.push(dayOffEvent(resourceId, dateStr));
+        continue;
+      }
+
+      addNonWorkingGaps(events, resourceId, dateStr, slots);
     }
   }
   return events;
 }
 
-function addNonWorkingGaps(events: any[], rid: string, dateStr: string, dayHours: any[]) {
-  const firstStart = dayHours[0].start;
+function buildWeeklyHoursMap(businessHours: any[]): Record<number, { start: string; end: string }[]> {
+  const map: Record<number, { start: string; end: string }[]> = {};
+  for (const bh of businessHours) {
+    // Skip date-specific overrides added by backend (have groupId)
+    if (bh.groupId) continue;
+    const days = bh.daysOfWeek || [];
+    for (const dow of days) {
+      if (!map[dow]) map[dow] = [];
+      map[dow].push({ start: bh.startTime, end: bh.endTime });
+    }
+  }
+  // Sort each day's slots
+  for (const dow of Object.keys(map)) {
+    map[Number(dow)].sort((a, b) => a.start.localeCompare(b.start));
+  }
+  return map;
+}
+
+function buildOverrideMap(dateOverrides: any[]): Record<string, { start: string; end: string }[] | "off"> {
+  const map: Record<string, { start: string; end: string }[] | "off"> = {};
+  for (const ov of dateOverrides) {
+    if (!ov.available) {
+      map[ov.date] = "off";
+    } else if (ov.availableSlots?.length) {
+      map[ov.date] = ov.availableSlots.map((s: any) => ({
+        start: normalizeTime(s.start),
+        end: normalizeTime(s.end),
+      }));
+    }
+  }
+  return map;
+}
+
+function normalizeTime(t: string): string {
+  // Handle "HH:MM:SS" → "HH:MM"
+  return t.length > 5 ? t.substring(0, 5) : t;
+}
+
+function toDateStr(d: Date): string {
+  return d.toISOString().split("T")[0];
+}
+
+function dayOffEvent(rid: string, dateStr: string) {
+  return {
+    id: `dayoff-${rid}-${dateStr}`,
+    resourceId: rid,
+    start: `${dateStr}T06:00:00`,
+    end: `${dateStr}T22:00:00`,
+    display: "background",
+    title: "Unavailable",
+    className: "ec-dayoff-block",
+    extendedProps: { type: "unavailable" },
+  };
+}
+
+function addNonWorkingGaps(events: any[], rid: string, dateStr: string, slots: { start: string; end: string }[]) {
+  const firstStart = slots[0].start;
   if (firstStart > "06:00") {
     events.push(bgEvent(rid, dateStr, "06:00", firstStart, "pre"));
   }
-  for (let i = 0; i < dayHours.length - 1; i++) {
-    if (dayHours[i].end < dayHours[i + 1].start) {
-      events.push(bgEvent(rid, dateStr, dayHours[i].end, dayHours[i + 1].start, `gap${i}`));
+  for (let i = 0; i < slots.length - 1; i++) {
+    if (slots[i].end < slots[i + 1].start) {
+      events.push(bgEvent(rid, dateStr, slots[i].end, slots[i + 1].start, `gap${i}`));
     }
   }
-  const lastEnd = dayHours[dayHours.length - 1].end;
+  const lastEnd = slots[slots.length - 1].end;
   if (lastEnd < "22:00") {
     events.push(bgEvent(rid, dateStr, lastEnd, "22:00", "post"));
   }
@@ -88,8 +157,9 @@ function bgEvent(rid: string, dateStr: string, startTime: string, endTime: strin
     start: `${dateStr}T${startTime}:00`,
     end: `${dateStr}T${endTime}:00`,
     display: "background",
-    title: "Non-Working",
+    title: "Unavailable",
     className: "ec-nonworking-block",
+    extendedProps: { type: "unavailable" },
   };
 }
 
@@ -111,13 +181,24 @@ export async function fetchEvents(
     if (filters.statuses.length) eventParams.statuses = JSON.stringify(filters.statuses);
     if (filters.services.length) eventParams.services = JSON.stringify(filters.services);
 
+    // Fetch booking events + blocked slots in parallel
+    // Business hours need resource IDs — use cached list from last resource fetch
+    const bhParams: Record<string, string> = {
+      ...baseParams,
+      resource_ids: JSON.stringify(cachedResourceIds),
+      start_date: startStr,
+      end_date: endStr,
+    };
+
     const [bookingEvents, businessHours, blockedSlots] = await Promise.all([
       call(`${API_BASE}.get_calendar_events`, eventParams),
-      call(`${API_BASE}.get_all_resources_business_hours`, baseParams),
+      cachedResourceIds.length
+        ? call(`${API_BASE}.get_all_resources_business_hours`, bhParams)
+        : Promise.resolve({}),
       call(`${API_BASE}.get_user_blocked_slots`, baseParams),
     ]);
 
-    const bhEvents = generateBusinessHoursEvents(businessHours || [], startStr, endStr);
+    const bhEvents = generateBusinessHoursEvents(businessHours || {}, startStr, endStr);
     const blockedEvents = (blockedSlots || []).map(mapBlockedSlot);
 
     successCb([...(bookingEvents || []), ...bhEvents, ...blockedEvents]);

@@ -116,6 +116,6 @@ const statusColor = computed(() => getStatusColor(ep.value.status || ''))
 function formatTime(date: string | Date | undefined): string {
   if (!date) return ''
   const d = typeof date === 'string' ? new Date(date) : date
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })
 }
 </script>

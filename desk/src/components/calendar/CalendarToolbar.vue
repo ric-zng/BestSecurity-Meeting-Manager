@@ -1,31 +1,17 @@
 <template>
   <div class="border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-900">
     <div class="flex items-center justify-between gap-3">
-      <!-- Left: Nav + title -->
+      <!-- Left: Nav + date picker + title -->
       <div class="flex items-center gap-2">
         <button @click="$emit('navigate', 'prev')" class="tb-btn w-8"><FeatherIcon name="chevron-left" class="h-4 w-4" /></button>
         <button @click="$emit('navigate', 'next')" class="tb-btn w-8"><FeatherIcon name="chevron-right" class="h-4 w-4" /></button>
         <button @click="$emit('navigate', 'today')" class="tb-btn px-3 text-sm font-medium">today</button>
-
-        <!-- Jump to date -->
-        <div class="relative">
-          <input
-            ref="dateInputRef"
-            type="date"
-            class="absolute inset-0 opacity-0 cursor-pointer"
-            @change="onJumpToDate"
-          />
-          <button class="tb-btn px-2" title="Jump to date">
-            <FeatherIcon name="calendar" class="h-3.5 w-3.5" />
-          </button>
-        </div>
-
+        <DatePicker @select="(d) => $emit('jump-to-date', d)" />
         <slot name="title" />
       </div>
 
       <!-- Right: Filters + toggles -->
       <div class="flex items-center gap-2">
-        <!-- Department multi-select -->
         <MultiSelectDropdown
           :items="departments"
           :selected="selectedDepartments"
@@ -34,8 +20,6 @@
           label-field="department_name"
           @update:selected="$emit('update:selected-departments', $event)"
         />
-
-        <!-- Status multi-select -->
         <MultiSelectDropdown
           :items="statuses"
           :selected="activeStatuses"
@@ -45,8 +29,6 @@
           color-field="color"
           @update:selected="$emit('update:active-statuses', $event)"
         />
-
-        <!-- Service multi-select -->
         <MultiSelectDropdown
           :items="serviceTypes"
           :selected="activeServices"
@@ -78,7 +60,6 @@
           <span class="hidden sm:inline">{{ orientation === 'vertical' ? 'Vertical' : 'Horizontal' }}</span>
         </button>
 
-        <!-- New Booking -->
         <button
           @click="$emit('new-booking')"
           class="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
@@ -89,9 +70,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { FeatherIcon } from 'frappe-ui'
 import MultiSelectDropdown from '@/components/calendar/MultiSelectDropdown.vue'
+import DatePicker from '@/components/calendar/DatePicker.vue'
 
 interface ViewOption { key: string; label: string }
 interface StatusOption { value: string; color: string }
@@ -109,7 +90,7 @@ defineProps<{
   activeServices: string[]
 }>()
 
-const emit = defineEmits<{
+defineEmits<{
   'change-view': [viewKey: string]
   'toggle-orientation': []
   'update:selected-departments': [depts: string[]]
@@ -119,13 +100,6 @@ const emit = defineEmits<{
   'navigate': [direction: 'prev' | 'next' | 'today']
   'jump-to-date': [date: string]
 }>()
-
-const dateInputRef = ref<HTMLInputElement | null>(null)
-
-function onJumpToDate(e: Event) {
-  const val = (e.target as HTMLInputElement).value
-  if (val) emit('jump-to-date', val)
-}
 </script>
 
 <style scoped>
