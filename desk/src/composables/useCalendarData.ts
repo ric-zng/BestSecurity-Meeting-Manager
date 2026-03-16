@@ -222,7 +222,7 @@ export async function fetchEvents(
     ]);
 
     const bhEvents = generateBusinessHoursEvents(businessHours || {}, startStr, endStr);
-    const blockedEvents = (blockedSlots || []).map(mapBlockedSlot);
+    const blockedEvents = flattenBlockedSlots(blockedSlots || {});
 
     successCb([...(bookingEvents || []), ...bhEvents, ...blockedEvents]);
   } catch (e) {
@@ -230,17 +230,25 @@ export async function fetchEvents(
   }
 }
 
-function mapBlockedSlot(slot: any) {
-  return {
-    id: `blocked-${slot.name}`,
-    resourceId: slot.resource_id || slot.user,
-    start: slot.start,
-    end: slot.end,
-    title: slot.reason || "Blocked",
-    className: "ec-blocked-slot",
-    editable: false,
-    extendedProps: { type: "blocked_slot", slot_name: slot.name },
-  };
+// API returns { userId: [{ name, blocked_date, start_time, end_time, reason }] }
+function flattenBlockedSlots(data: Record<string, any[]>): any[] {
+  const events: any[] = [];
+  for (const [userId, slots] of Object.entries(data)) {
+    if (!Array.isArray(slots)) continue;
+    for (const slot of slots) {
+      events.push({
+        id: `blocked-${slot.name}`,
+        resourceId: userId,
+        start: `${slot.blocked_date}T${normalizeTime(slot.start_time)}:00`,
+        end: `${slot.blocked_date}T${normalizeTime(slot.end_time)}:00`,
+        title: slot.reason || "Blocked",
+        className: "ec-blocked-slot",
+        editable: false,
+        extendedProps: { type: "blocked_slot", slot_name: slot.name },
+      });
+    }
+  }
+  return events;
 }
 
 // ── Drag/drop helpers ──────────────────────────────────────────────────────
