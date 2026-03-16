@@ -85,6 +85,13 @@ const allNavItems: NavItem[] = [
     minRole: "system_manager",
     section: "admin",
   },
+  {
+    label: "Status Colors",
+    to: "/admin/status-colors",
+    icon: "droplet",
+    minRole: "system_manager",
+    section: "admin",
+  },
 
   // Personal
   {

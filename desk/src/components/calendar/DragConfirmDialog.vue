@@ -70,6 +70,19 @@
                 </div>
               </div>
 
+              <!-- End time / duration change (resize) -->
+              <div v-if="hasEndTimeChange" class="flex items-center gap-2 text-sm">
+                <svg class="h-4 w-4 shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clip-rule="evenodd" />
+                </svg>
+                <div>
+                  <span class="text-xs text-gray-400">End:</span>
+                  <span class="ml-1 text-gray-500 line-through dark:text-gray-400">{{ formatTime(dragInfo?.oldEnd) }}</span>
+                  <span class="mx-1 text-gray-400">&rarr;</span>
+                  <span class="font-medium text-gray-900 dark:text-white">{{ formatTime(dragInfo?.newEnd) }}</span>
+                </div>
+              </div>
+
               <!-- Host change -->
               <div v-if="hasHostChange" class="flex items-center gap-2 text-sm">
                 <svg class="h-4 w-4 shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -203,6 +216,11 @@ const hasHostChange = computed(() => {
     props.dragInfo?.actionType === 'reassign_reschedule'
 })
 
+const hasEndTimeChange = computed(() => {
+  if (!props.dragInfo?.oldEnd || !props.dragInfo?.newEnd) return false
+  return new Date(props.dragInfo.oldEnd).getTime() !== new Date(props.dragInfo.newEnd).getTime()
+})
+
 const statusClasses = computed(() => {
   const s = props.dragInfo?.status?.toLowerCase()
   if (s === 'confirmed') return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
@@ -221,6 +239,12 @@ function formatDateTime(dateStr) {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+function formatTime(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 }
 
 function handleConfirm() {

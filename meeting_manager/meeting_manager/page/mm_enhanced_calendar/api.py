@@ -2157,3 +2157,175 @@ def update_blocked_slot(blocked_slot_name, blocked_date=None, start_time=None, e
     except Exception as e:
         frappe.db.rollback()
         return {"success": False, "message": str(e)}
+
+
+@frappe.whitelist()
+def get_status_colors():
+    """Get all active status colors from MM Status Color doctype."""
+    try:
+        colors = frappe.get_all(
+            "MM Status Color",
+            filters={"is_active": 1},
+            fields=["status", "color"],
+            order_by="status asc",
+        )
+        return {c["status"]: c["color"] for c in colors}
+    except Exception:
+        # Fallback if doctype doesn't exist yet (pre-migration)
+        return {}
+
+
+@frappe.whitelist()
+def search_customers(query):
+    """
+    Search for customers across Contact and HD Customer doctypes.
+
+    Searches Contact by: first_name, last_name, company_name, child email_id, child phone.
+    Searches HD Customer by: customer_name, email, phone, cvr, domain.
+
+    Returns combined results with source badges, max 10 total.
+    """
+    if not query or len(query) < 2:
+        return []
+
+    query = query.strip()
+    like_query = f"%{query}%"
+    results = []
+
+    # ── Search Contacts ──────────────────────────────────────────────────────
+    try:
+        contact_ids = set()
+
+        # Search by main fields
+        name_matches = frappe.get_all(
+            "Contact",
+            or_filters=[
+                ["first_name", "like", like_query],
+                ["last_name", "like", like_query],
+                ["company_name", "like", like_query],
+                ["name", "like", like_query],
+            ],
+            fields=["name"],
+            limit_page_length=10,
+        )
+        contact_ids.update(c["name"] for c in name_matches)
+
+        # Search by child email
+        email_matches = frappe.get_all(
+            "Contact Email",
+            filters={"email_id": ["like", like_query]},
+            fields=["parent"],
+            limit_page_length=10,
+        )
+        contact_ids.update(c["parent"] for c in email_matches)
+
+        # Search by child phone
+        phone_matches = frappe.get_all(
+            "Contact Phone",
+            filters={"phone": ["like", like_query]},
+            fields=["parent"],
+            limit_page_length=10,
+        )
+        contact_ids.update(c["parent"] for c in phone_matches)
+
+        # Fetch full contact details for matched IDs
+        for cid in list(contact_ids)[:5]:
+            try:
+                doc = frappe.get_doc("Contact", cid)
+                primary_email = ""
+                primary_phone = ""
+                for e in doc.get("email_ids", []):
+                    if e.is_primary:
+                        primary_email = e.email_id
+                    elif not primary_email:
+                        primary_email = e.email_id
+                for p in doc.get("phone_nos", []):
+                    if p.is_primary_phone or p.is_primary_mobile_no:
+                        primary_phone = p.phone
+                    elif not primary_phone:
+                        primary_phone = p.phone
+
+                display_name = " ".join(filter(None, [doc.first_name, doc.last_name])) or doc.name
+                results.append({
+                    "source": "Contact",
+                    "name": doc.name,
+                    "customer_name": display_name,
+                    "email": primary_email,
+                    "phone": primary_phone,
+                    "company": doc.company_name or "",
+                })
+            except Exception:
+                continue
+    except Exception:
+        pass
+
+    # ── Search HD Customer ────────────────────────────────────────────────────
+    try:
+        hd_customers = frappe.get_all(
+            "HD Customer",
+            or_filters=[
+                ["customer_name", "like", like_query],
+                ["email", "like", like_query],
+                ["phone", "like", like_query],
+                ["cvr", "like", like_query],
+                ["domain", "like", like_query],
+            ],
+            fields=["name", "customer_name", "email", "phone", "domain", "cvr"],
+            limit_page_length=5,
+        )
+        for hd in hd_customers:
+            results.append({
+                "source": "HD Customer",
+                "name": hd.name,
+                "customer_name": hd.customer_name or hd.name,
+                "email": hd.email or "",
+                "phone": hd.phone or "",
+                "company": hd.domain or "",
+                "cvr": hd.cvr or "",
+            })
+    except Exception:
+        pass
+
+    return results[:10]
+
+
+@frappe.whitelist()
+def get_customer_bookings(customer_email, exclude_booking=None):
+    """
+    Get recent (last 30 days) + upcoming bookings for a customer by email.
+
+    Args:
+        customer_email (str): Customer email to search by
+        exclude_booking (str, optional): Booking name to exclude (current booking)
+
+    Returns:
+        list: Bookings with name, meeting_title, start_datetime, booking_status, assigned_to_name
+    """
+    if not customer_email:
+        return []
+
+    from datetime import datetime, timedelta
+
+    thirty_days_ago = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+
+    filters = [
+        ["customer_email_at_booking", "=", customer_email],
+        ["start_datetime", ">=", thirty_days_ago],
+    ]
+
+    if exclude_booking:
+        filters.append(["name", "!=", exclude_booking])
+
+    bookings = frappe.get_all(
+        "MM Meeting Booking",
+        filters=filters,
+        fields=[
+            "name", "meeting_title", "start_datetime", "end_datetime",
+            "booking_status", "assigned_to_name", "select_mkru",
+            "duration_minutes", "is_internal",
+        ],
+        order_by="start_datetime asc",
+        limit_page_length=20,
+    )
+
+    return bookings

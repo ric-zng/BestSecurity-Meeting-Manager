@@ -14,6 +14,7 @@ declare module 'vue' {
     CalendarToolbar: typeof import('./src/components/calendar/CalendarToolbar.vue')['default']
     CancelBookingModal: typeof import('./src/components/bookings/CancelBookingModal.vue')['default']
     ChangeStatusModal: typeof import('./src/components/bookings/ChangeStatusModal.vue')['default']
+    ConfirmDeleteDialog: typeof import('./src/components/calendar/ConfirmDeleteDialog.vue')['default']
     CreateSlotBookingDialog: typeof import('./src/components/calendar/CreateSlotBookingDialog.vue')['default']
     DatePicker: typeof import('./src/components/calendar/DatePicker.vue')['default']
     DragConfirmDialog: typeof import('./src/components/calendar/DragConfirmDialog.vue')['default']

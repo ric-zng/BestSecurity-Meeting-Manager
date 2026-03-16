@@ -105,6 +105,12 @@ const routes = [
     meta: { minRole: "system_manager", title: "OAuth Settings" },
   },
   {
+    path: "/admin/status-colors",
+    name: "StatusColors",
+    component: () => import("@/pages/admin/StatusColors.vue"),
+    meta: { minRole: "system_manager", title: "Status Colors" },
+  },
+  {
     path: "/:pathMatch(.*)*",
     name: "NotFound",
     component: () => import("@/pages/NotFound.vue"),

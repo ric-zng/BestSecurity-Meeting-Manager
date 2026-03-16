@@ -37,12 +37,14 @@
     <BlockSlotDialog :show="blockSlot.show" :slot-info="blockSlot.info" @close="blockSlot.show = false" @success="onDialogSuccess('blockSlot')" />
     <CreateSlotBookingDialog :show="createBooking.show" :slot-info="createBooking.info" @close="createBooking.show = false" @success="onDialogSuccess('createBooking')" />
     <DragConfirmDialog :show="dragConfirm.show" :drag-info="dragConfirm.info" @close="cancelDrag" @confirm="confirmDrag" />
+    <ConfirmDeleteDialog :show="deleteSlot.show" :slot-info="deleteSlot.info" @close="deleteSlot.show = false" @confirm="handleDeleteConfirm" />
 
     <!-- Booking detail sidebar -->
     <BookingDetailSidebar
       :booking-id="selectedEvent"
       @close="selectedEvent = null"
       @view-full="(name) => { router.push(`/bookings/${name}`); selectedEvent = null }"
+      @refresh="calendar?.refetchEvents()"
     />
   </div>
 </template>
@@ -67,6 +69,7 @@ import SlotActionDialog from "@/components/calendar/SlotActionDialog.vue";
 import BlockSlotDialog from "@/components/calendar/BlockSlotDialog.vue";
 import CreateSlotBookingDialog from "@/components/calendar/CreateSlotBookingDialog.vue";
 import DragConfirmDialog from "@/components/calendar/DragConfirmDialog.vue";
+import ConfirmDeleteDialog from "@/components/calendar/ConfirmDeleteDialog.vue";
 import BookingDetailSidebar from "@/components/calendar/BookingDetailSidebar.vue";
 
 const router = useRouter();
@@ -89,6 +92,7 @@ const slotAction = reactive({ show: false, info: null });
 const blockSlot = reactive({ show: false, info: null });
 const createBooking = reactive({ show: false, info: null });
 const dragConfirm = reactive({ show: false, info: null, revertFn: null });
+const deleteSlot = reactive({ show: false, info: null });
 
 // ── Toolbar actions ───────────────────────────────────────────────────────────
 function handleToggleOrientation() {
@@ -132,29 +136,58 @@ function onDialogSuccess(dialogKey) {
 }
 
 // ── Drag/drop ─────────────────────────────────────────────────────────────────
-function buildDragInfo(ev, actionType, oldResourceId) {
-  const ep = ev.extendedProps || {};
-  return {
-    bookingId: ev.id, actionType,
-    newStart: ev.start, newEnd: ev.end,
-    newResourceId: ev.getResources?.()[0]?.id || oldResourceId,
-    oldResourceId,
-    title: ev.title,
-    customerName: ep.customer_name,
-    bookingStatus: ep.booking_status,
-  };
-}
-
 function handleEventDrop(info) {
-  const actionType = info.newResource && info.newResource.id !== info.oldResource?.id ? "reassign" : "reschedule";
-  dragConfirm.info = buildDragInfo(info.event, actionType, info.oldResource?.id);
-  dragConfirm.info.newResourceId = info.newResource?.id || info.oldResource?.id;
+  const ep = info.event.extendedProps || {};
+  const oldRes = info.oldResource;
+  const newRes = info.newResource || oldRes;
+  const hasHostChange = newRes && oldRes && newRes.id !== oldRes.id;
+  const hasTimeChange = info.oldEvent.start?.getTime() !== info.event.start?.getTime();
+  let actionType = "reschedule";
+  if (hasHostChange && hasTimeChange) actionType = "reassign_reschedule";
+  else if (hasHostChange) actionType = "reassign";
+
+  dragConfirm.info = {
+    bookingId: ep.booking_id || info.event.id,
+    actionType,
+    eventTitle: info.event.title,
+    meetingType: ep.meeting_type_name,
+    customerName: ep.customer_name,
+    department: ep.department_name,
+    status: ep.status || ep.booking_status,
+    isInternal: ep.is_internal,
+    oldStart: info.oldEvent.start?.toISOString(),
+    newStart: info.event.start?.toISOString(),
+    newEnd: info.event.end?.toISOString(),
+    oldResource: oldRes?.title || ep.assigned_to_name,
+    newResource: newRes?.title,
+    oldResourceId: oldRes?.id,
+    newResourceId: newRes?.id,
+  };
   dragConfirm.revertFn = info.revert;
   dragConfirm.show = true;
 }
 
 function handleEventResize(info) {
-  dragConfirm.info = buildDragInfo(info.event, "extend", null);
+  const ep = info.event.extendedProps || {};
+  const resource = info.event.getResources?.()[0];
+  dragConfirm.info = {
+    bookingId: ep.booking_id || info.event.id,
+    actionType: "reschedule",
+    eventTitle: info.event.title,
+    meetingType: ep.meeting_type_name,
+    customerName: ep.customer_name,
+    department: ep.department_name,
+    status: ep.status || ep.booking_status,
+    isInternal: ep.is_internal,
+    oldStart: info.oldEvent.start?.toISOString(),
+    oldEnd: info.oldEvent.end?.toISOString(),
+    newStart: info.event.start?.toISOString(),
+    newEnd: info.event.end?.toISOString(),
+    oldResource: resource?.title || ep.assigned_to_name,
+    newResource: resource?.title,
+    oldResourceId: resource?.id,
+    newResourceId: resource?.id,
+  };
   dragConfirm.revertFn = info.revert;
   dragConfirm.show = true;
 }
@@ -185,13 +218,26 @@ function handleEventClick(info) {
   const ep = info.event.extendedProps;
   if (ep?.type === "blocked_slot") {
     if (canManageBlockedSlot(info.event.getResources()[0]?.id)) {
-      if (confirm("Delete this blocked slot?")) {
-        deleteBlockedSlot(ep.slot_name).then(() => calendar?.refetchEvents());
-      }
+      deleteSlot.info = {
+        title: info.event.title,
+        resourceTitle: info.event.getResources()[0]?.title,
+        start: info.event.start,
+        end: info.event.end,
+        slotName: ep.slot_name,
+      };
+      deleteSlot.show = true;
     }
     return;
   }
-  selectedEvent.value = info.event.id;
+  selectedEvent.value = ep?.booking_id || info.event.id;
+}
+
+async function handleDeleteConfirm(slotName) {
+  try {
+    await deleteBlockedSlot(slotName);
+    calendar?.refetchEvents();
+  } catch { /* error handled silently */ }
+  deleteSlot.show = false;
 }
 
 // ── Select (time slot click) ──────────────────────────────────────────────────
@@ -209,16 +255,36 @@ function handleSelect(selectInfo) {
 // ── Event rendering ───────────────────────────────────────────────────────────
 function handleEventMount(info) {
   const ep = info.event.extendedProps || {};
-  if (ep.type === "blocked_slot" || info.event.display === "background") return;
+  if (info.event.display === "background") return;
+  if (ep.type === "blocked_slot") {
+    info.event.setProp("editable", false);
+    info.event.setProp("startEditable", false);
+    info.event.setProp("resourceEditable", false);
+    info.el.classList.add("ec-non-draggable");
+    return;
+  }
 
   const color = getStatusColor(ep.booking_status);
-  if (color) info.el.style.borderLeftColor = color;
+  if (color) {
+    info.el.style.backgroundColor = color;
+    info.el.style.borderColor = color;
+    info.el.style.borderLeftWidth = "4px";
+    info.el.style.borderLeftColor = darkenColor(color, 0.3);
+  }
   if (ep.is_team_meeting) info.el.classList.add("ec-team-meeting");
   if (ep.is_own_booking) info.el.classList.add("ec-own-booking");
   if (!canModifyEvent(info.event)) {
     info.el.classList.add("ec-non-draggable");
     info.event.setProp("editable", false);
   }
+}
+
+function darkenColor(hex, amount) {
+  const num = parseInt(hex.replace("#", ""), 16);
+  const r = Math.max(0, Math.round(((num >> 16) & 0xff) * (1 - amount)));
+  const g = Math.max(0, Math.round(((num >> 8) & 0xff) * (1 - amount)));
+  const b = Math.max(0, Math.round((num & 0xff) * (1 - amount)));
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
 }
 
 function showTooltip(info) {

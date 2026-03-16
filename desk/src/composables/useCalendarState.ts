@@ -1,16 +1,17 @@
 import { reactive, ref, computed } from "vue";
+import { call } from "frappe-ui";
 
-// Status color mapping (from the original JS)
-const STATUS_COLORS: Record<string, string> = {
+const API_BASE = "meeting_manager.meeting_manager.page.mm_enhanced_calendar.api";
+
+// Fallback colors used until API responds or if API fails
+const FALLBACK_COLORS: Record<string, string> = {
   "New Booking": "#1e40af",
   "New Appointment": "#ec4899",
   "Booking Started": "#60a5fa",
   "Sale Approved": "#22c55e",
   "Booking Approved Not Sale": "#ef4444",
   "Call Customer About Sale": "#f97316",
-  "No Answer 1": "#9ca3af",
-  "No Answer 2": "#9ca3af",
-  "No Answer 3": "#9ca3af",
+  "No Answer 1-3": "#9ca3af",
   "No Answer 4-5": "#964B00",
   "Customer Unsure": "#7dd3fc",
   "No Contact About Offer": "#b91c1c",
@@ -20,44 +21,61 @@ const STATUS_COLORS: Record<string, string> = {
   "Rebook": "#a855f7",
   "Rebook Earlier": "#9333ea",
   "Consent Sent Awaiting": "#3b82f6",
-  // Legacy statuses
-  "Confirmed": "#22c55e",
-  "Pending": "#f59e0b",
-  "Completed": "#10b981",
-  "No-Show": "#ef4444",
-  "Rescheduled": "#8b5cf6",
 };
 
-const LEGACY_STATUSES = ["Confirmed", "Pending", "Completed", "No-Show", "Rescheduled"];
+// Module-level shared state
+const statusColors = ref<Record<string, string>>({ ...FALLBACK_COLORS });
+let colorsLoaded = false;
+
+async function loadStatusColors() {
+  if (colorsLoaded) return;
+  try {
+    const res = await call(`${API_BASE}.get_status_colors`);
+    if (res && Object.keys(res).length > 0) {
+      statusColors.value = res;
+    }
+    colorsLoaded = true;
+  } catch {
+    // Keep fallback colors
+  }
+}
 
 export function getStatusColor(status: string): string {
-  return STATUS_COLORS[status] || "#6b7280";
+  return statusColors.value[status] || "#6b7280";
 }
 
 export function useCalendarState() {
   const currentView = ref("resourceTimeGridDay");
   const orientation = ref<"vertical" | "horizontal">("vertical");
 
+  // Load colors from DB on first use
+  loadStatusColors();
+
   const filters = reactive({
     departments: [] as string[],
     focusDepartment: "",
-    statuses: Object.keys(STATUS_COLORS).filter(s => !LEGACY_STATUSES.includes(s)),
+    statuses: [] as string[],
     services: [] as string[],
     meetingTypes: [] as string[],
   });
 
-  const allStatuses = Object.entries(STATUS_COLORS)
-    .filter(([key]) => !LEGACY_STATUSES.includes(key))
-    .map(([value, color]) => ({ value, color }));
+  // Reactive: re-computes when statusColors changes (after API load)
+  const allStatuses = computed(() =>
+    Object.entries(statusColors.value).map(([value, color]) => ({ value, color }))
+  );
+
+  // Initialize statuses filter once colors are loaded
+  loadStatusColors().then(() => {
+    if (filters.statuses.length === 0) {
+      filters.statuses = Object.keys(statusColors.value);
+    }
+  });
 
   const serviceTypes = [
     "Business", "Business Extended", "Business Rebook", "New Setup Business",
     "Private / Business Customer", "Private New Sale", "Private Self Book",
   ];
 
-  // Day view: vertical = time grid (columns per resource), horizontal = timeline (rows per resource)
-  // Week view: always timeline (rows per resource, days across top) — time grid is too wide
-  // Month view: simple day grid (no resource axis)
   const verticalViews = [
     { key: "resourceTimeGridDay", label: "Day" },
     { key: "resourceTimelineWeek", label: "Week" },
@@ -76,10 +94,9 @@ export function useCalendarState() {
 
   function toggleOrientation() {
     orientation.value = orientation.value === "vertical" ? "horizontal" : "vertical";
-    // Map current view to equivalent in other orientation
     const viewMap: Record<string, string> = {
       resourceTimeGridDay: "resourceTimelineDay",
-      resourceTimelineWeek: "resourceTimelineWeek", // week stays timeline in both
+      resourceTimelineWeek: "resourceTimelineWeek",
       dayGridMonth: "resourceTimelineMonth",
       resourceTimelineDay: "resourceTimeGridDay",
       resourceTimelineMonth: "dayGridMonth",
@@ -109,6 +126,6 @@ export function useCalendarState() {
     currentView, orientation, filters,
     allStatuses, serviceTypes, activeViews,
     toggleOrientation, toggleStatus, toggleDepartment,
-    STATUS_COLORS,
+    statusColors,
   };
 }

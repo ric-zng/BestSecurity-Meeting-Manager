@@ -253,19 +253,25 @@ function flattenBlockedSlots(data: Record<string, any[]>): any[] {
 
 // ── Drag/drop helpers ──────────────────────────────────────────────────────
 export async function submitDragUpdate(info: any, notifyFlags: any) {
-  const start = info.newStart;
-  const dateStr = start.toISOString().split("T")[0];
-  const timeStr = `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`;
-
-  await call(`${API_BASE}.update_calendar_booking`, {
+  const params: Record<string, any> = {
     booking_id: info.bookingId,
-    new_date: dateStr,
-    new_time: timeStr,
-    new_end: info.newEnd?.toISOString(),
-    new_resource_id: info.newResourceId,
-    action_type: info.actionType,
     ...notifyFlags,
-  });
+  };
+
+  // Send start/end datetimes
+  if (info.newStart) {
+    params.start_datetime = typeof info.newStart === "string" ? info.newStart : info.newStart.toISOString();
+  }
+  if (info.newEnd) {
+    params.end_datetime = typeof info.newEnd === "string" ? info.newEnd : info.newEnd.toISOString();
+  }
+
+  // Send new host for reassignment
+  if (info.newResourceId && info.actionType?.includes("reassign")) {
+    params.new_host = info.newResourceId;
+  }
+
+  await call(`${API_BASE}.update_calendar_booking`, params);
 }
 
 export async function deleteBlockedSlot(slotName: string) {

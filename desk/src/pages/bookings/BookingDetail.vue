@@ -382,6 +382,50 @@
             </dl>
           </div>
 
+          <!-- Customer Bookings Card -->
+          <div
+            v-if="!booking.is_internal && customerEmail"
+            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
+          >
+            <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
+              <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
+                Customer Bookings
+                <span v-if="customerBookings.length" class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">
+                  ({{ customerBookings.length }})
+                </span>
+              </h2>
+            </div>
+            <div v-if="customerBookingsLoading" class="flex items-center justify-center px-5 py-6">
+              <svg class="h-4 w-4 animate-spin text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            </div>
+            <div v-else-if="customerBookings.length === 0" class="px-5 py-4 text-sm text-gray-400 dark:text-gray-500">
+              No other bookings found for this customer.
+            </div>
+            <ul v-else class="divide-y divide-gray-100 dark:divide-gray-800 max-h-72 overflow-y-auto">
+              <li
+                v-for="cb in customerBookings"
+                :key="cb.name"
+                class="group cursor-pointer px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                @click="router.push(`/bookings/${cb.name}`)"
+              >
+                <div class="flex items-center justify-between gap-2">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {{ cb.meeting_title || cb.name }}
+                  </p>
+                  <StatusBadge :label="cb.booking_status" :status="cb.booking_status" size="xs" />
+                </div>
+                <div class="mt-1 flex flex-wrap items-center gap-x-3 text-xs text-gray-500 dark:text-gray-400">
+                  <span>{{ formatShortDate(cb.start_datetime) }}</span>
+                  <span v-if="cb.assigned_to_name">{{ cb.assigned_to_name }}</span>
+                  <span v-if="cb.select_mkru" class="text-gray-400 dark:text-gray-500">{{ cb.select_mkru }}</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+
           <!-- Links Card -->
           <div
             v-if="booking.cancel_link || booking.reschedule_link"
@@ -462,7 +506,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { createResource, toast, Tooltip } from 'frappe-ui'
+import { createResource, call, toast, Tooltip } from 'frappe-ui'
 import { useBookingNavigation } from '@/composables/useBookingNavigation'
 import StatusBadge from '@/components/shared/StatusBadge.vue'
 import ErrorState from '@/components/shared/ErrorState.vue'
@@ -522,6 +566,25 @@ const externalParticipants = computed(() => data.value?.external_participants ||
 const permissions = computed(() => data.value?.permissions || {})
 const userContext = computed(() => data.value?.user_context || {})
 
+// ---- Customer bookings ----
+const customerEmail = computed(() => customer.value?.primary_email || booking.value.customer_email_at_booking || '')
+const customerBookings = ref([])
+const customerBookingsLoading = ref(false)
+
+watch(customerEmail, async (email) => {
+  customerBookings.value = []
+  if (!email) return
+  customerBookingsLoading.value = true
+  try {
+    const res = await call(
+      'meeting_manager.meeting_manager.page.mm_enhanced_calendar.api.get_customer_bookings',
+      { customer_email: email, exclude_booking: booking.value.name }
+    )
+    customerBookings.value = res || []
+  } catch { customerBookings.value = [] }
+  finally { customerBookingsLoading.value = false }
+}, { immediate: true })
+
 // ---- Formatting helpers ----
 
 function formatDateTime(dt) {
@@ -538,6 +601,12 @@ function formatDateTime(dt) {
 function formatTime(dt) {
   if (!dt) return ''
   return new Date(dt).toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' })
+}
+
+function formatShortDate(dt) {
+  if (!dt) return ''
+  const d = new Date(dt)
+  return d.toLocaleDateString('da-DK', { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' })
 }
 
 function getInitials(name) {

@@ -129,6 +129,10 @@ def after_install():
 		# Create team-meeting Page if it doesn't exist
 		create_team_meeting_page()
 
+		# Seed default status colors
+		from meeting_manager.meeting_manager.doctype.mm_status_color.mm_status_color import seed_default_colors
+		seed_default_colors()
+
 		# Create workspace
 		setup_workspace()
 
