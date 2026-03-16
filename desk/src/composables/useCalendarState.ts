@@ -55,9 +55,12 @@ export function useCalendarState() {
     "Private / Business Customer", "Private New Sale", "Private Self Book",
   ];
 
+  // Day view: vertical = time grid (columns per resource), horizontal = timeline (rows per resource)
+  // Week view: always timeline (rows per resource, days across top) — time grid is too wide
+  // Month view: simple day grid (no resource axis)
   const verticalViews = [
     { key: "resourceTimeGridDay", label: "Day" },
-    { key: "resourceTimeGridWeek", label: "Week" },
+    { key: "resourceTimelineWeek", label: "Week" },
     { key: "dayGridMonth", label: "Month" },
   ];
 
@@ -76,10 +79,9 @@ export function useCalendarState() {
     // Map current view to equivalent in other orientation
     const viewMap: Record<string, string> = {
       resourceTimeGridDay: "resourceTimelineDay",
-      resourceTimeGridWeek: "resourceTimelineWeek",
+      resourceTimelineWeek: "resourceTimelineWeek", // week stays timeline in both
       dayGridMonth: "resourceTimelineMonth",
       resourceTimelineDay: "resourceTimeGridDay",
-      resourceTimelineWeek: "resourceTimeGridWeek",
       resourceTimelineMonth: "dayGridMonth",
     };
     currentView.value = viewMap[currentView.value] || currentView.value;
