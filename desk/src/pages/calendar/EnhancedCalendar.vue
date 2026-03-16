@@ -352,6 +352,27 @@ watch(filters, () => {
   scrollbar-color: #4b5563 #1f2937;
 }
 
+/* ── Today Column Highlight ─────────────────────────────────────────────────── */
+.fc .fc-day-today {
+  background-color: rgba(59, 130, 246, 0.06) !important;
+}
+.fc .fc-col-header-cell.fc-day-today {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+}
+.fc .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion {
+  color: #2563eb;
+  font-weight: 700;
+}
+.dark .fc .fc-day-today {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+}
+.dark .fc .fc-col-header-cell.fc-day-today {
+  background-color: rgba(59, 130, 246, 0.18) !important;
+}
+.dark .fc .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion {
+  color: #60a5fa;
+}
+
 /* ── Event Styling ──────────────────────────────────────────────────────────── */
 .fc-event { cursor: pointer; border-radius: 4px; font-size: 0.75rem; }
 

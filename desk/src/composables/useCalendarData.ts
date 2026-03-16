@@ -205,16 +205,20 @@ export async function fetchEvents(
     // Ensure we have resource IDs before fetching business hours
     const resourceIds = await ensureResourceIds(filters);
 
+    const resourceParams = {
+      resource_ids: JSON.stringify(resourceIds),
+      start_date: startStr,
+      end_date: endStr,
+    };
+
     const [bookingEvents, businessHours, blockedSlots] = await Promise.all([
       call(`${API_BASE}.get_calendar_events`, eventParams),
       resourceIds.length
-        ? call(`${API_BASE}.get_all_resources_business_hours`, {
-            resource_ids: JSON.stringify(resourceIds),
-            start_date: startStr,
-            end_date: endStr,
-          })
+        ? call(`${API_BASE}.get_all_resources_business_hours`, resourceParams)
         : Promise.resolve({}),
-      call(`${API_BASE}.get_user_blocked_slots`, baseParams),
+      resourceIds.length
+        ? call(`${API_BASE}.get_user_blocked_slots`, resourceParams)
+        : Promise.resolve([]),
     ]);
 
     const bhEvents = generateBusinessHoursEvents(businessHours || {}, startStr, endStr);
