@@ -21,8 +21,8 @@ export async function fetchResources(
     if (filters.departments.length) params.departments = JSON.stringify(filters.departments);
     if (filters.focusDepartment) params.focus_department = filters.focusDepartment;
     const res = await call(`${API_BASE}.get_calendar_resources`, params);
-    // Cache resource IDs for business hours fetch
     cachedResourceIds = (res || []).map((r: any) => r.id);
+    cachedFilterKey = buildFilterKey(filters);
     successCb(res || []);
   } catch (e) {
     failureCb(e);
@@ -31,6 +31,24 @@ export async function fetchResources(
 
 // Keep resource IDs in sync for business hours
 let cachedResourceIds: string[] = [];
+let cachedFilterKey = "";
+
+function buildFilterKey(f: Filters): string {
+  return `${f.departments.join(",")}_${f.focusDepartment}`;
+}
+
+// Fetch resource IDs if not yet cached or filters changed
+async function ensureResourceIds(filters: Filters): Promise<string[]> {
+  const key = buildFilterKey(filters);
+  if (cachedResourceIds.length && cachedFilterKey === key) return cachedResourceIds;
+  const params: Record<string, string> = {};
+  if (filters.departments.length) params.departments = JSON.stringify(filters.departments);
+  if (filters.focusDepartment) params.focus_department = filters.focusDepartment;
+  const res = await call(`${API_BASE}.get_calendar_resources`, params);
+  cachedResourceIds = (res || []).map((r: any) => r.id);
+  cachedFilterKey = key;
+  return cachedResourceIds;
+}
 
 // ── Business-hours → background events ─────────────────────────────────────
 // API returns: { resourceId: { businessHours: [...], dateOverrides: [...] } }
@@ -118,7 +136,10 @@ function normalizeTime(t: string): string {
 }
 
 function toDateStr(d: Date): string {
-  return d.toISOString().split("T")[0];
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 function dayOffEvent(rid: string, dateStr: string) {
@@ -181,19 +202,17 @@ export async function fetchEvents(
     if (filters.statuses.length) eventParams.statuses = JSON.stringify(filters.statuses);
     if (filters.services.length) eventParams.services = JSON.stringify(filters.services);
 
-    // Fetch booking events + blocked slots in parallel
-    // Business hours need resource IDs — use cached list from last resource fetch
-    const bhParams: Record<string, string> = {
-      ...baseParams,
-      resource_ids: JSON.stringify(cachedResourceIds),
-      start_date: startStr,
-      end_date: endStr,
-    };
+    // Ensure we have resource IDs before fetching business hours
+    const resourceIds = await ensureResourceIds(filters);
 
     const [bookingEvents, businessHours, blockedSlots] = await Promise.all([
       call(`${API_BASE}.get_calendar_events`, eventParams),
-      cachedResourceIds.length
-        ? call(`${API_BASE}.get_all_resources_business_hours`, bhParams)
+      resourceIds.length
+        ? call(`${API_BASE}.get_all_resources_business_hours`, {
+            resource_ids: JSON.stringify(resourceIds),
+            start_date: startStr,
+            end_date: endStr,
+          })
         : Promise.resolve({}),
       call(`${API_BASE}.get_user_blocked_slots`, baseParams),
     ]);
