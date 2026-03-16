@@ -128,7 +128,20 @@ function formatTime(val) {
 function toDateStr(val) {
   const d = toDate(val)
   if (!d) return ''
-  return d.toISOString().split('T')[0]
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+function isPastDate(val) {
+  const d = toDate(val)
+  if (!d) return false
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const target = new Date(d)
+  target.setHours(0, 0, 0, 0)
+  return target < today
 }
 
 function toTimeStr(val) {
@@ -157,6 +170,10 @@ async function handleSubmit() {
     validationError.value = 'Reason is required'
     return
   }
+  if (isPastDate(props.slotInfo?.start)) {
+    validationError.value = 'Cannot block time slots in the past'
+    return
+  }
 
   submitting.value = true
   try {
@@ -164,7 +181,7 @@ async function handleSubmit() {
       'meeting_manager.meeting_manager.page.mm_enhanced_calendar.api.create_blocked_slot',
       {
         user: props.slotInfo?.resourceId,
-        date: toDateStr(props.slotInfo?.start),
+        blocked_date: toDateStr(props.slotInfo?.start),
         start_time: toTimeStr(props.slotInfo?.start),
         end_time: toTimeStr(props.slotInfo?.end),
         reason: reason.value.trim(),
