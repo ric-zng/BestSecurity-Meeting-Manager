@@ -143,17 +143,42 @@
 
             <!-- Inline reschedule form -->
             <transition enter-active-class="transition duration-150" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
-              <div v-if="activePanel === 'reschedule'" class="mt-3 space-y-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-                <div class="grid grid-cols-2 gap-2">
-                  <div>
-                    <label class="mb-1 block text-[10px] font-medium uppercase text-gray-500">Date</label>
-                    <input v-model="rescheduleForm.date" type="date" class="fld" />
+              <div v-if="activePanel === 'reschedule'" class="mt-3 space-y-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+                <!-- Mini calendar -->
+                <div class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">
+                  <div class="mb-2 flex items-center justify-between">
+                    <button @click="calChangeMonth(-1)" class="rounded p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                    <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ calMonthLabel }}</span>
+                    <button @click="calChangeMonth(1)" class="rounded p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </button>
                   </div>
-                  <div>
-                    <label class="mb-1 block text-[10px] font-medium uppercase text-gray-500">Time</label>
-                    <input v-model="rescheduleForm.time" type="time" class="fld" />
+                  <div class="grid grid-cols-7 gap-0.5 text-center">
+                    <div v-for="d in ['Mo','Tu','We','Th','Fr','Sa','Su']" :key="d" class="py-1 text-[10px] font-medium text-gray-400 dark:text-gray-500">{{ d }}</div>
+                    <template v-for="(day, idx) in calDays" :key="idx">
+                      <button
+                        v-if="day.date"
+                        @click="rescheduleForm.date = day.date"
+                        class="flex h-8 w-8 items-center justify-center rounded-full text-xs transition-colors mx-auto"
+                        :class="calDayClass(day)"
+                      >{{ day.day }}</button>
+                      <div v-else class="h-8 w-8" />
+                    </template>
+                  </div>
+                  <div class="mt-2 flex items-center justify-between">
+                    <button @click="calGoToday" class="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400">Today</button>
+                    <span v-if="rescheduleForm.date" class="text-xs text-gray-500 dark:text-gray-400">{{ formatDate(rescheduleForm.date + 'T12:00:00') }}</span>
                   </div>
                 </div>
+
+                <!-- Time input -->
+                <div>
+                  <label class="mb-1 block text-[10px] font-medium uppercase text-gray-500">Time</label>
+                  <input v-model="rescheduleForm.time" type="time" class="fld" />
+                </div>
+
                 <div class="flex gap-2">
                   <button @click="activePanel = null" class="flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 dark:border-gray-600 dark:text-gray-300">Cancel</button>
                   <button
@@ -519,15 +544,68 @@ async function cancelBooking() {
   }
 }
 
+// ── Mini calendar for reschedule ──────────────────────────────────────────────
+const calViewMonth = ref(new Date().getMonth());
+const calViewYear = ref(new Date().getFullYear());
+
+const calMonthLabel = computed(() => {
+  const d = new Date(calViewYear.value, calViewMonth.value, 1);
+  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+});
+
+const calDays = computed(() => {
+  const year = calViewYear.value;
+  const month = calViewMonth.value;
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startDow = (firstDay.getDay() + 6) % 7; // Monday = 0
+  const daysInMonth = lastDay.getDate();
+  const todayStr = toLocalDateStr(new Date());
+
+  const days = [];
+  for (let i = 0; i < startDow; i++) days.push({ date: null, day: null });
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    days.push({ date: dateStr, day: d, isPast: dateStr < todayStr, isToday: dateStr === todayStr });
+  }
+  return days;
+});
+
+function calDayClass(day) {
+  if (rescheduleForm.value.date === day.date) return "bg-blue-600 text-white font-semibold";
+  if (day.isToday) return "bg-blue-100 text-blue-700 font-semibold dark:bg-blue-900/40 dark:text-blue-400";
+  if (day.isPast) return "text-gray-300 dark:text-gray-600";
+  return "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700";
+}
+
+function calChangeMonth(delta) {
+  let m = calViewMonth.value + delta;
+  let y = calViewYear.value;
+  if (m > 11) { m = 0; y++; }
+  if (m < 0) { m = 11; y--; }
+  calViewMonth.value = m;
+  calViewYear.value = y;
+}
+
+function calGoToday() {
+  const now = new Date();
+  calViewMonth.value = now.getMonth();
+  calViewYear.value = now.getFullYear();
+  rescheduleForm.value.date = toLocalDateStr(now);
+}
+
+function toLocalDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 // Pre-fill reschedule form when panel opens
 watch(activePanel, (panel) => {
   if (panel === "reschedule" && booking.value?.start_datetime) {
     const dt = new Date(booking.value.start_datetime);
-    const y = dt.getFullYear();
-    const m = String(dt.getMonth() + 1).padStart(2, "0");
-    const d = String(dt.getDate()).padStart(2, "0");
-    rescheduleForm.value.date = `${y}-${m}-${d}`;
+    rescheduleForm.value.date = toLocalDateStr(dt);
     rescheduleForm.value.time = `${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`;
+    calViewMonth.value = dt.getMonth();
+    calViewYear.value = dt.getFullYear();
   }
 });
 
