@@ -511,7 +511,7 @@ def reschedule_booking_internal(booking_id, new_date, new_time, reason=None):
 @frappe.whitelist()
 def update_booking_status(booking_id, new_status, notes=None):
 	"""
-	Update booking status (e.g., mark as completed, no-show)
+	Update booking status.
 
 	Permissions:
 	- System Manager: Can update any booking
@@ -520,7 +520,7 @@ def update_booking_status(booking_id, new_status, notes=None):
 
 	Args:
 		booking_id (str): Booking ID
-		new_status (str): New status (Confirmed, Cancelled, Completed, No-show)
+		new_status (str): New booking_status value from MM Meeting Booking doctype
 		notes (str, optional): Notes about status change
 
 	Returns:
@@ -536,39 +536,44 @@ def update_booking_status(booking_id, new_status, notes=None):
 	if not has_permission_to_manage_booking(booking):
 		frappe.throw(_("You don't have permission to update this booking"))
 
-	# Validate status transition
-	valid_statuses = ["Confirmed", "Cancelled", "Completed", "No-show"]
+	# Validate status against the doctype's allowed options
+	valid_statuses = [
+		"New Appointment", "New Booking", "Booking Started",
+		"Sale Approved", "Booking Approved Not Sale",
+		"Call Customer About Sale", "No Answer 1-3", "No Answer 4-5",
+		"Customer Unsure", "No Contact About Offer", "Cancelled",
+		"Optimising Not Possible", "Not Possible",
+		"Rebook", "Rebook Earlier", "Consent Sent Awaiting",
+	]
 	if new_status not in valid_statuses:
 		frappe.throw(_(f"Invalid status. Must be one of: {', '.join(valid_statuses)}"))
 
-	old_status = booking.status
+	old_status = booking.booking_status
 
 	# Update status
-	booking.status = new_status
+	booking.booking_status = new_status
 
 	# Handle cancellation
 	if new_status == "Cancelled":
-		booking.cancellation_reason = "Other"
-		booking.cancelled_by_role = get_user_role_for_booking(booking)
-		booking.cancelled_datetime = now_datetime()
-		booking.cancellation_notes = notes
+		booking.cancelled_at = now_datetime()
+		booking.cancellation_reason = notes or "Cancelled"
 
 	# Add to booking history
+	description = f"Status changed from '{old_status}' to '{new_status}'"
+	if notes:
+		description += f" — {notes}"
 	booking.append("booking_history", {
-		"action": f"Status changed to {new_status}",
-		"action_by": frappe.session.user,
-		"action_by_role": get_user_role_for_booking(booking),
-		"action_datetime": now_datetime(),
-		"old_value": old_status,
-		"new_value": new_status,
-		"notes": notes or f"Status changed from {old_status} to {new_status}"
+		"event_type": "Status Change",
+		"event_datetime": now_datetime(),
+		"event_by": frappe.session.user,
+		"event_description": description,
 	})
 
 	booking.save()
 
 	return {
 		"success": True,
-		"message": _(f"Booking status updated to {new_status}. Notifications will be sent as configured.")
+		"message": _(f"Booking status updated to {new_status}.")
 	}
 
 

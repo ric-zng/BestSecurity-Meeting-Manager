@@ -54,7 +54,8 @@
 
         <!-- Content -->
         <div v-else-if="booking" class="flex-1 overflow-y-auto">
-          <!-- Status bar -->
+
+          <!-- ═══ Status Section ═══ -->
           <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
@@ -68,36 +69,71 @@
                   Team
                 </span>
               </div>
-              <!-- Status change button -->
               <button
-                v-if="permissions?.can_edit && !isFinalized"
-                @click="activePanel = activePanel === 'status' ? null : 'status'"
+                v-if="permissions?.can_edit"
+                @click="togglePanel('status')"
                 class="rounded px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
               >
                 Change
               </button>
             </div>
 
-            <!-- Inline status change -->
+            <!-- Inline status change with notes -->
             <transition enter-active-class="transition duration-150" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
-              <div v-if="activePanel === 'status'" class="mt-3 space-y-2">
-                <div class="grid grid-cols-2 gap-1.5">
+              <div v-if="activePanel === 'status'" class="mt-3 space-y-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+                <!-- Status dropdown -->
+                <div>
+                  <label class="sidebar-label">New Status</label>
+                  <div class="relative" ref="statusDropdownRef">
+                    <button @click="statusDropdownOpen = !statusDropdownOpen" class="sidebar-select">
+                      <span class="flex items-center gap-2">
+                        <span v-if="statusForm.status" class="h-2.5 w-2.5 shrink-0 rounded-full" :style="{ backgroundColor: getStatusColor(statusForm.status) }" />
+                        <span :class="statusForm.status ? 'text-gray-900 dark:text-white' : 'text-gray-400'">
+                          {{ statusForm.status || 'Select status...' }}
+                        </span>
+                      </span>
+                      <svg class="h-4 w-4 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <transition enter-active-class="transition duration-100" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-75" leave-from-class="opacity-100" leave-to-class="opacity-0 scale-95">
+                      <div v-if="statusDropdownOpen" class="sidebar-dropdown">
+                        <button
+                          v-for="s in BOOKING_STATUSES.filter(st => st !== booking.booking_status)"
+                          :key="s"
+                          @click="statusForm.status = s; statusDropdownOpen = false"
+                          class="sidebar-dropdown-item"
+                        >
+                          <span class="h-2.5 w-2.5 shrink-0 rounded-full" :style="{ backgroundColor: getStatusColor(s) }" />
+                          <span>{{ s }}</span>
+                        </button>
+                      </div>
+                    </transition>
+                  </div>
+                </div>
+                <!-- Notes -->
+                <div>
+                  <label class="sidebar-label">Notes (optional)</label>
+                  <textarea
+                    v-model="statusForm.notes"
+                    rows="2"
+                    placeholder="Add a note about this status change..."
+                    class="fld resize-none"
+                  />
+                </div>
+                <div class="flex gap-2">
+                  <button @click="activePanel = null" class="sidebar-btn-secondary">Cancel</button>
                   <button
-                    v-for="s in validStatuses"
-                    :key="s.value"
-                    @click="changeStatus(s.value)"
-                    class="flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-left text-xs font-medium transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
-                    :class="actionLoading === 'status' ? 'pointer-events-none opacity-50' : 'border-gray-200 dark:border-gray-700'"
+                    @click="changeStatus"
+                    :disabled="!statusForm.status || actionLoading === 'status'"
+                    class="sidebar-btn-primary"
                   >
-                    <span class="h-2 w-2 shrink-0 rounded-full" :style="{ backgroundColor: s.color }" />
-                    <span class="truncate text-gray-700 dark:text-gray-300">{{ s.value }}</span>
+                    {{ actionLoading === 'status' ? 'Saving...' : 'Update Status' }}
                   </button>
                 </div>
               </div>
             </transition>
           </div>
 
-          <!-- Title & meeting info -->
+          <!-- ═══ Title & Meeting Info ═══ -->
           <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
             <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
               {{ booking.meeting_title || meetingType?.meeting_name || 'Meeting' }}
@@ -107,13 +143,13 @@
             </p>
           </div>
 
-          <!-- Date/Time section -->
+          <!-- ═══ Schedule Section ═══ -->
           <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
             <div class="flex items-center justify-between">
-              <h4 class="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Schedule</h4>
+              <h4 class="sidebar-label mb-0">Schedule</h4>
               <button
                 v-if="permissions?.can_reschedule && !isFinalized"
-                @click="activePanel = activePanel === 'reschedule' ? null : 'reschedule'"
+                @click="togglePanel('reschedule')"
                 class="rounded px-2 py-0.5 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
               >
                 Reschedule
@@ -132,12 +168,6 @@
                 </svg>
                 <span class="text-gray-900 dark:text-white">{{ formatTimeRange(booking.start_datetime, booking.end_datetime) }}</span>
                 <span class="text-xs text-gray-400">({{ booking.duration_minutes || booking.duration }} min)</span>
-              </div>
-              <div v-if="booking.service_type" class="flex items-center gap-2 text-sm">
-                <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <span class="text-gray-900 dark:text-white">{{ booking.service_type }}</span>
               </div>
             </div>
 
@@ -161,7 +191,7 @@
                       <button
                         v-if="day.date"
                         @click="rescheduleForm.date = day.date"
-                        class="flex h-8 w-8 items-center justify-center rounded-full text-xs transition-colors mx-auto"
+                        class="mx-auto flex h-8 w-8 items-center justify-center rounded-full text-xs transition-colors"
                         :class="calDayClass(day)"
                       >{{ day.day }}</button>
                       <div v-else class="h-8 w-8" />
@@ -173,18 +203,47 @@
                   </div>
                 </div>
 
-                <!-- Time input -->
-                <div>
-                  <label class="mb-1 block text-[10px] font-medium uppercase text-gray-500">Time</label>
-                  <input v-model="rescheduleForm.time" type="time" class="fld" />
+                <!-- Time spinners (24hr, step 15min) -->
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="sidebar-label">Start Time</label>
+                    <div class="flex items-center gap-1">
+                      <button @click="adjustTime('start', -15)" class="time-btn">
+                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+                      </button>
+                      <div class="flex-1 rounded-lg border border-gray-300 bg-white py-2 text-center text-sm font-semibold tabular-nums text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+                        {{ rescheduleForm.startTime }}
+                      </div>
+                      <button @click="adjustTime('start', 15)" class="time-btn">
+                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="sidebar-label">End Time</label>
+                    <div class="flex items-center gap-1">
+                      <button @click="adjustTime('end', -15)" class="time-btn">
+                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+                      </button>
+                      <div class="flex-1 rounded-lg border border-gray-300 bg-white py-2 text-center text-sm font-semibold tabular-nums text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+                        {{ rescheduleForm.endTime }}
+                      </div>
+                      <button @click="adjustTime('end', 15)" class="time-btn">
+                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                      </button>
+                    </div>
+                  </div>
                 </div>
+                <p v-if="rescheduleDuration" class="text-center text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                  Duration: {{ rescheduleDuration }} min
+                </p>
 
                 <div class="flex gap-2">
-                  <button @click="activePanel = null" class="flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 dark:border-gray-600 dark:text-gray-300">Cancel</button>
+                  <button @click="activePanel = null" class="sidebar-btn-secondary">Cancel</button>
                   <button
                     @click="rescheduleBooking"
-                    :disabled="!rescheduleForm.date || !rescheduleForm.time || actionLoading === 'reschedule'"
-                    class="flex-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+                    :disabled="!rescheduleForm.date || !rescheduleForm.startTime || !rescheduleForm.endTime || actionLoading === 'reschedule'"
+                    class="sidebar-btn-primary"
                   >
                     {{ actionLoading === 'reschedule' ? 'Saving...' : 'Save' }}
                   </button>
@@ -193,9 +252,55 @@
             </transition>
           </div>
 
-          <!-- Customer section (non-internal) -->
+          <!-- ═══ Service Section ═══ -->
+          <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+            <div class="flex items-center justify-between">
+              <h4 class="sidebar-label mb-0">Service</h4>
+              <button
+                v-if="permissions?.can_edit && !isFinalized"
+                @click="togglePanel('service')"
+                class="rounded px-2 py-0.5 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+              >
+                Change
+              </button>
+            </div>
+            <p class="mt-1.5 text-sm text-gray-900 dark:text-white">{{ booking.service_type || 'Not set' }}</p>
+
+            <!-- Inline service change -->
+            <transition enter-active-class="transition duration-150" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
+              <div v-if="activePanel === 'service'" class="mt-3 space-y-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+                <div class="space-y-1">
+                  <button
+                    v-for="svc in SERVICE_TYPES"
+                    :key="svc"
+                    @click="serviceForm.value = svc"
+                    class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors"
+                    :class="serviceForm.value === svc
+                      ? 'bg-blue-600 text-white font-medium'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                  >
+                    <svg v-if="serviceForm.value === svc" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span v-else class="h-4 w-4 shrink-0" />
+                    {{ svc }}
+                  </button>
+                </div>
+                <div class="flex gap-2 pt-1">
+                  <button @click="activePanel = null" class="sidebar-btn-secondary">Cancel</button>
+                  <button
+                    @click="changeService"
+                    :disabled="!serviceForm.value || serviceForm.value === booking.service_type || actionLoading === 'service'"
+                    class="sidebar-btn-primary"
+                  >
+                    {{ actionLoading === 'service' ? 'Saving...' : 'Update' }}
+                  </button>
+                </div>
+              </div>
+            </transition>
+          </div>
+
+          <!-- ═══ Customer Section ═══ -->
           <div v-if="customer && !booking.is_internal" class="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
-            <h4 class="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Customer</h4>
+            <h4 class="sidebar-label">Customer</h4>
             <div class="mt-2">
               <p class="text-sm font-medium text-gray-900 dark:text-white">{{ customer.customer_name || customer.name }}</p>
               <p v-if="customer.primary_email || customer.email_id" class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
@@ -204,10 +309,10 @@
             </div>
           </div>
 
-          <!-- Hosts section -->
+          <!-- ═══ Hosts Section ═══ -->
           <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
             <div class="flex items-center justify-between">
-              <h4 class="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Assigned To</h4>
+              <h4 class="sidebar-label mb-0">Assigned To</h4>
               <button
                 v-if="permissions?.can_reassign && !isFinalized && !booking.is_internal"
                 @click="openReassignPanel"
@@ -233,28 +338,45 @@
               </div>
             </div>
 
-            <!-- Inline reassign form -->
+            <!-- Inline reassign - clickable list -->
             <transition enter-active-class="transition duration-150" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
               <div v-if="activePanel === 'reassign'" class="mt-3 space-y-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-                <div>
-                  <label class="mb-1 block text-[10px] font-medium uppercase text-gray-500">Assign to</label>
-                  <div v-if="membersLoading" class="flex items-center gap-2 py-2 text-xs text-gray-400">
-                    <div class="h-3 w-3 animate-spin rounded-full border border-gray-400 border-t-transparent" />
-                    Loading members...
-                  </div>
-                  <select v-else v-model="reassignForm.user" class="fld">
-                    <option value="" disabled>Select team member...</option>
-                    <option v-for="m in departmentMembers" :key="m.user" :value="m.user">
-                      {{ m.full_name || m.user }}
-                    </option>
-                  </select>
+                <label class="sidebar-label">Assign to</label>
+                <div v-if="membersLoading" class="flex items-center gap-2 py-3 text-xs text-gray-400">
+                  <div class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-400 border-t-transparent" />
+                  Loading team members...
                 </div>
-                <div class="flex gap-2">
-                  <button @click="activePanel = null" class="flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 dark:border-gray-600 dark:text-gray-300">Cancel</button>
+                <div v-else-if="departmentMembers.length === 0" class="py-3 text-center text-xs text-gray-400">
+                  No other team members available
+                </div>
+                <div v-else class="max-h-48 space-y-1 overflow-y-auto">
+                  <button
+                    v-for="m in departmentMembers"
+                    :key="m.user"
+                    @click="reassignForm.user = m.user"
+                    class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors"
+                    :class="reassignForm.user === m.user
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                  >
+                    <div
+                      class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+                      :class="reassignForm.user === m.user
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'"
+                    >
+                      {{ m.full_name?.charAt(0)?.toUpperCase() || '?' }}
+                    </div>
+                    <span class="text-sm font-medium">{{ m.full_name || m.user }}</span>
+                    <svg v-if="reassignForm.user === m.user" class="ml-auto h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  </button>
+                </div>
+                <div class="flex gap-2 pt-1">
+                  <button @click="activePanel = null" class="sidebar-btn-secondary">Cancel</button>
                   <button
                     @click="reassignBooking"
                     :disabled="!reassignForm.user || actionLoading === 'reassign'"
-                    class="flex-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+                    class="sidebar-btn-primary"
                   >
                     {{ actionLoading === 'reassign' ? 'Saving...' : 'Reassign' }}
                   </button>
@@ -263,13 +385,13 @@
             </transition>
           </div>
 
-          <!-- Notes/Description -->
+          <!-- ═══ Notes/Description ═══ -->
           <div v-if="booking.notes || booking.meeting_description" class="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
-            <h4 class="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Notes</h4>
+            <h4 class="sidebar-label">Notes</h4>
             <p class="mt-1.5 whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-300">{{ booking.notes || booking.meeting_description }}</p>
           </div>
 
-          <!-- Action buttons (bottom) -->
+          <!-- ═══ Action Buttons ═══ -->
           <div class="px-5 py-4">
             <div class="flex gap-2">
               <button
@@ -283,7 +405,7 @@
               </button>
               <button
                 v-if="permissions?.can_cancel && !isFinalized"
-                @click="activePanel = activePanel === 'cancel' ? null : 'cancel'"
+                @click="togglePanel('cancel')"
                 class="rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
               >
                 Cancel
@@ -296,10 +418,17 @@
                 <p class="text-xs font-medium text-red-700 dark:text-red-400">
                   Cancel this booking? This cannot be undone.
                 </p>
+                <div>
+                  <label class="sidebar-label mt-2">Notes (optional)</label>
+                  <textarea
+                    v-model="cancelNotes"
+                    rows="2"
+                    placeholder="Reason for cancellation..."
+                    class="fld resize-none"
+                  />
+                </div>
                 <div class="mt-2 flex gap-2">
-                  <button @click="activePanel = null" class="flex-1 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
-                    Keep
-                  </button>
+                  <button @click="activePanel = null" class="sidebar-btn-secondary">Keep</button>
                   <button
                     @click="cancelBooking"
                     :disabled="actionLoading === 'cancel'"
@@ -325,12 +454,41 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { call } from "frappe-ui";
 import { getStatusColor, useCalendarState } from "@/composables/useCalendarState";
 
 const API_BASE = "meeting_manager.meeting_manager.page.mm_enhanced_calendar.api";
 const BOOKING_API = "meeting_manager.meeting_manager.api.booking";
+
+const SERVICE_TYPES = [
+  "Business",
+  "Business Extended",
+  "Business Rebook",
+  "New Setup Business",
+  "Private / Business Customer",
+  "Private New Sale",
+  "Private Self Book",
+];
+
+const BOOKING_STATUSES = [
+  "New Appointment",
+  "New Booking",
+  "Booking Started",
+  "Sale Approved",
+  "Booking Approved Not Sale",
+  "Call Customer About Sale",
+  "No Answer 1-3",
+  "No Answer 4-5",
+  "Customer Unsure",
+  "No Contact About Offer",
+  "Cancelled",
+  "Optimising Not Possible",
+  "Not Possible",
+  "Rebook",
+  "Rebook Earlier",
+  "Consent Sent Awaiting",
+];
 
 const props = defineProps({
   bookingId: { type: String, default: null },
@@ -347,7 +505,7 @@ const department = ref(null);
 const customer = ref(null);
 const hosts = ref([]);
 const permissions = ref(null);
-const activePanel = ref(null); // 'status' | 'reschedule' | 'reassign' | 'cancel'
+const activePanel = ref(null);
 const actionLoading = ref(null);
 const successMsg = ref(null);
 
@@ -355,9 +513,16 @@ const successMsg = ref(null);
 const departmentMembers = ref([]);
 const membersLoading = ref(false);
 
+// Dropdown refs
+const statusDropdownOpen = ref(false);
+const statusDropdownRef = ref(null);
+
 // Forms
-const rescheduleForm = ref({ date: "", time: "" });
+const rescheduleForm = ref({ date: "", startTime: "", endTime: "" });
 const reassignForm = ref({ user: "" });
+const statusForm = ref({ status: "", notes: "" });
+const serviceForm = ref({ value: "" });
+const cancelNotes = ref("");
 
 // Computed
 const { allStatuses } = useCalendarState();
@@ -367,17 +532,51 @@ const isFinalized = computed(() => {
   return finalized.includes(booking.value?.booking_status);
 });
 
-const validStatuses = computed(() =>
-  allStatuses.value.filter((s) => s.value !== booking.value?.booking_status)
-);
-
 const statusBadgeStyle = computed(() => {
   const color = getStatusColor(booking.value?.booking_status || "");
-  return {
-    backgroundColor: color + "1a",
-    color: color,
-  };
+  return { backgroundColor: color + "1a", color };
 });
+
+const rescheduleDuration = computed(() => {
+  if (!rescheduleForm.value.startTime || !rescheduleForm.value.endTime) return null;
+  const [sh, sm] = rescheduleForm.value.startTime.split(":").map(Number);
+  const [eh, em] = rescheduleForm.value.endTime.split(":").map(Number);
+  const diff = (eh * 60 + em) - (sh * 60 + sm);
+  return diff > 0 ? diff : null;
+});
+
+// Click-outside for status dropdown
+function handleClickOutside(e) {
+  if (statusDropdownOpen.value && statusDropdownRef.value && !statusDropdownRef.value.contains(e.target)) {
+    statusDropdownOpen.value = false;
+  }
+}
+onMounted(() => document.addEventListener("mousedown", handleClickOutside));
+onBeforeUnmount(() => document.removeEventListener("mousedown", handleClickOutside));
+
+// ── Time adjustment (24hr, 15min steps) ──────────────────────────────────────
+function adjustTime(which, deltaMinutes) {
+  const key = which === "start" ? "startTime" : "endTime";
+  const current = rescheduleForm.value[key];
+  if (!current) return;
+  const [h, m] = current.split(":").map(Number);
+  let total = h * 60 + m + deltaMinutes;
+  if (total < 0) total = 0;
+  if (total > 23 * 60 + 45) total = 23 * 60 + 45;
+  const nh = Math.floor(total / 60);
+  const nm = total % 60;
+  rescheduleForm.value[key] = `${String(nh).padStart(2, "0")}:${String(nm).padStart(2, "0")}`;
+}
+
+// Toggle panel helper
+function togglePanel(panel) {
+  if (activePanel.value === panel) {
+    activePanel.value = null;
+  } else {
+    activePanel.value = panel;
+    statusDropdownOpen.value = false;
+  }
+}
 
 // Fetch booking details
 async function fetchDetails() {
@@ -411,31 +610,33 @@ watch(
   () => props.bookingId,
   (id) => {
     if (id) fetchDetails();
-    else {
-      booking.value = null;
-      error.value = null;
-    }
+    else { booking.value = null; error.value = null; }
   },
   { immediate: true }
 );
 
-// Actions
+// ── Actions ──────────────────────────────────────────────────────────────────
+
 function showSuccess(msg) {
   successMsg.value = msg;
   setTimeout(() => (successMsg.value = null), 2000);
 }
 
-async function changeStatus(newStatus) {
+async function changeStatus() {
   actionLoading.value = "status";
   try {
-    const res = await call(`${BOOKING_API}.update_booking_status`, {
+    const params = {
       booking_id: booking.value.name,
-      new_status: newStatus,
-    });
+      new_status: statusForm.value.status,
+    };
+    if (statusForm.value.notes?.trim()) {
+      params.notes = statusForm.value.notes.trim();
+    }
+    const res = await call(`${BOOKING_API}.update_booking_status`, params);
     if (res?.success) {
-      booking.value.booking_status = newStatus;
+      booking.value.booking_status = statusForm.value.status;
       activePanel.value = null;
-      showSuccess(`Status changed to "${newStatus}"`);
+      showSuccess(`Status: "${statusForm.value.status}"`);
       emit("refresh");
     } else {
       error.value = res?.message || "Failed to update status";
@@ -450,21 +651,16 @@ async function changeStatus(newStatus) {
 async function rescheduleBooking() {
   actionLoading.value = "reschedule";
   try {
-    const newStartDt = `${rescheduleForm.value.date} ${rescheduleForm.value.time}:00`;
-    // Calculate new end time based on duration
-    const start = new Date(`${rescheduleForm.value.date}T${rescheduleForm.value.time}`);
-    const duration = booking.value.duration_minutes || booking.value.duration || 30;
-    const end = new Date(start.getTime() + duration * 60000);
-    const endStr = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, "0")}-${String(end.getDate()).padStart(2, "0")} ${String(end.getHours()).padStart(2, "0")}:${String(end.getMinutes()).padStart(2, "0")}:00`;
-
+    const newStartDt = `${rescheduleForm.value.date} ${rescheduleForm.value.startTime}:00`;
+    const newEndDt = `${rescheduleForm.value.date} ${rescheduleForm.value.endTime}:00`;
     const res = await call(`${API_BASE}.update_calendar_booking`, {
       booking_id: booking.value.name,
       start_datetime: newStartDt,
-      end_datetime: endStr,
+      end_datetime: newEndDt,
     });
     if (res?.success) {
       booking.value.start_datetime = newStartDt;
-      booking.value.end_datetime = endStr;
+      booking.value.end_datetime = newEndDt;
       activePanel.value = null;
       showSuccess("Booking rescheduled");
       emit("refresh");
@@ -478,23 +674,53 @@ async function rescheduleBooking() {
   }
 }
 
+async function changeService() {
+  actionLoading.value = "service";
+  try {
+    const res = await call(`${API_BASE}.update_calendar_booking`, {
+      booking_id: booking.value.name,
+      service_type: serviceForm.value.value,
+    });
+    if (res?.success) {
+      booking.value.service_type = serviceForm.value.value;
+      activePanel.value = null;
+      showSuccess(`Service: "${serviceForm.value.value}"`);
+      emit("refresh");
+    } else {
+      error.value = res?.message || "Failed to update service";
+    }
+  } catch (err) {
+    error.value = err?.messages?.[0] || err?.message || "Failed to update service";
+  } finally {
+    actionLoading.value = null;
+  }
+}
+
 async function openReassignPanel() {
   activePanel.value = "reassign";
+  statusDropdownOpen.value = false;
   reassignForm.value.user = "";
-  if (department.value?.name) {
+  departmentMembers.value = [];
+
+  // Try department from details, fallback to meeting type lookup
+  const deptName = department.value?.name;
+  if (deptName) {
     membersLoading.value = true;
     try {
       const res = await call(`${BOOKING_API}.get_department_members`, {
-        department: department.value.name,
+        department: deptName,
       });
       departmentMembers.value = (res || []).filter(
         (m) => !hosts.value.some((h) => h.user === m.user)
       );
-    } catch {
+    } catch (e) {
+      console.error("Failed to load members:", e);
       departmentMembers.value = [];
     } finally {
       membersLoading.value = false;
     }
+  } else {
+    membersLoading.value = false;
   }
 }
 
@@ -509,7 +735,6 @@ async function reassignBooking() {
       activePanel.value = null;
       showSuccess("Booking reassigned");
       emit("refresh");
-      // Refresh to get updated host info
       await fetchDetails();
     } else {
       error.value = res?.message || "Failed to reassign";
@@ -524,11 +749,14 @@ async function reassignBooking() {
 async function cancelBooking() {
   actionLoading.value = "cancel";
   try {
-    const res = await call(`${BOOKING_API}.update_booking_status`, {
+    const params = {
       booking_id: booking.value.name,
       new_status: "Cancelled",
-      notes: "Cancelled from calendar sidebar",
-    });
+    };
+    if (cancelNotes.value?.trim()) {
+      params.notes = cancelNotes.value.trim();
+    }
+    const res = await call(`${BOOKING_API}.update_booking_status`, params);
     if (res?.success) {
       booking.value.booking_status = "Cancelled";
       activePanel.value = null;
@@ -544,7 +772,7 @@ async function cancelBooking() {
   }
 }
 
-// ── Mini calendar for reschedule ──────────────────────────────────────────────
+// ── Mini calendar ────────────────────────────────────────────────────────────
 const calViewMonth = ref(new Date().getMonth());
 const calViewYear = ref(new Date().getFullYear());
 
@@ -558,7 +786,7 @@ const calDays = computed(() => {
   const month = calViewMonth.value;
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
-  const startDow = (firstDay.getDay() + 6) % 7; // Monday = 0
+  const startDow = (firstDay.getDay() + 6) % 7;
   const daysInMonth = lastDay.getDate();
   const todayStr = toLocalDateStr(new Date());
 
@@ -598,36 +826,44 @@ function toLocalDateStr(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-// Pre-fill reschedule form when panel opens
+// Pre-fill forms when panels open
 watch(activePanel, (panel) => {
   if (panel === "reschedule" && booking.value?.start_datetime) {
-    const dt = new Date(booking.value.start_datetime);
-    rescheduleForm.value.date = toLocalDateStr(dt);
-    rescheduleForm.value.time = `${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`;
-    calViewMonth.value = dt.getMonth();
-    calViewYear.value = dt.getFullYear();
+    const startDt = new Date(booking.value.start_datetime);
+    const endDt = booking.value.end_datetime ? new Date(booking.value.end_datetime) : null;
+    rescheduleForm.value.date = toLocalDateStr(startDt);
+    rescheduleForm.value.startTime = `${String(startDt.getHours()).padStart(2, "0")}:${String(startDt.getMinutes()).padStart(2, "0")}`;
+    rescheduleForm.value.endTime = endDt
+      ? `${String(endDt.getHours()).padStart(2, "0")}:${String(endDt.getMinutes()).padStart(2, "0")}`
+      : "";
+    calViewMonth.value = startDt.getMonth();
+    calViewYear.value = startDt.getFullYear();
+  }
+  if (panel === "status") {
+    statusForm.value = { status: "", notes: "" };
+  }
+  if (panel === "service") {
+    serviceForm.value.value = booking.value?.service_type || "";
+  }
+  if (panel === "cancel") {
+    cancelNotes.value = "";
   }
 });
 
-// Formatting
+// ── Formatting (24hr) ────────────────────────────────────────────────────────
 function formatDate(dt) {
   if (!dt) return "";
   return new Date(dt).toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+    weekday: "short", month: "short", day: "numeric", year: "numeric",
   });
 }
 
 function formatTimeRange(start, end) {
   if (!start) return "";
-  const fmt = (d) =>
-    new Date(d).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
+  const fmt = (d) => {
+    const date = new Date(d);
+    return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+  };
   return `${fmt(start)} – ${end ? fmt(end) : ""}`;
 }
 </script>
@@ -635,5 +871,26 @@ function formatTimeRange(start, end) {
 <style scoped>
 .fld {
   @apply w-full rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white;
+}
+.sidebar-label {
+  @apply mb-1 block text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500;
+}
+.sidebar-btn-primary {
+  @apply flex-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50 hover:bg-blue-700 transition-colors;
+}
+.sidebar-btn-secondary {
+  @apply flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 dark:border-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors;
+}
+.sidebar-select {
+  @apply flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-left text-sm shadow-sm transition-colors hover:border-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:border-gray-500;
+}
+.sidebar-dropdown {
+  @apply absolute left-0 right-0 z-10 mt-1 max-h-52 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800;
+}
+.sidebar-dropdown-item {
+  @apply flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700;
+}
+.time-btn {
+  @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 active:bg-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200;
 }
 </style>

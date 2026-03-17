@@ -279,6 +279,8 @@ class MMMeetingBooking(Document):
 
 	def validate_location_settings(self):
 		"""Validate location settings consistency"""
+		if self.flags.get("skip_location_validation"):
+			return
 		if self.location_type == "Video Call" and not self.video_meeting_url:
 			frappe.msgprint(
 				"Video Meeting URL is recommended when Location Type is 'Video Call'.",

@@ -756,7 +756,7 @@ def get_resource_availability(resource_id, start_date, end_date):
 
 @frappe.whitelist()
 def update_calendar_booking(booking_id, start_datetime=None, end_datetime=None,
-                           new_host=None, browser_timezone=None,
+                           new_host=None, service_type=None, browser_timezone=None,
                            notify_customer=False, notify_host=False, notify_participants=False):
     """
     Update a booking with strict permission checks.
@@ -1028,7 +1028,20 @@ def update_calendar_booking(booking_id, start_datetime=None, end_datetime=None,
                         )
                     }
 
+    # Update service type if provided
+    if service_type:
+        # Permission check: members can only change their own, leaders their dept
+        if role_level == "department_member":
+            if user not in assigned_users:
+                return {"success": False, "message": _("You can only update service type on your own bookings")}
+        elif role_level == "department_leader":
+            if department not in led_dept_names and user not in assigned_users:
+                return {"success": False, "message": _("You can only update service type in departments you lead")}
+        booking.select_mkru = service_type
+
     try:
+        # Skip location validation warnings for API-driven saves
+        booking.flags.skip_location_validation = True
         booking.save(ignore_permissions=True)
         frappe.db.commit()
 
