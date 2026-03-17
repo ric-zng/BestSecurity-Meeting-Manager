@@ -25,7 +25,7 @@
       <div
         v-for="item in statusList"
         :key="item.name"
-        class="flex items-center gap-4 rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900"
+        class="flex items-center gap-4 rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800"
       >
         <!-- Color swatch (clickable) -->
         <label class="relative cursor-pointer">
@@ -98,7 +98,7 @@
           <TransitionChild as="template"
             enter="duration-200 ease-out" enter-from="opacity-0 scale-95" enter-to="opacity-100 scale-100"
             leave="duration-150 ease-in" leave-from="opacity-100 scale-100" leave-to="opacity-0 scale-95">
-            <DialogPanel class="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl dark:bg-gray-900">
+            <DialogPanel class="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800">
               <DialogTitle class="text-base font-semibold text-gray-900 dark:text-white">Add Status Color</DialogTitle>
               <div class="mt-4 space-y-3">
                 <div>

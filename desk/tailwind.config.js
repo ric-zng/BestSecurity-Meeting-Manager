@@ -1,7 +1,7 @@
 import frappeUIPreset from "frappe-ui/src/tailwind/preset";
 
 export default {
-  darkMode: "class",
+  darkMode: ["selector", '[data-theme="dark"]'],
   presets: [frappeUIPreset],
   content: [
     "./index.html",

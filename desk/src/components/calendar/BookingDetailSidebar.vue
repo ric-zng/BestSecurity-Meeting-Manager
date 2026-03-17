@@ -12,7 +12,7 @@
       class="fixed inset-0 z-50 flex justify-end"
     >
       <div class="absolute inset-0 bg-black/30" @click="$emit('close')" />
-      <div class="relative flex w-full max-w-md flex-col overflow-hidden bg-white shadow-xl dark:bg-gray-900">
+      <div class="relative flex w-full max-w-md flex-col overflow-hidden bg-white shadow-xl dark:bg-gray-800">
         <!-- Header -->
         <div class="flex items-center justify-between border-b border-gray-200 px-5 py-3.5 dark:border-gray-700">
           <div class="flex items-center gap-2">
@@ -175,7 +175,7 @@
             <transition enter-active-class="transition duration-150" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
               <div v-if="activePanel === 'reschedule'" class="mt-3 space-y-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
                 <!-- Mini calendar -->
-                <div class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">
+                <div class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
                   <div class="mb-2 flex items-center justify-between">
                     <button @click="calChangeMonth(-1)" class="rounded p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
                       <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -203,7 +203,7 @@
                   </div>
                 </div>
 
-                <!-- Time spinners (24hr, step 15min) -->
+                <!-- Time spinners (24hr, step 15min) + editable inputs -->
                 <div class="grid grid-cols-2 gap-3">
                   <div>
                     <label class="sidebar-label">Start Time</label>
@@ -211,9 +211,13 @@
                       <button @click="adjustTime('start', -15)" class="time-btn">
                         <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
                       </button>
-                      <div class="flex-1 rounded-lg border border-gray-300 bg-white py-2 text-center text-sm font-semibold tabular-nums text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
-                        {{ rescheduleForm.startTime }}
-                      </div>
+                      <input
+                        :value="rescheduleForm.startTime"
+                        @change="onTimeInput('start', $event)"
+                        class="time-input"
+                        placeholder="HH:MM"
+                        maxlength="5"
+                      />
                       <button @click="adjustTime('start', 15)" class="time-btn">
                         <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                       </button>
@@ -225,16 +229,21 @@
                       <button @click="adjustTime('end', -15)" class="time-btn">
                         <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
                       </button>
-                      <div class="flex-1 rounded-lg border border-gray-300 bg-white py-2 text-center text-sm font-semibold tabular-nums text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
-                        {{ rescheduleForm.endTime }}
-                      </div>
+                      <input
+                        :value="rescheduleForm.endTime"
+                        @change="onTimeInput('end', $event)"
+                        class="time-input"
+                        placeholder="HH:MM"
+                        maxlength="5"
+                      />
                       <button @click="adjustTime('end', 15)" class="time-btn">
                         <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                       </button>
                     </div>
                   </div>
                 </div>
-                <p v-if="rescheduleDuration" class="text-center text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                <p v-if="timeError" class="text-center text-[11px] font-medium text-red-500">{{ timeError }}</p>
+                <p v-else-if="rescheduleDuration" class="text-center text-[11px] font-medium text-gray-500 dark:text-gray-400">
                   Duration: {{ rescheduleDuration }} min
                 </p>
 
@@ -242,7 +251,7 @@
                   <button @click="activePanel = null" class="sidebar-btn-secondary">Cancel</button>
                   <button
                     @click="rescheduleBooking"
-                    :disabled="!rescheduleForm.date || !rescheduleForm.startTime || !rescheduleForm.endTime || actionLoading === 'reschedule'"
+                    :disabled="!rescheduleForm.date || !rescheduleForm.startTime || !rescheduleForm.endTime || !!timeError || actionLoading === 'reschedule'"
                     class="sidebar-btn-primary"
                   >
                     {{ actionLoading === 'reschedule' ? 'Saving...' : 'Save' }}
@@ -352,23 +361,23 @@
                 <div v-else class="max-h-48 space-y-1 overflow-y-auto">
                   <button
                     v-for="m in departmentMembers"
-                    :key="m.user"
-                    @click="reassignForm.user = m.user"
+                    :key="m.user_id"
+                    @click="reassignForm.user = m.user_id"
                     class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors"
-                    :class="reassignForm.user === m.user
+                    :class="reassignForm.user === m.user_id
                       ? 'bg-blue-600 text-white'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
                   >
                     <div
                       class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
-                      :class="reassignForm.user === m.user
+                      :class="reassignForm.user === m.user_id
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'"
                     >
                       {{ m.full_name?.charAt(0)?.toUpperCase() || '?' }}
                     </div>
-                    <span class="text-sm font-medium">{{ m.full_name || m.user }}</span>
-                    <svg v-if="reassignForm.user === m.user" class="ml-auto h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span class="text-sm font-medium">{{ m.full_name || m.user_id }}</span>
+                    <svg v-if="reassignForm.user === m.user_id" class="ml-auto h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                   </button>
                 </div>
                 <div class="flex gap-2 pt-1">
@@ -442,10 +451,15 @@
           </div>
         </div>
 
-        <!-- Success toast overlay -->
+        <!-- Toast overlays -->
         <transition enter-active-class="transition duration-300" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
           <div v-if="successMsg" class="absolute bottom-4 left-4 right-4 rounded-lg bg-green-600 px-4 py-2.5 text-center text-sm font-medium text-white shadow-lg">
             {{ successMsg }}
+          </div>
+        </transition>
+        <transition enter-active-class="transition duration-300" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
+          <div v-if="errorMsg" class="absolute bottom-4 left-4 right-4 rounded-lg bg-red-600 px-4 py-2.5 text-center text-sm font-medium text-white shadow-lg">
+            {{ errorMsg }}
           </div>
         </transition>
       </div>
@@ -568,6 +582,40 @@ function adjustTime(which, deltaMinutes) {
   rescheduleForm.value[key] = `${String(nh).padStart(2, "0")}:${String(nm).padStart(2, "0")}`;
 }
 
+// ── Direct time input (typed HH:MM) ──────────────────────────────────────────
+function onTimeInput(which, event) {
+  const raw = event.target.value.trim();
+  const key = which === "start" ? "startTime" : "endTime";
+
+  // Accept HH:MM or HHMM
+  const match = raw.match(/^(\d{1,2}):?(\d{2})$/);
+  if (!match) {
+    // Reset to previous value
+    event.target.value = rescheduleForm.value[key];
+    return;
+  }
+
+  let h = parseInt(match[1], 10);
+  let m = parseInt(match[2], 10);
+
+  // Clamp to valid range
+  if (h > 23) h = 23;
+  if (m > 59) m = 59;
+
+  rescheduleForm.value[key] = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+// ── Time validation ──────────────────────────────────────────────────────────
+const timeError = computed(() => {
+  if (!rescheduleForm.value.startTime || !rescheduleForm.value.endTime) return null;
+  const [sh, sm] = rescheduleForm.value.startTime.split(":").map(Number);
+  const [eh, em] = rescheduleForm.value.endTime.split(":").map(Number);
+  const startMins = sh * 60 + sm;
+  const endMins = eh * 60 + em;
+  if (endMins <= startMins) return "End time must be after start time";
+  return null;
+});
+
 // Toggle panel helper
 function togglePanel(panel) {
   if (activePanel.value === panel) {
@@ -617,9 +665,16 @@ watch(
 
 // ── Actions ──────────────────────────────────────────────────────────────────
 
+const errorMsg = ref(null);
+
 function showSuccess(msg) {
   successMsg.value = msg;
   setTimeout(() => (successMsg.value = null), 2000);
+}
+
+function showError(msg) {
+  errorMsg.value = msg;
+  setTimeout(() => (errorMsg.value = null), 4000);
 }
 
 async function changeStatus() {
@@ -639,10 +694,10 @@ async function changeStatus() {
       showSuccess(`Status: "${statusForm.value.status}"`);
       emit("refresh");
     } else {
-      error.value = res?.message || "Failed to update status";
+      showError(res?.message || "Failed to update status");
     }
   } catch (err) {
-    error.value = err?.messages?.[0] || err?.message || "Failed to update status";
+    showError(err?.messages?.[0] || err?.message || "Failed to update status");
   } finally {
     actionLoading.value = null;
   }
@@ -665,10 +720,10 @@ async function rescheduleBooking() {
       showSuccess("Booking rescheduled");
       emit("refresh");
     } else {
-      error.value = res?.message || "Failed to reschedule";
+      showError(res?.message || "Failed to reschedule");
     }
   } catch (err) {
-    error.value = err?.messages?.[0] || err?.message || "Failed to reschedule";
+    showError(err?.messages?.[0] || err?.message || "Failed to reschedule");
   } finally {
     actionLoading.value = null;
   }
@@ -687,10 +742,10 @@ async function changeService() {
       showSuccess(`Service: "${serviceForm.value.value}"`);
       emit("refresh");
     } else {
-      error.value = res?.message || "Failed to update service";
+      showError(res?.message || "Failed to update service");
     }
   } catch (err) {
-    error.value = err?.messages?.[0] || err?.message || "Failed to update service";
+    showError(err?.messages?.[0] || err?.message || "Failed to update service");
   } finally {
     actionLoading.value = null;
   }
@@ -710,8 +765,10 @@ async function openReassignPanel() {
       const res = await call(`${BOOKING_API}.get_department_members`, {
         department: deptName,
       });
+      // Show all members but exclude currently assigned hosts
+      const currentHostUsers = new Set((hosts.value || []).map((h) => h.user));
       departmentMembers.value = (res || []).filter(
-        (m) => !hosts.value.some((h) => h.user === m.user)
+        (m) => !currentHostUsers.has(m.user_id)
       );
     } catch (e) {
       console.error("Failed to load members:", e);
@@ -737,10 +794,10 @@ async function reassignBooking() {
       emit("refresh");
       await fetchDetails();
     } else {
-      error.value = res?.message || "Failed to reassign";
+      showError(res?.message || "Failed to reassign");
     }
   } catch (err) {
-    error.value = err?.messages?.[0] || err?.message || "Failed to reassign";
+    showError(err?.messages?.[0] || err?.message || "Failed to reassign");
   } finally {
     actionLoading.value = null;
   }
@@ -763,10 +820,10 @@ async function cancelBooking() {
       showSuccess("Booking cancelled");
       emit("refresh");
     } else {
-      error.value = res?.message || "Failed to cancel";
+      showError(res?.message || "Failed to cancel");
     }
   } catch (err) {
-    error.value = err?.messages?.[0] || err?.message || "Failed to cancel";
+    showError(err?.messages?.[0] || err?.message || "Failed to cancel");
   } finally {
     actionLoading.value = null;
   }
@@ -892,5 +949,8 @@ function formatTimeRange(start, end) {
 }
 .time-btn {
   @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 active:bg-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200;
+}
+.time-input {
+  @apply w-full rounded-lg border border-gray-300 bg-white py-2 text-center text-sm font-semibold tabular-nums text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white;
 }
 </style>

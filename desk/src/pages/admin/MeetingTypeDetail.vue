@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-full flex-col overflow-auto">
     <!-- Header -->
-    <div class="flex flex-col gap-4 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-900 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-4 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-800 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex items-center gap-3">
         <button
           @click="router.push('/meeting-types')"
@@ -42,7 +42,7 @@
 
       <div v-else-if="doc.doc" class="mx-auto max-w-4xl space-y-6">
         <!-- Basic Info Card -->
-        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-800">
           <h2 class="mb-4 text-base font-semibold text-gray-900 dark:text-white">Basic Information</h2>
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
@@ -99,7 +99,7 @@
         </div>
 
         <!-- Location Card -->
-        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-800">
           <h2 class="mb-4 text-base font-semibold text-gray-900 dark:text-white">Location Settings</h2>
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
@@ -140,7 +140,7 @@
         </div>
 
         <!-- Visibility & Options Card -->
-        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-800">
           <h2 class="mb-4 text-base font-semibold text-gray-900 dark:text-white">Visibility & Options</h2>
           <div class="flex flex-wrap items-center gap-6">
             <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
@@ -179,7 +179,7 @@
         </div>
 
         <!-- Public Booking URL Card -->
-        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-800">
           <h2 class="mb-4 text-base font-semibold text-gray-900 dark:text-white">Public Booking URL</h2>
           <div class="flex items-center gap-2">
             <input
@@ -207,7 +207,7 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
         @click.self="showDeleteModal = false"
       >
-        <div class="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-900">
+        <div class="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-800">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Delete Meeting Type</h3>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             Are you sure you want to delete "{{ doc.doc?.meeting_name }}"? This action cannot be undone.

@@ -563,13 +563,21 @@ def update_booking_status(booking_id, new_status, notes=None):
 	if notes:
 		description += f" — {notes}"
 	booking.append("booking_history", {
-		"event_type": "Status Change",
+		"event_type": "Status Changed",
 		"event_datetime": now_datetime(),
 		"event_by": frappe.session.user,
 		"event_description": description,
 	})
 
-	booking.save()
+	booking.flags.skip_location_validation = True
+
+	# Mute msgprint warnings during save so they don't break the API response
+	prev_mute = frappe.flags.mute_messages
+	frappe.flags.mute_messages = True
+	try:
+		booking.save()
+	finally:
+		frappe.flags.mute_messages = prev_mute
 
 	return {
 		"success": True,
@@ -1862,3 +1870,185 @@ def get_recent_customers(limit=10):
 	""", {"limit": limit}, as_dict=True)
 
 	return customers
+
+
+@frappe.whitelist()
+def search_bookings(
+	search="",
+	statuses=None,
+	services=None,
+	departments=None,
+	date_from=None,
+	date_to=None,
+	page=1,
+	page_length=20,
+	order_by="start_datetime desc",
+):
+	"""
+	Search bookings across all fields with multi-select filters.
+
+	Searches: customer name, email, phone, booking reference, meeting title,
+	notes, assigned user name.
+
+	Returns:
+		dict: { data, total, page, page_length }
+	"""
+	import json
+
+	if frappe.session.user == "Guest":
+		frappe.throw(_("You must be logged in"))
+
+	page = int(page)
+	page_length = int(page_length)
+
+	if isinstance(statuses, str) and statuses:
+		statuses = json.loads(statuses)
+	if isinstance(services, str) and services:
+		services = json.loads(services)
+	if isinstance(departments, str) and departments:
+		departments = json.loads(departments)
+
+	conditions = []
+	params = {}
+
+	# Status filter
+	if statuses and len(statuses) > 0:
+		placeholders = ", ".join([f"%({f's_{i}'})s" for i in range(len(statuses))])
+		for i, s in enumerate(statuses):
+			params[f"s_{i}"] = s
+		conditions.append(f"b.booking_status IN ({placeholders})")
+
+	# Service filter
+	if services and len(services) > 0:
+		placeholders = ", ".join([f"%(svc_{i})s" for i in range(len(services))])
+		for i, s in enumerate(services):
+			params[f"svc_{i}"] = s
+		conditions.append(f"b.select_mkru IN ({placeholders})")
+
+	# Department filter (department is on meeting_type, not booking)
+	if departments and len(departments) > 0:
+		placeholders = ", ".join([f"%(dept_{i})s" for i in range(len(departments))])
+		for i, d in enumerate(departments):
+			params[f"dept_{i}"] = d
+		conditions.append(f"mt.department IN ({placeholders})")
+
+	# Date range
+	if date_from:
+		conditions.append("b.start_datetime >= %(date_from)s")
+		params["date_from"] = f"{date_from} 00:00:00"
+	if date_to:
+		conditions.append("b.start_datetime <= %(date_to)s")
+		params["date_to"] = f"{date_to} 23:59:59"
+
+	# Broad search
+	search_condition = ""
+	if search and search.strip():
+		q = f"%{search.strip()}%"
+		params["q"] = q
+		search_condition = """
+			AND (
+				b.booking_reference LIKE %(q)s
+				OR b.meeting_title LIKE %(q)s
+				OR b.customer_notes LIKE %(q)s
+				OR b.meeting_description LIKE %(q)s
+				OR b.customer_email_at_booking LIKE %(q)s
+				OR b.customer_phone_at_booking LIKE %(q)s
+				OR c.full_name LIKE %(q)s
+				OR c.first_name LIKE %(q)s
+				OR c.company_name LIKE %(q)s
+				OR c.email_id LIKE %(q)s
+				OR au_user.full_name LIKE %(q)s
+			)
+		"""
+
+	where_clause = " AND ".join(conditions) if conditions else "1=1"
+
+	# Permission scoping
+	user = frappe.session.user
+	roles = frappe.get_roles()
+	perm_condition = ""
+	if "System Manager" not in roles:
+		if "Department Leader" in roles:
+			led_depts = frappe.get_all("MM Department", filters={"department_leader": user}, pluck="name")
+			member_depts = frappe.db.sql_list("""
+				SELECT DISTINCT parent FROM `tabMM Department Member`
+				WHERE member = %s AND is_active = 1
+			""", (user,))
+			all_depts = list(set(led_depts + member_depts))
+			if all_depts:
+				dept_placeholders = ", ".join([f"%(perm_dept_{i})s" for i in range(len(all_depts))])
+				for i, d in enumerate(all_depts):
+					params[f"perm_dept_{i}"] = d
+				perm_condition = f"AND mt.department IN ({dept_placeholders})"
+			else:
+				perm_condition = "AND 1=0"
+		else:
+			# Department member: only own bookings
+			params["perm_user"] = user
+			perm_condition = """
+				AND EXISTS (
+					SELECT 1 FROM `tabMM Meeting Booking Assigned User` bau
+					WHERE bau.parent = b.name AND bau.user = %(perm_user)s
+				)
+			"""
+
+	# Count total
+	count_sql = f"""
+		SELECT COUNT(DISTINCT b.name) as cnt
+		FROM `tabMM Meeting Booking` b
+		LEFT JOIN `tabMM Meeting Type` mt ON mt.name = b.meeting_type
+		LEFT JOIN `tabContact` c ON c.name = b.customer
+		LEFT JOIN `tabMM Meeting Booking Assigned User` au ON au.parent = b.name AND au.is_primary_host = 1
+		LEFT JOIN `tabUser` au_user ON au_user.name = au.user
+		WHERE {where_clause} {search_condition} {perm_condition}
+	"""
+	total = frappe.db.sql(count_sql, params, as_dict=True)[0].cnt
+
+	# Fetch data
+	offset = (page - 1) * page_length
+	params["limit"] = page_length
+	params["offset"] = offset
+
+	# Sanitize order_by to prevent SQL injection
+	allowed_orders = {
+		"start_datetime desc": "b.start_datetime DESC",
+		"start_datetime asc": "b.start_datetime ASC",
+		"creation desc": "b.creation DESC",
+		"booking_status asc": "b.booking_status ASC",
+	}
+	safe_order = allowed_orders.get(order_by, "b.start_datetime DESC")
+
+	data_sql = f"""
+		SELECT DISTINCT
+			b.name,
+			b.booking_reference,
+			b.meeting_title,
+			b.booking_status,
+			b.start_datetime,
+			b.end_datetime,
+			b.duration,
+			b.customer,
+			b.customer_email_at_booking,
+			b.customer_phone_at_booking,
+			b.is_internal,
+			b.select_mkru,
+			mt.department,
+			IFNULL(c.full_name, c.first_name) as customer_name,
+			au_user.full_name as assigned_to_name
+		FROM `tabMM Meeting Booking` b
+		LEFT JOIN `tabMM Meeting Type` mt ON mt.name = b.meeting_type
+		LEFT JOIN `tabContact` c ON c.name = b.customer
+		LEFT JOIN `tabMM Meeting Booking Assigned User` au ON au.parent = b.name AND au.is_primary_host = 1
+		LEFT JOIN `tabUser` au_user ON au_user.name = au.user
+		WHERE {where_clause} {search_condition} {perm_condition}
+		ORDER BY {safe_order}
+		LIMIT %(limit)s OFFSET %(offset)s
+	"""
+	data = frappe.db.sql(data_sql, params, as_dict=True)
+
+	return {
+		"data": data,
+		"total": total,
+		"page": page,
+		"page_length": page_length,
+	}

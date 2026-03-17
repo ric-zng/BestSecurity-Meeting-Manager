@@ -1,5 +1,5 @@
 <template>
-  <div class="border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-900">
+  <div class="border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-800">
     <div class="flex items-center justify-between gap-3">
       <!-- Left: Nav + date picker + title -->
       <div class="flex items-center gap-2">
@@ -60,6 +60,11 @@
           <span class="hidden sm:inline">{{ orientation === 'vertical' ? 'Vertical' : 'Horizontal' }}</span>
         </button>
 
+        <!-- Reload -->
+        <button @click="$emit('reload')" class="tb-btn w-8" title="Reload calendar">
+          <FeatherIcon name="refresh-cw" class="h-3.5 w-3.5" />
+        </button>
+
         <button
           @click="$emit('new-booking')"
           class="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
@@ -99,6 +104,7 @@ defineEmits<{
   'new-booking': []
   'navigate': [direction: 'prev' | 'next' | 'today']
   'jump-to-date': [date: string]
+  'reload': []
 }>()
 </script>
 

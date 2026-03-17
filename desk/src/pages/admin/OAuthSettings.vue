@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-full flex-col overflow-auto">
     <!-- Header -->
-    <div class="flex flex-col gap-4 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-900 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-4 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-800 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-lg font-semibold text-gray-900 dark:text-white">OAuth Settings</h1>
         <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
@@ -69,7 +69,7 @@
         </div>
 
         <!-- Outlook Settings Card -->
-        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-800">
           <div class="mb-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
@@ -142,7 +142,7 @@
         </div>
 
         <!-- Google Calendar Settings Card (placeholder for future) -->
-        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-800">
           <div class="flex items-center gap-3">
             <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/30">
               <FeatherIcon name="calendar" class="h-5 w-5 text-red-600 dark:text-red-400" />

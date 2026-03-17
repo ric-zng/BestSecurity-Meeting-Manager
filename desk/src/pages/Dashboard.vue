@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-950">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Loading State -->
     <LoadingSpinner v-if="authStore.isLoading" fullPage />
 
@@ -38,7 +38,7 @@
       <div class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <!-- Today's Meetings -->
         <div
-          class="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
+          class="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-800"
         >
           <div class="flex items-center justify-between">
             <div
@@ -61,7 +61,7 @@
 
         <!-- This Week's Meetings -->
         <div
-          class="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
+          class="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-800"
         >
           <div class="flex items-center justify-between">
             <div
@@ -84,7 +84,7 @@
 
         <!-- Pending Approvals -->
         <div
-          class="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
+          class="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-800"
         >
           <div class="flex items-center justify-between">
             <div
@@ -107,7 +107,7 @@
 
         <!-- Total Bookings (this month) -->
         <div
-          class="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
+          class="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-800"
         >
           <div class="flex items-center justify-between">
             <div
@@ -134,7 +134,7 @@
         <!-- Today's Schedule (2 cols) -->
         <div class="lg:col-span-2">
           <div
-            class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900"
+            class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-800"
           >
             <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-800">
               <h2 class="text-base font-semibold text-gray-900 dark:text-white">
@@ -240,7 +240,7 @@
         <div class="space-y-6">
           <!-- Quick Actions -->
           <div
-            class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900"
+            class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-800"
           >
             <div class="border-b border-gray-200 px-5 py-4 dark:border-gray-800">
               <h2 class="text-base font-semibold text-gray-900 dark:text-white">
@@ -286,7 +286,7 @@
 
           <!-- Recent Bookings -->
           <div
-            class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900"
+            class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-800"
           >
             <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-800">
               <h2 class="text-base font-semibold text-gray-900 dark:text-white">

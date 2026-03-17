@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-950">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
       <!-- Loading -->
       <LoadingSpinner v-if="auth.isLoading" fullPage />
 
@@ -36,7 +36,7 @@
           <div
             v-for="dept in departments"
             :key="dept.name"
-            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900"
+            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-800"
           >
             <!-- Department Header -->
             <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-800">

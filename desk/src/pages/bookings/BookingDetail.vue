@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="min-h-full bg-gray-50 dark:bg-gray-900">
     <!-- Loading state -->
     <div v-if="bookingResource.loading && !data" class="p-6">
       <div class="mb-6 flex items-center gap-3">
@@ -8,7 +8,7 @@
       </div>
       <div class="grid gap-6 lg:grid-cols-3">
         <div class="lg:col-span-2 space-y-6">
-          <div v-for="i in 2" :key="i" class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+          <div v-for="i in 2" :key="i" class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
             <div class="h-5 w-32 animate-pulse rounded bg-gray-200 dark:bg-gray-700 mb-4" />
             <div class="space-y-3">
               <div class="h-4 w-full animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
@@ -18,7 +18,7 @@
           </div>
         </div>
         <div class="space-y-6">
-          <div v-for="i in 3" :key="i" class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+          <div v-for="i in 3" :key="i" class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
             <div class="h-5 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700 mb-4" />
             <div class="space-y-3">
               <div class="h-4 w-full animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
@@ -133,7 +133,7 @@
         <!-- Left column: main info -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Meeting Info Card -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Meeting Information</h2>
             </div>
@@ -146,9 +146,21 @@
                   </dd>
                 </div>
                 <div>
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Booking Reference</dt>
+                  <dd class="mt-0.5 text-sm font-mono text-gray-900 dark:text-white">
+                    {{ booking.booking_reference || booking.name }}
+                  </dd>
+                </div>
+                <div>
                   <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Meeting Type</dt>
                   <dd class="mt-0.5 text-sm text-gray-900 dark:text-white">
                     {{ meetingType?.meeting_name || meetingType?.name || '-' }}
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Department</dt>
+                  <dd class="mt-0.5 text-sm text-gray-900 dark:text-white">
+                    {{ department?.department_name || '-' }}
                   </dd>
                 </div>
                 <div>
@@ -172,7 +184,13 @@
                     {{ booking.location_type || '-' }}
                   </dd>
                 </div>
-                <div v-if="booking.video_meeting_url">
+                <div v-if="booking.meeting_location">
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Location</dt>
+                  <dd class="mt-0.5 text-sm text-gray-900 dark:text-white">
+                    {{ booking.meeting_location }}
+                  </dd>
+                </div>
+                <div v-if="booking.video_meeting_url" class="sm:col-span-2">
                   <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Video Meeting URL</dt>
                   <dd class="mt-0.5 text-sm">
                     <a
@@ -187,10 +205,56 @@
                     </a>
                   </dd>
                 </div>
+                <div>
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Service Type</dt>
+                  <dd class="mt-0.5 text-sm text-gray-900 dark:text-white">
+                    <span v-if="booking.service_type" class="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                      {{ booking.service_type }}
+                    </span>
+                    <span v-else>-</span>
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Booking Source</dt>
+                  <dd class="mt-0.5 text-sm text-gray-900 dark:text-white">
+                    {{ booking.booking_source || '-' }}
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Booking Type</dt>
+                  <dd class="mt-0.5 text-sm text-gray-900 dark:text-white">
+                    {{ booking.is_internal ? 'Internal (Team Meeting)' : 'External (Customer)' }}
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Created</dt>
+                  <dd class="mt-0.5 text-sm text-gray-900 dark:text-white">
+                    {{ formatDateTime(booking.creation) }}
+                    <span v-if="booking.created_by" class="text-xs text-gray-400 dark:text-gray-500">
+                      by {{ booking.created_by }}
+                    </span>
+                  </dd>
+                </div>
+                <div v-if="booking.cancelled_at">
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Cancelled At</dt>
+                  <dd class="mt-0.5 text-sm text-red-600 dark:text-red-400">
+                    {{ formatDateTime(booking.cancelled_at) }}
+                  </dd>
+                </div>
+                <div v-if="booking.cancellation_reason" class="sm:col-span-2">
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Cancellation Reason</dt>
+                  <dd class="mt-0.5 whitespace-pre-wrap text-sm text-red-600 dark:text-red-400">
+                    {{ booking.cancellation_reason }}
+                  </dd>
+                </div>
               </dl>
               <div v-if="booking.notes" class="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
                 <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Description</dt>
-                <dd class="mt-1 whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">{{ booking.notes }}</dd>
+                <dd class="mt-1 whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300" v-html="booking.notes"></dd>
+              </div>
+              <div v-if="booking.customer_notes" class="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
+                <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Customer Notes</dt>
+                <dd class="mt-1 whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">{{ booking.customer_notes }}</dd>
               </div>
             </div>
           </div>
@@ -198,47 +262,137 @@
           <!-- Customer Card (non-internal only) -->
           <div
             v-if="!booking.is_internal && (customer || booking.customer_email_at_booking)"
-            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
+            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
           >
-            <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
+            <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Customer</h2>
+              <a
+                v-if="customer?.name"
+                :href="`/app/contact/${customer.name}`"
+                target="_blank"
+                class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-300"
+              >
+                <FeatherIcon name="external-link" class="h-3 w-3" />
+                View in Desk
+              </a>
             </div>
             <div class="px-5 py-4">
+              <!-- Basic info -->
               <dl class="grid gap-x-6 gap-y-4 sm:grid-cols-2">
                 <div>
-                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Name</dt>
-                  <dd class="mt-0.5 text-sm text-gray-900 dark:text-white">
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Full Name</dt>
+                  <dd class="mt-0.5 text-sm font-medium text-gray-900 dark:text-white">
                     {{ customer?.customer_name || '-' }}
                   </dd>
                 </div>
-                <div>
-                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Email</dt>
+                <div v-if="customer?.company_name">
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Company</dt>
                   <dd class="mt-0.5 text-sm text-gray-900 dark:text-white">
-                    {{ customer?.primary_email || booking.customer_email_at_booking || '-' }}
+                    {{ customer.company_name }}
                   </dd>
                 </div>
-                <div v-if="booking.customer_phone_at_booking">
-                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Phone</dt>
+                <div v-if="customer?.designation">
+                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Designation</dt>
                   <dd class="mt-0.5 text-sm text-gray-900 dark:text-white">
-                    {{ booking.customer_phone_at_booking }}
-                  </dd>
-                </div>
-                <div v-if="booking.customer_notes">
-                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Notes</dt>
-                  <dd class="mt-0.5 whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
-                    {{ booking.customer_notes }}
+                    {{ customer.designation }}
                   </dd>
                 </div>
               </dl>
-              <div v-if="customer?.name" class="mt-4 border-t border-gray-100 pt-3 dark:border-gray-800">
-                <a
-                  :href="`/app/contact/${customer.name}`"
-                  target="_blank"
-                  class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                >
-                  <FeatherIcon name="external-link" class="h-3 w-3" />
-                  View Contact Record
-                </a>
+
+              <!-- Emails -->
+              <div v-if="customer?.emails?.length" class="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
+                <dt class="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">Email Addresses</dt>
+                <div class="space-y-1.5">
+                  <div
+                    v-for="(em, idx) in customer.emails"
+                    :key="idx"
+                    class="flex items-center gap-2"
+                  >
+                    <FeatherIcon name="mail" class="h-3.5 w-3.5 shrink-0 text-gray-400 dark:text-gray-500" />
+                    <span class="text-sm text-gray-900 dark:text-white">{{ em.email }}</span>
+                    <span
+                      v-if="em.is_primary"
+                      class="inline-flex items-center rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                    >Primary</span>
+                  </div>
+                </div>
+              </div>
+              <div v-else-if="booking.customer_email_at_booking" class="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
+                <dt class="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">Email (at booking)</dt>
+                <div class="flex items-center gap-2">
+                  <FeatherIcon name="mail" class="h-3.5 w-3.5 shrink-0 text-gray-400 dark:text-gray-500" />
+                  <span class="text-sm text-gray-900 dark:text-white">{{ booking.customer_email_at_booking }}</span>
+                </div>
+              </div>
+
+              <!-- Phones -->
+              <div v-if="customer?.phones?.length" class="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
+                <dt class="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">Phone Numbers</dt>
+                <div class="space-y-1.5">
+                  <div
+                    v-for="(ph, idx) in customer.phones"
+                    :key="idx"
+                    class="flex items-center gap-2"
+                  >
+                    <FeatherIcon name="phone" class="h-3.5 w-3.5 shrink-0 text-gray-400 dark:text-gray-500" />
+                    <span class="text-sm text-gray-900 dark:text-white">{{ ph.phone }}</span>
+                    <span
+                      v-if="ph.is_primary_phone"
+                      class="inline-flex items-center rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                    >Primary</span>
+                    <span
+                      v-if="ph.is_primary_mobile"
+                      class="inline-flex items-center rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                    >Mobile</span>
+                  </div>
+                </div>
+              </div>
+              <div v-else-if="booking.customer_phone_at_booking" class="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
+                <dt class="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">Phone (at booking)</dt>
+                <div class="flex items-center gap-2">
+                  <FeatherIcon name="phone" class="h-3.5 w-3.5 shrink-0 text-gray-400 dark:text-gray-500" />
+                  <span class="text-sm text-gray-900 dark:text-white">{{ booking.customer_phone_at_booking }}</span>
+                </div>
+              </div>
+
+              <!-- References / Links -->
+              <div v-if="customer?.links?.length" class="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
+                <dt class="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">References</dt>
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="border-b border-gray-100 dark:border-gray-800">
+                      <th class="pb-1.5 text-left text-[10px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">Type</th>
+                      <th class="pb-1.5 text-left text-[10px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">Name</th>
+                      <th class="pb-1.5 text-left text-[10px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">Title</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+                    <tr
+                      v-for="(link, idx) in customer.links"
+                      :key="idx"
+                      class="group"
+                    >
+                      <td class="py-2 pr-3">
+                        <span class="inline-flex rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                          {{ link.link_doctype }}
+                        </span>
+                      </td>
+                      <td class="py-2 pr-3">
+                        <a
+                          :href="`/app/${link.link_doctype.toLowerCase().replace(/ /g, '-')}/${link.link_name}`"
+                          target="_blank"
+                          class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                        >
+                          {{ link.link_name }}
+                          <FeatherIcon name="external-link" class="h-2.5 w-2.5 opacity-0 group-hover:opacity-100" />
+                        </a>
+                      </td>
+                      <td class="py-2 text-gray-700 dark:text-gray-300">
+                        {{ link.link_title || '-' }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -246,7 +400,7 @@
           <!-- Participants Card (internal meeting) -->
           <div
             v-if="booking.is_internal && internalParticipants.length"
-            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
+            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
           >
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
@@ -284,7 +438,7 @@
           <!-- History/Timeline Card -->
           <div
             v-if="hasHistory"
-            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
+            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
           >
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">History</h2>
@@ -301,7 +455,10 @@
                   </div>
                   <div>
                     <p class="text-sm text-gray-900 dark:text-white">{{ entry.description }}</p>
-                    <time class="text-xs text-gray-500 dark:text-gray-400">{{ entry.time }}</time>
+                    <div class="flex flex-wrap items-center gap-x-2">
+                      <time v-if="entry.time" class="text-xs text-gray-500 dark:text-gray-400">{{ entry.time }}</time>
+                      <span v-if="entry.by" class="text-xs text-gray-400 dark:text-gray-500">by {{ entry.by }}</span>
+                    </div>
                   </div>
                 </li>
               </ol>
@@ -312,7 +469,7 @@
         <!-- Right column: sidebar cards -->
         <div class="space-y-6">
           <!-- Hosts Card -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
                 Hosts
@@ -349,43 +506,10 @@
             </ul>
           </div>
 
-          <!-- Service Info Card -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
-            <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
-              <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Service Info</h2>
-            </div>
-            <dl class="px-5 py-4 space-y-3">
-              <div>
-                <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Service Type</dt>
-                <dd class="mt-0.5 text-sm text-gray-900 dark:text-white">
-                  {{ booking.service_type || '-' }}
-                </dd>
-              </div>
-              <div>
-                <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Booking Source</dt>
-                <dd class="mt-0.5 text-sm text-gray-900 dark:text-white">
-                  {{ booking.booking_source || '-' }}
-                </dd>
-              </div>
-              <div>
-                <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Booking Type</dt>
-                <dd class="mt-0.5 text-sm text-gray-900 dark:text-white">
-                  {{ booking.is_internal ? 'Internal (Team Meeting)' : 'External (Customer)' }}
-                </dd>
-              </div>
-              <div>
-                <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Department</dt>
-                <dd class="mt-0.5 text-sm text-gray-900 dark:text-white">
-                  {{ department?.department_name || '-' }}
-                </dd>
-              </div>
-            </dl>
-          </div>
-
           <!-- Customer Bookings Card -->
           <div
             v-if="!booking.is_internal && customerEmail"
-            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
+            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
           >
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
@@ -419,7 +543,7 @@
                 </div>
                 <div class="mt-1 flex flex-wrap items-center gap-x-3 text-xs text-gray-500 dark:text-gray-400">
                   <span>{{ formatShortDate(cb.start_datetime) }}</span>
-                  <span v-if="cb.assigned_to_name">{{ cb.assigned_to_name }}</span>
+                  <span v-if="cb.is_internal" class="text-gray-400 dark:text-gray-500">Internal</span>
                   <span v-if="cb.select_mkru" class="text-gray-400 dark:text-gray-500">{{ cb.select_mkru }}</span>
                 </div>
               </li>
@@ -429,7 +553,7 @@
           <!-- Links Card -->
           <div
             v-if="booking.cancel_link || booking.reschedule_link"
-            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
+            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
           >
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Customer Links</h2>
@@ -541,7 +665,7 @@ onMounted(() => {
 })
 
 watch(
-  () => route.params.id || route.params.bookingId,
+  () => route.params.bookingId,
   () => {
     updateCurrentIndex()
   }
@@ -549,10 +673,20 @@ watch(
 
 // ---- Data fetching ----
 
+const currentBookingId = computed(() => props.bookingId || route.params.bookingId)
+
 const bookingResource = createResource({
   url: 'meeting_manager.meeting_manager.page.mm_enhanced_calendar.api.get_booking_details',
-  params: { booking_id: props.bookingId || route.params.bookingId },
+  params: { booking_id: currentBookingId.value },
   auto: true,
+})
+
+// Re-fetch when navigating to a different booking
+watch(currentBookingId, (newId) => {
+  if (newId) {
+    bookingResource.update({ params: { booking_id: newId } })
+    bookingResource.fetch()
+  }
 })
 
 const data = computed(() => bookingResource.data)
@@ -628,35 +762,51 @@ function attendanceClass(status) {
 // ---- History / Timeline ----
 
 const hasHistory = computed(() => {
-  return (booking.value.assignment_history || booking.value.booking_history)
+  const bh = booking.value.booking_history
+  const ah = booking.value.assignment_history
+  return (Array.isArray(bh) && bh.length > 0) || (Array.isArray(ah) && ah.length > 0)
 })
 
 const timelineEntries = computed(() => {
   const entries = []
 
-  // Parse assignment history (stored as text, each line is an entry)
-  if (booking.value.assignment_history) {
-    const lines = booking.value.assignment_history.split('\n').filter(Boolean)
-    for (const line of lines) {
+  // Assignment history entries
+  const ah = booking.value.assignment_history
+  if (Array.isArray(ah)) {
+    for (const entry of ah) {
       entries.push({
         icon: 'user-plus',
-        description: line.trim(),
-        time: '',
+        description: entry.description || entry.event_type || 'Assignment change',
+        time: entry.timestamp ? formatDateTime(entry.timestamp) : '',
+        by: entry.changed_by || '',
       })
     }
   }
 
-  // Parse booking history
-  if (booking.value.booking_history) {
-    const lines = booking.value.booking_history.split('\n').filter(Boolean)
-    for (const line of lines) {
+  // Booking history entries
+  const bh = booking.value.booking_history
+  if (Array.isArray(bh)) {
+    for (const entry of bh) {
+      let desc = entry.description || entry.event_type || 'Status change'
+      if (entry.old_value && entry.new_value) {
+        desc += `: ${entry.old_value} → ${entry.new_value}`
+      }
       entries.push({
         icon: 'clock',
-        description: line.trim(),
-        time: '',
+        description: desc,
+        time: entry.timestamp ? formatDateTime(entry.timestamp) : '',
+        by: entry.changed_by || '',
       })
     }
   }
+
+  // Sort by timestamp descending (newest first)
+  entries.sort((a, b) => {
+    if (!a.time && !b.time) return 0
+    if (!a.time) return 1
+    if (!b.time) return -1
+    return new Date(b.time) - new Date(a.time)
+  })
 
   return entries
 })

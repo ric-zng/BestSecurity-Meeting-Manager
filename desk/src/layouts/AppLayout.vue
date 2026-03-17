@@ -1,8 +1,8 @@
 <template>
-  <div class="flex h-screen bg-gray-50 dark:bg-gray-950">
+  <div class="flex h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Sidebar -->
     <aside
-      class="flex w-56 flex-col border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900"
+      class="flex w-56 flex-col border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-800"
     >
       <!-- App header -->
       <div class="flex h-14 items-center gap-2 border-b border-gray-200 px-4 dark:border-gray-800">

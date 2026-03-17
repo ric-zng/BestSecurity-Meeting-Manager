@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-950">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
       <!-- Loading -->
       <LoadingSpinner v-if="loading" fullPage />
 
@@ -21,7 +21,7 @@
         </div>
 
         <!-- Profile Card -->
-        <div class="mb-6 rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div class="mb-6 rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-800">
           <div class="border-b border-gray-200 px-5 py-4 dark:border-gray-800">
             <h2 class="text-base font-semibold text-gray-900 dark:text-white">Profile</h2>
           </div>
@@ -56,7 +56,7 @@
         </div>
 
         <!-- Working Hours Card -->
-        <div class="mb-6 rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div class="mb-6 rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-800">
           <div class="border-b border-gray-200 px-5 py-4 dark:border-gray-800">
             <h2 class="text-base font-semibold text-gray-900 dark:text-white">Working Hours</h2>
             <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
@@ -126,7 +126,7 @@
           <button
             @click="saveSettings"
             :disabled="saving"
-            class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-gray-950"
+            class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-gray-900"
           >
             <FeatherIcon v-if="saving" name="loader" class="h-4 w-4 animate-spin" />
             <FeatherIcon v-else name="save" class="h-4 w-4" />

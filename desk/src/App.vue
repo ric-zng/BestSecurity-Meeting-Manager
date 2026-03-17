@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen w-screen overflow-hidden">
+  <div class="flex h-screen w-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
     <!-- Sidebar -->
     <div
       class="flex select-none flex-col border-r border-gray-200 bg-gray-50 p-2 text-base duration-300 ease-in-out dark:border-gray-800 dark:bg-gray-900"
@@ -87,7 +87,7 @@
               <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
               </svg>
-              {{ isDark ? 'Light Mode' : 'Dark Mode' }}
+              {{ isDark ? 'Dark Mode' : 'Light Mode' }}
             </button>
 
             <!-- Divider -->
@@ -171,7 +171,7 @@
         <span
           class="ml-2 text-sm duration-300 ease-in-out"
           :class="sidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'"
-        >{{ isDark ? 'Light Mode' : 'Dark Mode' }}</span>
+        >{{ isDark ? 'Dark Mode' : 'Light Mode' }}</span>
       </button>
 
       <!-- Collapse toggle -->
@@ -199,7 +199,7 @@
       <!-- Page header slot -->
       <div id="app-header"></div>
       <!-- Page content -->
-      <div class="flex-1 overflow-auto bg-gray-50 dark:bg-gray-950">
+      <div class="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
         <router-view />
       </div>
     </div>

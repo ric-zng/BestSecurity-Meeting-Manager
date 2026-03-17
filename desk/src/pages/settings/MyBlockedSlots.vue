@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-950">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
       <!-- Loading -->
       <LoadingSpinner v-if="loading" fullPage />
 
@@ -22,7 +22,7 @@
           </div>
           <button
             @click="showAddForm = !showAddForm"
-            class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950"
+            class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
           >
             <FeatherIcon :name="showAddForm ? 'x' : 'plus'" class="h-4 w-4" />
             {{ showAddForm ? 'Cancel' : 'Block Time' }}
@@ -121,7 +121,7 @@
         </div>
 
         <!-- Slots Table -->
-        <div v-else class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div v-else class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-800">
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>

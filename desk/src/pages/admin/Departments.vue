@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-full flex-col">
     <!-- Header -->
-    <div class="flex flex-col gap-4 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-900 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-4 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-800 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-lg font-semibold text-gray-900 dark:text-white">Departments</h1>
         <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
@@ -19,7 +19,7 @@
     </div>
 
     <!-- Filters -->
-    <div class="border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-900">
+    <div class="border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-800">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
         <!-- Search -->
         <div class="relative min-w-[200px] flex-1 sm:max-w-xs">
@@ -154,7 +154,7 @@
           v-for="dept in departments.data"
           :key="dept.name"
           @click="goToDepartment(dept.name)"
-          class="cursor-pointer rounded-lg border border-gray-200 bg-white p-3 transition-colors hover:border-gray-300 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700"
+          class="cursor-pointer rounded-lg border border-gray-200 bg-white p-3 transition-colors hover:border-gray-300 dark:border-gray-800 dark:bg-gray-800 dark:hover:border-gray-700"
         >
           <div class="flex items-start justify-between">
             <div>
@@ -191,7 +191,7 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
         @click.self="showNewModal = false"
       >
-        <div class="w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-900">
+        <div class="w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-800">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">New Department</h2>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Create a new department</p>
 

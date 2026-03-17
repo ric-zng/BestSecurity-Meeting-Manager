@@ -10,7 +10,7 @@
         <TransitionChild as="template"
           enter="duration-200 ease-out" enter-from="opacity-0 scale-95" enter-to="opacity-100 scale-100"
           leave="duration-150 ease-in" leave-from="opacity-100 scale-100" leave-to="opacity-0 scale-95">
-          <DialogPanel class="w-full max-w-2xl rounded-lg bg-white shadow-xl dark:bg-gray-900">
+          <DialogPanel class="w-full max-w-2xl rounded-lg bg-white shadow-xl dark:bg-gray-800">
             <!-- Header with slot info -->
             <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
               <DialogTitle class="text-base font-semibold text-gray-900 dark:text-white">

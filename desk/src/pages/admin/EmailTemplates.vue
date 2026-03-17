@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-full flex-col">
     <!-- Header -->
-    <div class="flex flex-col gap-4 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-900 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-4 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-800 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-lg font-semibold text-gray-900 dark:text-white">Email Templates</h1>
         <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{{ totalLabel }}</p>
@@ -16,7 +16,7 @@
     </div>
 
     <!-- Filters -->
-    <div class="border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-900">
+    <div class="border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-800">
       <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <!-- Search -->
         <div class="relative min-w-[200px] flex-1 sm:max-w-xs">
@@ -191,7 +191,7 @@
           v-for="tpl in templates.data"
           :key="tpl.name"
           @click="editTemplate(tpl)"
-          class="cursor-pointer rounded-lg border border-gray-200 bg-white p-3 transition-colors hover:border-gray-300 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700"
+          class="cursor-pointer rounded-lg border border-gray-200 bg-white p-3 transition-colors hover:border-gray-300 dark:border-gray-800 dark:bg-gray-800 dark:hover:border-gray-700"
         >
           <div class="flex items-start justify-between">
             <div>
@@ -223,7 +223,7 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
         @click.self="showTemplateModal = false"
       >
-        <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-900">
+        <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-800">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
             {{ editingTemplate ? 'Edit Template' : 'New Template' }}
           </h2>
@@ -333,7 +333,7 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
         @click.self="showPreviewModal = false"
       >
-        <div class="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-900">
+        <div class="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-800">
           <div class="mb-4 flex items-center justify-between">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Template Preview</h2>
             <button

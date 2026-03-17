@@ -29,34 +29,39 @@ export function useBookingNavigation() {
   }
 
   function updateCurrentIndex() {
-    const id = route.params.id as string;
+    const id = (route.params.bookingId || route.params.id) as string;
     currentIndex.value = bookingIds.value.indexOf(id);
   }
 
   function goToNext() {
-    if (hasNext.value) {
-      const next = bookingIds.value[currentIndex.value + 1];
-      router.push(`/bookings/${next}`);
-    }
+    if (bookingIds.value.length === 0) return;
+    // Wrap around: if at end, go to first
+    const nextIdx = (currentIndex.value + 1) % bookingIds.value.length;
+    router.push(`/bookings/${bookingIds.value[nextIdx]}`);
   }
 
   function goToPrevious() {
-    if (hasPrevious.value) {
-      const prev = bookingIds.value[currentIndex.value - 1];
-      router.push(`/bookings/${prev}`);
-    }
+    if (bookingIds.value.length === 0) return;
+    // Wrap around: if at start, go to last
+    const prevIdx = (currentIndex.value - 1 + bookingIds.value.length) % bookingIds.value.length;
+    router.push(`/bookings/${bookingIds.value[prevIdx]}`);
   }
 
-  const hasNext = computed(
-    () => currentIndex.value >= 0 && currentIndex.value < bookingIds.value.length - 1
-  );
-  const hasPrevious = computed(() => currentIndex.value > 0);
-  const nextId = computed(() =>
-    hasNext.value ? bookingIds.value[currentIndex.value + 1] : null
-  );
-  const prevId = computed(() =>
-    hasPrevious.value ? bookingIds.value[currentIndex.value - 1] : null
-  );
+  // Always enabled when we have bookings (circular navigation)
+  const hasNext = computed(() => bookingIds.value.length > 1);
+  const hasPrevious = computed(() => bookingIds.value.length > 1);
+
+  const nextId = computed(() => {
+    if (bookingIds.value.length <= 1) return null;
+    const nextIdx = (currentIndex.value + 1) % bookingIds.value.length;
+    return bookingIds.value[nextIdx];
+  });
+
+  const prevId = computed(() => {
+    if (bookingIds.value.length <= 1) return null;
+    const prevIdx = (currentIndex.value - 1 + bookingIds.value.length) % bookingIds.value.length;
+    return bookingIds.value[prevIdx];
+  });
 
   return {
     loadBookings,

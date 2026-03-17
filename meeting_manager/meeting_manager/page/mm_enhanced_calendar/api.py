@@ -1042,7 +1042,13 @@ def update_calendar_booking(booking_id, start_datetime=None, end_datetime=None,
     try:
         # Skip location validation warnings for API-driven saves
         booking.flags.skip_location_validation = True
-        booking.save(ignore_permissions=True)
+        # Mute msgprint warnings so they don't break the API response
+        prev_mute = frappe.flags.mute_messages
+        frappe.flags.mute_messages = True
+        try:
+            booking.save(ignore_permissions=True)
+        finally:
+            frappe.flags.mute_messages = prev_mute
         frappe.db.commit()
 
         # Get updated primary host
@@ -1513,6 +1519,14 @@ def get_booking_details(booking_id):
     Returns:
         dict: Full booking details with permissions
     """
+    try:
+        return _get_booking_details_inner(booking_id)
+    except Exception as e:
+        frappe.log_error(f"get_booking_details error for {booking_id}: {e}", "Booking Detail Error")
+        return {"success": False, "message": _("Booking not found") + f" {type(e).__name__}: {e}"}
+
+
+def _get_booking_details_inner(booking_id):
     user = frappe.session.user
     role_level, role_display = get_user_role_level()
 
@@ -1547,10 +1561,10 @@ def get_booking_details(booking_id):
             "user": au.user,
             "full_name": user_info.full_name if user_info else au.user,
             "email": user_info.email if user_info else "",
-            "is_primary_host": au.is_primary_host
+            "is_primary_host": getattr(au, "is_primary_host", False)
         }
         assigned_users.append(host_data)
-        if au.is_primary_host:
+        if getattr(au, "is_primary_host", False):
             primary_host = host_data
 
     if not primary_host and assigned_users:
@@ -1559,39 +1573,79 @@ def get_booking_details(booking_id):
     # Get internal participants
     internal_participants = []
     for p in booking.participants:
-        if p.participant_type == "Internal" and p.user:
+        if getattr(p, "participant_type", "") == "Internal" and getattr(p, "user", None):
             user_info = frappe.db.get_value("User", p.user, ["full_name", "email"], as_dict=True)
             internal_participants.append({
                 "user": p.user,
                 "full_name": user_info.full_name if user_info else p.user,
-                "email": p.email or (user_info.email if user_info else ""),
-                "response_status": p.response_status
+                "email": getattr(p, "email", "") or (user_info.email if user_info else ""),
+                "response_status": getattr(p, "response_status", "")
             })
 
     # Get external participants
     external_participants = []
     for p in booking.participants:
-        if p.participant_type == "External":
+        if getattr(p, "participant_type", "") == "External":
             external_participants.append({
-                "name": p.name1,
-                "email": p.email,
-                "response_status": p.response_status
+                "name": getattr(p, "name1", ""),
+                "email": getattr(p, "email", ""),
+                "response_status": getattr(p, "response_status", "")
             })
 
-    # Get customer details
+    # Get comprehensive customer details
     customer_data = None
     if booking.customer:
-        customer_info = frappe.db.get_value(
-            "Contact",
-            booking.customer,
-            ["full_name", "email_id"],
-            as_dict=True
-        )
-        if customer_info:
+        try:
+            contact = frappe.get_doc("Contact", booking.customer)
+        except frappe.DoesNotExistError:
+            contact = None
+
+        if contact:
+            # All emails with primary flag
+            emails = []
+            for e in getattr(contact, "email_ids", []):
+                emails.append({
+                    "email": getattr(e, "email_id", ""),
+                    "is_primary": bool(getattr(e, "is_primary", False)),
+                })
+
+            # All phones with primary flags
+            phones = []
+            for p in getattr(contact, "phone_nos", []):
+                phones.append({
+                    "phone": getattr(p, "phone", ""),
+                    "is_primary_phone": bool(getattr(p, "is_primary_phone", False)),
+                    "is_primary_mobile": bool(getattr(p, "is_primary_mobile_no", False)),
+                })
+
+            # Dynamic links (references)
+            links = []
+            for link in getattr(contact, "links", []):
+                link_title = getattr(link, "link_title", "") or ""
+                if not link_title:
+                    try:
+                        link_title = frappe.db.get_value(link.link_doctype, link.link_name, "name") or ""
+                    except Exception:
+                        pass
+                links.append({
+                    "link_doctype": getattr(link, "link_doctype", ""),
+                    "link_name": getattr(link, "link_name", ""),
+                    "link_title": link_title,
+                })
+
             customer_data = {
                 "name": booking.customer,
-                "customer_name": customer_info.full_name,
-                "primary_email": customer_info.email_id
+                "customer_name": getattr(contact, "full_name", ""),
+                "first_name": getattr(contact, "first_name", ""),
+                "last_name": getattr(contact, "last_name", ""),
+                "primary_email": getattr(contact, "email_id", ""),
+                "primary_phone": getattr(contact, "phone", ""),
+                "mobile_no": getattr(contact, "mobile_no", ""),
+                "company_name": getattr(contact, "company_name", ""),
+                "designation": getattr(contact, "designation", ""),
+                "emails": emails,
+                "phones": phones,
+                "links": links,
             }
 
     # Check permissions
@@ -1646,22 +1700,59 @@ def get_booking_details(booking_id):
     if start_dt and end_dt:
         duration_minutes = int((get_datetime(end_dt) - get_datetime(start_dt)).total_seconds() / 60)
 
+    # Build booking history entries
+    history_entries = []
+    for h in booking.booking_history:
+        history_entries.append({
+            "event_type": getattr(h, "event_type", ""),
+            "description": getattr(h, "description", ""),
+            "timestamp": str(h.timestamp) if getattr(h, "timestamp", None) else None,
+            "changed_by": getattr(h, "changed_by", ""),
+            "old_value": getattr(h, "old_value", ""),
+            "new_value": getattr(h, "new_value", ""),
+        })
+
+    # Build assignment history entries
+    assignment_entries = []
+    for ah in booking.assignment_history:
+        assignment_entries.append({
+            "event_type": getattr(ah, "event_type", ""),
+            "description": getattr(ah, "description", ""),
+            "timestamp": str(ah.timestamp) if getattr(ah, "timestamp", None) else None,
+            "changed_by": getattr(ah, "changed_by", ""),
+        })
+
     return {
         "success": True,
         "booking": {
             "name": booking.name,
-            "meeting_title": booking.meeting_title,
-            "meeting_description": booking.meeting_description,
-            "booking_date": str(booking.booking_date) if booking.booking_date else None,
+            "booking_reference": getattr(booking, "booking_reference", ""),
+            "meeting_title": getattr(booking, "meeting_title", ""),
+            "meeting_description": getattr(booking, "meeting_description", ""),
+            "booking_date": str(booking.booking_date) if getattr(booking, "booking_date", None) else None,
             "start_datetime": str(start_dt) if start_dt else None,
             "end_datetime": str(end_dt) if end_dt else None,
-            "duration": booking.duration,
+            "duration": getattr(booking, "duration", ""),
             "duration_minutes": duration_minutes,
-            "booking_status": booking.booking_status,
-            "is_internal": booking.is_internal,
-            "service_type": booking.select_mkru,
-            "customer_email_at_booking": booking.customer_email_at_booking,
-            "notes": booking.meeting_description
+            "booking_status": getattr(booking, "booking_status", ""),
+            "booking_source": getattr(booking, "booking_source", ""),
+            "is_internal": getattr(booking, "is_internal", False),
+            "service_type": getattr(booking, "select_mkru", ""),
+            "location_type": getattr(booking, "location_type", ""),
+            "meeting_location": getattr(booking, "meeting_location", ""),
+            "video_meeting_url": getattr(booking, "video_meeting_url", ""),
+            "customer_email_at_booking": getattr(booking, "customer_email_at_booking", ""),
+            "customer_phone_at_booking": getattr(booking, "customer_phone_at_booking", ""),
+            "customer_notes": getattr(booking, "customer_notes", ""),
+            "cancel_link": getattr(booking, "cancel_link", ""),
+            "reschedule_link": getattr(booking, "reschedule_link", ""),
+            "created_by": getattr(booking, "created_by", ""),
+            "creation": str(booking.creation) if getattr(booking, "creation", None) else None,
+            "cancelled_at": str(booking.cancelled_at) if getattr(booking, "cancelled_at", None) else None,
+            "cancellation_reason": getattr(booking, "cancellation_reason", ""),
+            "notes": getattr(booking, "meeting_description", ""),
+            "booking_history": history_entries,
+            "assignment_history": assignment_entries,
         },
         "meeting_type": {
             "name": booking.meeting_type,
@@ -2334,8 +2425,7 @@ def get_customer_bookings(customer_email, exclude_booking=None):
         filters=filters,
         fields=[
             "name", "meeting_title", "start_datetime", "end_datetime",
-            "booking_status", "assigned_to_name", "select_mkru",
-            "duration_minutes", "is_internal",
+            "booking_status", "select_mkru", "is_internal",
         ],
         order_by="start_datetime asc",
         limit_page_length=20,

@@ -20,6 +20,7 @@
       @new-booking="router.push('/book')"
       @navigate="handleNavigate"
       @jump-to-date="handleJumpToDate"
+      @reload="handleReload"
     >
       <template #title>
         <h2 class="text-base font-semibold text-gray-900 dark:text-white" v-text="calendarTitle" />
@@ -50,8 +51,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount, watch } from "vue";
-import { useRouter } from "vue-router";
+import { ref, reactive, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { Calendar } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -73,11 +74,54 @@ import ConfirmDeleteDialog from "@/components/calendar/ConfirmDeleteDialog.vue";
 import BookingDetailSidebar from "@/components/calendar/BookingDetailSidebar.vue";
 
 const router = useRouter();
+const route = useRoute();
 const auth = useAuthStore();
 const {
   currentView, orientation, filters, allStatuses,
   serviceTypes, activeViews, toggleOrientation,
 } = useCalendarState();
+
+// ── URL ↔ State sync ────────────────────────────────────────────────────────
+let suppressUrlSync = false;
+
+function readUrlState() {
+  const q = route.query;
+  suppressUrlSync = true;
+
+  if (q.view && typeof q.view === "string") currentView.value = q.view;
+  if (q.orientation && (q.orientation === "vertical" || q.orientation === "horizontal")) {
+    orientation.value = q.orientation;
+  }
+  if (q.departments) {
+    filters.departments = (typeof q.departments === "string" ? q.departments : "").split(",").filter(Boolean);
+  }
+  if (q.statuses) {
+    filters.statuses = (typeof q.statuses === "string" ? q.statuses : "").split(",").filter(Boolean);
+  }
+  if (q.services) {
+    filters.services = (typeof q.services === "string" ? q.services : "").split(",").filter(Boolean);
+  }
+
+  nextTick(() => { suppressUrlSync = false; });
+}
+
+function writeUrlState(extra) {
+  if (suppressUrlSync) return;
+  const q = {};
+
+  q.view = currentView.value;
+  q.orientation = orientation.value;
+  if (filters.departments.length > 0) q.departments = filters.departments.join(",");
+  if (filters.services.length > 0) q.services = filters.services.join(",");
+  // Only persist statuses if not "all selected" (avoid long URL)
+  if (filters.statuses.length > 0 && filters.statuses.length < allStatuses.value.length) {
+    q.statuses = filters.statuses.join(",");
+  }
+
+  if (extra) Object.assign(q, extra);
+
+  router.replace({ query: q });
+}
 const { canSelectSlot, canManageBlockedSlot, canModifyEvent } = useCalendarPermissions();
 
 // ── Refs ──────────────────────────────────────────────────────────────────────
@@ -98,6 +142,7 @@ const deleteSlot = reactive({ show: false, info: null });
 function handleToggleOrientation() {
   toggleOrientation();
   if (calendar) calendar.changeView(currentView.value);
+  writeUrlState();
 }
 
 function handleNavigate(action) {
@@ -111,9 +156,16 @@ function handleJumpToDate(dateStr) {
   if (calendar) calendar.gotoDate(dateStr);
 }
 
+function handleReload() {
+  if (!calendar) return;
+  calendar.refetchResources();
+  calendar.refetchEvents();
+}
+
 function changeView(viewKey) {
   currentView.value = viewKey;
   calendar?.changeView(viewKey);
+  writeUrlState();
 }
 
 // ── Slot dialog flow ──────────────────────────────────────────────────────────
@@ -305,9 +357,14 @@ function showTooltip(info) {
 onMounted(() => {
   if (!calendarEl.value) return;
 
+  // Restore state from URL before creating calendar
+  readUrlState();
+  const initialDate = route.query.date || null;
+
   calendar = new Calendar(calendarEl.value, {
     plugins: [dayGridPlugin, interactionPlugin, resourceTimeGridPlugin, resourceTimelinePlugin],
     initialView: currentView.value,
+    ...(initialDate ? { initialDate } : {}),
     schedulerLicenseKey: "GPL-My-Project-Is-Open-Source",
     headerToolbar: false,
     height: "100%",
@@ -334,7 +391,12 @@ onMounted(() => {
     eventDrop: handleEventDrop,
     eventResize: handleEventResize,
     select: handleSelect,
-    datesSet: (info) => { calendarTitle.value = info.view.title; },
+    datesSet: (info) => {
+      calendarTitle.value = info.view.title;
+      // Persist current date to URL
+      const dateStr = info.view.currentStart.toISOString().slice(0, 10);
+      writeUrlState({ date: dateStr });
+    },
     eventDidMount: handleEventMount,
     eventMouseEnter: showTooltip,
     eventMouseLeave: () => { tooltip.show = false; },
@@ -356,6 +418,7 @@ watch(filters, () => {
   if (!calendar) return;
   calendar.refetchResources();
   calendar.refetchEvents();
+  writeUrlState();
 }, { deep: true });
 </script>
 
@@ -376,7 +439,9 @@ watch(filters, () => {
 /* Calendar grid background */
 .dark .fc .fc-view-harness,
 .dark .fc .fc-timegrid-slot,
-.dark .fc .fc-timegrid-col {
+.dark .fc .fc-timegrid-col,
+.dark .fc .fc-timeline-lane,
+.dark .fc .fc-timeline-slot {
   background-color: #111827;
 }
 
@@ -386,9 +451,17 @@ watch(filters, () => {
   background-color: #1f2937;
 }
 
-/* Column headers */
-.dark .fc .fc-col-header-cell {
+/* Column headers + timeline header */
+.dark .fc .fc-col-header-cell,
+.dark .fc .fc-timeline-header-row th,
+.dark .fc .fc-resource-timeline .fc-datagrid-header {
   background-color: #1f2937;
+}
+
+/* Timeline shaded cells (weekends, etc) */
+.dark .fc .fc-cell-shaded,
+.dark .fc .fc-day-disabled {
+  background-color: #1a2332;
 }
 
 /* All text in dark mode */
@@ -396,7 +469,14 @@ watch(filters, () => {
 .dark .fc .fc-timegrid-axis-cushion,
 .dark .fc .fc-timegrid-slot-label-cushion,
 .dark .fc .fc-datagrid-cell-main,
-.dark .fc .fc-resource-area .fc-datagrid-cell-main {
+.dark .fc .fc-resource-area .fc-datagrid-cell-main,
+.dark .fc .fc-timeline-slot-cushion,
+.dark .fc .fc-timeline-header-row th,
+.dark .fc .fc-timeline-slot-label,
+.dark .fc .fc-timeline-slot-label-cushion,
+.dark .fc .fc-datagrid-cell-cushion,
+.dark .fc a,
+.dark .fc .fc-cell-shaded {
   color: #d1d5db;
 }
 
@@ -416,6 +496,19 @@ watch(filters, () => {
 /* Scrollbar */
 .dark .fc .fc-scroller {
   scrollbar-color: #4b5563 #1f2937;
+}
+
+/* Month/DayGrid dark mode */
+.dark .fc .fc-daygrid-day,
+.dark .fc .fc-daygrid-body {
+  background-color: #111827;
+}
+.dark .fc .fc-daygrid-day-number,
+.dark .fc .fc-daygrid-day-top a {
+  color: #d1d5db;
+}
+.dark .fc .fc-daygrid-day.fc-day-other .fc-daygrid-day-number {
+  color: #6b7280;
 }
 
 /* ── Remove default today highlight ────────────────────────────────────────── */
@@ -444,11 +537,11 @@ watch(filters, () => {
   opacity: 0.8;
 }
 .dark .ec-nonworking-block {
-  background: repeating-linear-gradient(45deg, #334155, #334155 4px, #1e293b 4px, #1e293b 8px) !important;
-  opacity: 0.85;
+  background: repeating-linear-gradient(45deg, #475569, #475569 4px, #1e293b 4px, #1e293b 8px) !important;
+  opacity: 0.9;
 }
 .dark .ec-dayoff-block {
-  background: repeating-linear-gradient(45deg, #1e293b, #1e293b 4px, #0f172a 4px, #0f172a 8px) !important;
-  opacity: 0.85;
+  background: repeating-linear-gradient(45deg, #374151, #374151 4px, #111827 4px, #111827 8px) !important;
+  opacity: 0.9;
 }
 </style>
