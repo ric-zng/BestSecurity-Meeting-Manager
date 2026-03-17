@@ -436,19 +436,19 @@ watch(filters, () => {
 
 /* ── Unavailable / Non-working Time (striped pattern) ───────────────────────── */
 .ec-nonworking-block {
-  background: repeating-linear-gradient(45deg, #e2e8f0, #e2e8f0 4px, #cbd5e1 4px, #cbd5e1 8px) !important;
-  opacity: 0.5;
+  background: repeating-linear-gradient(45deg, #cbd5e1, #cbd5e1 4px, #94a3b8 4px, #94a3b8 8px) !important;
+  opacity: 0.75;
 }
 .ec-dayoff-block {
-  background: repeating-linear-gradient(45deg, #f1f5f9, #f1f5f9 4px, #e2e8f0 4px, #e2e8f0 8px) !important;
-  opacity: 0.6;
+  background: repeating-linear-gradient(45deg, #e2e8f0, #e2e8f0 4px, #cbd5e1 4px, #cbd5e1 8px) !important;
+  opacity: 0.8;
 }
 .dark .ec-nonworking-block {
-  background: repeating-linear-gradient(45deg, #1e293b, #1e293b 4px, #0f172a 4px, #0f172a 8px) !important;
-  opacity: 0.6;
+  background: repeating-linear-gradient(45deg, #334155, #334155 4px, #1e293b 4px, #1e293b 8px) !important;
+  opacity: 0.85;
 }
 .dark .ec-dayoff-block {
-  background: repeating-linear-gradient(45deg, #0f172a, #0f172a 4px, #020617 4px, #020617 8px) !important;
-  opacity: 0.7;
+  background: repeating-linear-gradient(45deg, #1e293b, #1e293b 4px, #0f172a 4px, #0f172a 8px) !important;
+  opacity: 0.85;
 }
 </style>
