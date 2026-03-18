@@ -397,11 +397,13 @@ def reassign_booking(booking_id, new_assigned_to, reason=None):
 	new_member_name = frappe.get_value("User", new_assigned_to, "full_name")
 
 	booking.append("booking_history", {
-		"action": "Reassigned",
-		"description": f"Reassigned from {old_member_name} to {new_member_name}",
-		"performed_by": frappe.session.user
+		"event_type": "Assignment Changed",
+		"event_datetime": now_datetime(),
+		"event_by": frappe.session.user,
+		"event_description": f"Reassigned from {old_member_name} to {new_member_name}",
 	})
 
+	booking.flags.skip_auto_history = True
 	booking.save()
 
 	# Update assignment tracking for the new member
@@ -495,11 +497,13 @@ def reschedule_booking_internal(booking_id, new_date, new_time, reason=None):
 
 	# Add to booking history
 	booking.append("booking_history", {
-		"action": "Rescheduled",
-		"description": f"Rescheduled from {old_start_datetime} to {new_start_datetime}",
-		"performed_by": frappe.session.user
+		"event_type": "Rescheduled",
+		"event_datetime": now_datetime(),
+		"event_by": frappe.session.user,
+		"event_description": f"Rescheduled from {old_start_datetime} to {new_start_datetime}",
 	})
 
+	booking.flags.skip_auto_history = True
 	booking.save()
 
 	return {
@@ -570,6 +574,7 @@ def update_booking_status(booking_id, new_status, notes=None):
 	})
 
 	booking.flags.skip_location_validation = True
+	booking.flags.skip_auto_history = True  # We already added history above
 
 	# Mute msgprint warnings during save so they don't break the API response
 	prev_mute = frappe.flags.mute_messages
@@ -927,14 +932,17 @@ def create_self_booking(booking_data):
 		"assigned_by": current_user
 	})
 
+	# Skip location validation warnings for API-driven creation
+	booking.flags.skip_location_validation = True
+
 	# Insert booking
 	booking.insert()
 
 	# Update member assignment tracking
 	update_member_assignment_tracking(department.name, current_user)
 
-	# Update customer booking stats
-	if customer_doc:
+	# Update customer booking stats (if the method exists on the doc)
+	if customer_doc and hasattr(customer_doc, "update_booking_stats"):
 		customer_doc.update_booking_stats()
 
 	# Send email notification if requested (default False for self-booking)
@@ -1646,13 +1654,16 @@ def create_team_meeting(meeting_data):
 	})
 
 	# Add all participants to the participants child table
+	# Host (current_user) is auto-confirmed; others start as Pending
 	for participant_id in participants:
 		participant_doc = frappe.get_doc("User", participant_id)
+		is_host = (participant_id == current_user)
 		booking.append("participants", {
 			"participant_type": "Internal",
 			"user": participant_id,
 			"email": participant_doc.email,
-			"response_status": "Pending"
+			"response_status": "Accepted" if is_host else "Pending",
+			"response_datetime": now_datetime() if is_host else None
 		})
 
 	# Add leader as primary assigned user
@@ -1668,15 +1679,31 @@ def create_team_meeting(meeting_data):
 	# Update assignment tracking for leader
 	update_member_assignment_tracking(department, current_user)
 
-	# Send email notifications if requested (default True)
-	send_notification = meeting_data.get("send_email_notification", True)
+	# Send email notifications per participant
+	# notify_participants can be a list of user IDs to notify, or a boolean
+	notify_config = meeting_data.get("notify_participants", meeting_data.get("send_email_notification", True))
 	email_result = None
+	notified_count = 0
 
-	if send_notification:
+	if notify_config:
 		try:
-			# Send email to all participants
-			from meeting_manager.meeting_manager.utils.email_notifications import send_booking_confirmation_email
-			email_result = send_booking_confirmation_email(booking.name)
+			from meeting_manager.meeting_manager.utils.email_notifications import send_team_meeting_invitations
+
+			# If notify_config is a list, only notify those specific participants
+			if isinstance(notify_config, list):
+				notify_set = set(notify_config)
+				# Send to selected participants only
+				email_result = send_team_meeting_invitations(
+					booking.name,
+					notify_participants=True,
+					participant_filter=notify_set
+				)
+			else:
+				# Notify all participants
+				email_result = send_team_meeting_invitations(booking.name, notify_participants=True)
+
+			if email_result and email_result.get("success"):
+				notified_count = len(email_result.get("results", {}).get("participants", []))
 		except Exception as e:
 			frappe.log_error(
 				f"Failed to send notification emails for team meeting {booking.name}: {str(e)}",
@@ -1686,8 +1713,70 @@ def create_team_meeting(meeting_data):
 	return {
 		"success": True,
 		"booking_id": booking.name,
-		"message": _("Team meeting created successfully!" + (" Notification emails will be sent to all participants." if send_notification else "")),
-		"email_sent": email_result.get("success") if email_result else False
+		"message": _("Team meeting created successfully!"),
+		"email_sent": email_result.get("success") if email_result else False,
+		"notified_count": notified_count
+	}
+
+
+@frappe.whitelist()
+def respond_to_meeting(booking_id, response):
+	"""
+	Allow a participant to respond to a team meeting invitation.
+
+	Args:
+		booking_id (str): MM Meeting Booking ID
+		response (str): One of "Accepted", "Declined", "Tentative"
+
+	Returns:
+		dict: { "success": bool, "message": str }
+	"""
+	if frappe.session.user == "Guest":
+		frappe.throw(_("You must be logged in"))
+
+	valid_responses = ["Accepted", "Declined", "Tentative"]
+	if response not in valid_responses:
+		frappe.throw(_(f"Invalid response. Must be one of: {', '.join(valid_responses)}"))
+
+	booking = frappe.get_doc("MM Meeting Booking", booking_id)
+
+	if not booking.is_internal:
+		frappe.throw(_("This is not a team meeting"))
+
+	# Find the participant row for current user
+	current_user = frappe.session.user
+	participant_row = None
+	for p in booking.participants:
+		if p.user == current_user:
+			participant_row = p
+			break
+
+	if not participant_row:
+		frappe.throw(_("You are not a participant of this meeting"))
+
+	old_status = participant_row.response_status or "Pending"
+
+	# Update response
+	participant_row.response_status = response
+	participant_row.response_datetime = now_datetime()
+
+	# Add history entry
+	user_name = frappe.get_value("User", current_user, "full_name") or current_user
+	booking.flags.skip_auto_history = True
+	booking.flags.skip_location_validation = True
+	booking.append("booking_history", {
+		"event_type": "Status Changed",
+		"event_description": f"{user_name} changed RSVP from {old_status} to {response}",
+		"event_by": current_user,
+		"event_datetime": now_datetime()
+	})
+
+	booking.save(ignore_permissions=True)
+
+	return {
+		"success": True,
+		"message": _(f"Your response has been updated to {response}"),
+		"response_status": response
 	}
 
 

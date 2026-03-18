@@ -86,6 +86,13 @@ const routes = [
     meta: { minRole: "department_leader", title: "Email Templates" },
   },
   {
+    path: "/email-templates/:id",
+    name: "EmailTemplateDetail",
+    component: () => import("@/pages/admin/EmailTemplateDetail.vue"),
+    props: true,
+    meta: { minRole: "department_leader", title: "Email Template" },
+  },
+  {
     path: "/admin/departments",
     name: "Departments",
     component: () => import("@/pages/admin/Departments.vue"),

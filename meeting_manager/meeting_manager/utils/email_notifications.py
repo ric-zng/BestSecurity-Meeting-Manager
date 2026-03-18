@@ -646,13 +646,14 @@ def send_cancellation_notification(
 # ==========================================
 
 @frappe.whitelist()
-def send_team_meeting_invitations(booking_id: str, notify_participants: bool = True) -> dict:
+def send_team_meeting_invitations(booking_id: str, notify_participants: bool = True, participant_filter: set = None) -> dict:
 	"""
-	Send team meeting invitations to all participants.
+	Send team meeting invitations to participants.
 
 	Args:
 		booking_id: MM Meeting Booking ID
 		notify_participants: Send emails to participants
+		participant_filter: Optional set of user IDs to notify (if None, notify all)
 
 	Returns:
 		Dict with results
@@ -666,16 +667,18 @@ def send_team_meeting_invitations(booking_id: str, notify_participants: bool = T
 
 		# Get hosts list for context
 		hosts_list = []
+		host_users = set()
 		if booking.assigned_users:
 			for assignment in booking.assigned_users:
 				host_name = frappe.db.get_value("User", assignment.user, "full_name") or assignment.user
 				hosts_list.append(host_name)
+				host_users.add(assignment.user)
 
 		extra_context = {
 			"hosts": ", ".join(hosts_list)
 		}
 
-		# Send to hosts
+		# Send to hosts (always notified)
 		if booking.assigned_users:
 			for assignment in booking.assigned_users:
 				user = frappe.get_doc("User", assignment.user)
@@ -691,22 +694,29 @@ def send_team_meeting_invitations(booking_id: str, notify_participants: bool = T
 					)
 					results["hosts"].append({"user": user.email, "result": result})
 
-		# Send to participants
+		# Send to participants (excluding hosts, respecting filter)
 		if notify_participants and booking.participants:
 			for participant in booking.participants:
-				if participant.user:
-					user = frappe.get_doc("User", participant.user)
-					if user.email:
-						context = build_booking_context(booking, recipient_name=user.full_name, extra_context=extra_context)
-						result = send_notification(
-							user.email,
-							"Team Meeting Invitation",
-							"Participant",
-							context,
-							None,
-							booking_id
-						)
-						results["participants"].append({"user": user.email, "result": result})
+				if not participant.user:
+					continue
+				# Skip hosts (already notified above)
+				if participant.user in host_users:
+					continue
+				# If filter is provided, only notify those in the filter
+				if participant_filter is not None and participant.user not in participant_filter:
+					continue
+				user = frappe.get_doc("User", participant.user)
+				if user.email:
+					context = build_booking_context(booking, recipient_name=user.full_name, extra_context=extra_context)
+					result = send_notification(
+						user.email,
+						"Team Meeting Invitation",
+						"Participant",
+						context,
+						None,
+						booking_id
+					)
+					results["participants"].append({"user": user.email, "result": result})
 
 		return {"success": True, "results": results}
 

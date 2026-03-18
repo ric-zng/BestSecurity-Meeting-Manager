@@ -7,6 +7,7 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    AppToasts: typeof import('./src/components/shared/AppToasts.vue')['default']
     BlockSlotDialog: typeof import('./src/components/calendar/BlockSlotDialog.vue')['default']
     BookingDetailSidebar: typeof import('./src/components/calendar/BookingDetailSidebar.vue')['default']
     BulkActionBar: typeof import('./src/components/shared/BulkActionBar.vue')['default']

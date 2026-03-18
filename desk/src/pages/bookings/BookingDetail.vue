@@ -83,48 +83,6 @@
               </button>
             </Tooltip>
           </div>
-
-          <Button
-            v-if="permissions.can_edit"
-            variant="subtle"
-            @click="showStatusModal = true"
-          >
-            <template #prefix>
-              <FeatherIcon name="edit-3" class="h-4 w-4" />
-            </template>
-            Edit Status
-          </Button>
-          <Button
-            v-if="permissions.can_reschedule"
-            variant="subtle"
-            @click="showRescheduleModal = true"
-          >
-            <template #prefix>
-              <FeatherIcon name="calendar" class="h-4 w-4" />
-            </template>
-            Reschedule
-          </Button>
-          <Button
-            v-if="permissions.can_reassign"
-            variant="subtle"
-            @click="showReassignModal = true"
-          >
-            <template #prefix>
-              <FeatherIcon name="user-plus" class="h-4 w-4" />
-            </template>
-            Reassign
-          </Button>
-          <Button
-            v-if="permissions.can_cancel"
-            theme="red"
-            variant="subtle"
-            @click="showCancelDialog = true"
-          >
-            <template #prefix>
-              <FeatherIcon name="x-circle" class="h-4 w-4" />
-            </template>
-            Cancel
-          </Button>
         </div>
       </div>
 
@@ -175,7 +133,7 @@
                 <div>
                   <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Duration</dt>
                   <dd class="mt-0.5 text-sm text-gray-900 dark:text-white">
-                    {{ booking.duration_minutes ? booking.duration_minutes + ' minutes' : booking.duration || '-' }}
+                    {{ booking.duration_minutes ? booking.duration_minutes + ' minutes' : booking.duration ? booking.duration + ' minutes' : '-' }}
                   </dd>
                 </div>
                 <div>
@@ -203,15 +161,6 @@
                       Join Meeting
                       <FeatherIcon name="external-link" class="h-3 w-3" />
                     </a>
-                  </dd>
-                </div>
-                <div>
-                  <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Service Type</dt>
-                  <dd class="mt-0.5 text-sm text-gray-900 dark:text-white">
-                    <span v-if="booking.service_type" class="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                      {{ booking.service_type }}
-                    </span>
-                    <span v-else>-</span>
                   </dd>
                 </div>
                 <div>
@@ -277,7 +226,6 @@
               </a>
             </div>
             <div class="px-5 py-4">
-              <!-- Basic info -->
               <dl class="grid gap-x-6 gap-y-4 sm:grid-cols-2">
                 <div>
                   <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Full Name</dt>
@@ -303,17 +251,10 @@
               <div v-if="customer?.emails?.length" class="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
                 <dt class="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">Email Addresses</dt>
                 <div class="space-y-1.5">
-                  <div
-                    v-for="(em, idx) in customer.emails"
-                    :key="idx"
-                    class="flex items-center gap-2"
-                  >
+                  <div v-for="(em, idx) in customer.emails" :key="idx" class="flex items-center gap-2">
                     <FeatherIcon name="mail" class="h-3.5 w-3.5 shrink-0 text-gray-400 dark:text-gray-500" />
                     <span class="text-sm text-gray-900 dark:text-white">{{ em.email }}</span>
-                    <span
-                      v-if="em.is_primary"
-                      class="inline-flex items-center rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                    >Primary</span>
+                    <span v-if="em.is_primary" class="inline-flex items-center rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Primary</span>
                   </div>
                 </div>
               </div>
@@ -329,21 +270,11 @@
               <div v-if="customer?.phones?.length" class="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
                 <dt class="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">Phone Numbers</dt>
                 <div class="space-y-1.5">
-                  <div
-                    v-for="(ph, idx) in customer.phones"
-                    :key="idx"
-                    class="flex items-center gap-2"
-                  >
+                  <div v-for="(ph, idx) in customer.phones" :key="idx" class="flex items-center gap-2">
                     <FeatherIcon name="phone" class="h-3.5 w-3.5 shrink-0 text-gray-400 dark:text-gray-500" />
                     <span class="text-sm text-gray-900 dark:text-white">{{ ph.phone }}</span>
-                    <span
-                      v-if="ph.is_primary_phone"
-                      class="inline-flex items-center rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                    >Primary</span>
-                    <span
-                      v-if="ph.is_primary_mobile"
-                      class="inline-flex items-center rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                    >Mobile</span>
+                    <span v-if="ph.is_primary_phone" class="inline-flex items-center rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Primary</span>
+                    <span v-if="ph.is_primary_mobile" class="inline-flex items-center rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">Mobile</span>
                   </div>
                 </div>
               </div>
@@ -367,11 +298,7 @@
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
-                    <tr
-                      v-for="(link, idx) in customer.links"
-                      :key="idx"
-                      class="group"
-                    >
+                    <tr v-for="(link, idx) in customer.links" :key="idx" class="group">
                       <td class="py-2 pr-3">
                         <span class="inline-flex rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
                           {{ link.link_doctype }}
@@ -402,35 +329,140 @@
             v-if="booking.is_internal && internalParticipants.length"
             class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
           >
-            <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
-              <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
-                Participants
-                <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">
-                  ({{ internalParticipants.length }})
-                </span>
-              </h2>
-            </div>
-            <ul class="divide-y divide-gray-100 dark:divide-gray-800">
-              <li
-                v-for="p in internalParticipants"
-                :key="p.user"
-                class="flex items-center justify-between px-5 py-3"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">
-                    {{ getInitials(p.full_name || p.user) }}
+            <!-- Header with summary -->
+            <div class="px-5 py-3" :class="showParticipantsList ? 'border-b border-gray-100 dark:border-gray-800' : ''">
+              <div class="flex items-center justify-between">
+                <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
+                  Participants
+                  <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">
+                    ({{ internalParticipants.length }})
+                  </span>
+                </h2>
+                <button
+                  @click="showParticipantsList = !showParticipantsList"
+                  class="cursor-pointer text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                >{{ showParticipantsList ? 'Collapse' : 'Show all' }}</button>
+              </div>
+
+              <!-- Compact summary: stacked avatars + RSVP counts -->
+              <div class="mt-2.5 flex items-center justify-between">
+                <!-- Stacked avatars -->
+                <div class="flex items-center">
+                  <div class="flex -space-x-2">
+                    <div
+                      v-for="(p, idx) in internalParticipants.slice(0, 6)" :key="p.user"
+                      class="relative flex h-8 w-8 items-center justify-center rounded-full border-2 text-[10px] font-bold"
+                      :class="avatarRingClass(p.response_status)"
+                      :style="{ zIndex: internalParticipants.length - idx }"
+                      :title="`${p.full_name || p.user} — ${p.response_status || 'Pending'}`"
+                    >{{ getInitials(p.full_name || p.user) }}</div>
+                    <div
+                      v-if="internalParticipants.length > 6"
+                      class="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-gray-200 text-[10px] font-bold text-gray-600 dark:border-gray-800 dark:bg-gray-600 dark:text-gray-300"
+                      :style="{ zIndex: 0 }"
+                    >+{{ internalParticipants.length - 6 }}</div>
                   </div>
+                </div>
+
+                <!-- RSVP status counts -->
+                <div class="flex items-center gap-2">
+                  <span v-if="rsvpCounts.accepted" class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    {{ rsvpCounts.accepted }}
+                  </span>
+                  <span v-if="rsvpCounts.tentative" class="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2 py-0.5 text-[11px] font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01"/></svg>
+                    {{ rsvpCounts.tentative }}
+                  </span>
+                  <span v-if="rsvpCounts.declined" class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                    {{ rsvpCounts.declined }}
+                  </span>
+                  <span v-if="rsvpCounts.pending" class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    {{ rsvpCounts.pending }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- RSVP banner for current user if they're a participant and haven't accepted -->
+            <div
+              v-if="currentUserParticipant && currentUserParticipant.response_status !== 'Accepted'"
+              class="border-t border-b border-gray-100 bg-blue-50 px-5 py-3 dark:border-gray-800 dark:bg-blue-900/20"
+            >
+              <p class="mb-2 text-sm font-medium text-gray-900 dark:text-white">You've been invited to this meeting</p>
+              <div class="flex flex-wrap items-center gap-2">
+                <button
+                  @click="respondToMeeting('Accepted')"
+                  :disabled="rsvpLoading"
+                  class="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-green-700 disabled:opacity-50"
+                >
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  Accept
+                </button>
+                <button
+                  @click="respondToMeeting('Tentative')"
+                  :disabled="rsvpLoading"
+                  class="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-yellow-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-yellow-600 disabled:opacity-50"
+                >
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  Maybe
+                </button>
+                <button
+                  @click="respondToMeeting('Declined')"
+                  :disabled="rsvpLoading"
+                  class="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-red-700 disabled:opacity-50"
+                >
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  Decline
+                </button>
+              </div>
+            </div>
+
+            <!-- Already accepted banner -->
+            <div
+              v-else-if="currentUserParticipant && currentUserParticipant.response_status === 'Accepted'"
+              class="flex items-center justify-between border-t border-b border-gray-100 bg-green-50 px-5 py-2.5 dark:border-gray-800 dark:bg-green-900/20"
+            >
+              <div class="flex items-center gap-2">
+                <svg class="h-4 w-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span class="text-sm font-medium text-green-700 dark:text-green-400">You accepted this meeting</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button
+                  @click="respondToMeeting('Tentative')"
+                  :disabled="rsvpLoading"
+                  class="cursor-pointer rounded px-2 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                >Maybe</button>
+                <button
+                  @click="respondToMeeting('Declined')"
+                  :disabled="rsvpLoading"
+                  class="cursor-pointer rounded px-2 py-1 text-xs font-medium text-red-500 transition-colors hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
+                >Decline</button>
+              </div>
+            </div>
+
+            <!-- Expanded participant list -->
+            <ul v-if="showParticipantsList" class="divide-y divide-gray-100 dark:divide-gray-800">
+              <li v-for="p in internalParticipants" :key="p.user" class="flex items-center justify-between px-5 py-2.5">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold"
+                    :class="avatarBgClass(p.response_status)"
+                  >{{ getInitials(p.full_name || p.user) }}</div>
                   <div>
-                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ p.full_name || p.user }}</p>
+                    <div class="flex items-center gap-1.5">
+                      <p class="text-sm font-medium text-gray-900 dark:text-white">{{ p.full_name || p.user }}</p>
+                      <span v-if="p.user === auth.user" class="text-[10px] font-medium text-gray-400 dark:text-gray-500">(You)</span>
+                    </div>
                     <p v-if="p.email" class="text-xs text-gray-500 dark:text-gray-400">{{ p.email }}</p>
                   </div>
                 </div>
                 <span
                   class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
                   :class="attendanceClass(p.response_status)"
-                >
-                  {{ p.response_status || 'Pending' }}
-                </span>
+                >{{ p.response_status || 'Pending' }}</span>
               </li>
             </ul>
           </div>
@@ -441,72 +473,422 @@
             class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
           >
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
-              <h2 class="text-sm font-semibold text-gray-900 dark:text-white">History</h2>
+              <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
+                History
+                <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">({{ timelineEntries.length }})</span>
+              </h2>
             </div>
             <div class="px-5 py-4">
               <ol class="relative border-l border-gray-200 dark:border-gray-700">
-                <li
-                  v-for="(entry, idx) in timelineEntries"
-                  :key="idx"
-                  class="mb-6 ml-6 last:mb-0"
-                >
-                  <div class="absolute -left-2.5 flex h-5 w-5 items-center justify-center rounded-full border border-white bg-gray-100 dark:border-gray-900 dark:bg-gray-700">
-                    <FeatherIcon :name="entry.icon" class="h-3 w-3 text-gray-500 dark:text-gray-400" />
+                <li v-for="(entry, idx) in visibleTimeline" :key="idx" class="mb-5 ml-6 last:mb-0">
+                  <div
+                    class="absolute -left-2.5 flex h-5 w-5 items-center justify-center rounded-full border border-white dark:border-gray-900"
+                    :class="entry.iconBg || 'bg-gray-100 dark:bg-gray-700'"
+                  >
+                    <FeatherIcon :name="entry.icon" class="h-3 w-3" :class="entry.iconColor || 'text-gray-500 dark:text-gray-400'" />
                   </div>
                   <div>
-                    <p class="text-sm text-gray-900 dark:text-white">{{ entry.description }}</p>
-                    <div class="flex flex-wrap items-center gap-x-2">
-                      <time v-if="entry.time" class="text-xs text-gray-500 dark:text-gray-400">{{ entry.time }}</time>
-                      <span v-if="entry.by" class="text-xs text-gray-400 dark:text-gray-500">by {{ entry.by }}</span>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ entry.title }}</p>
+                    <p v-if="entry.detail" class="mt-0.5 text-xs text-gray-600 dark:text-gray-300">{{ entry.detail }}</p>
+                    <div class="mt-1 flex flex-wrap items-center gap-x-2">
+                      <time v-if="entry.time" class="text-[11px] text-gray-500 dark:text-gray-400">{{ entry.time }}</time>
+                      <span v-if="entry.by" class="text-[11px] text-gray-400 dark:text-gray-500">&middot; {{ entry.by }}</span>
                     </div>
                   </div>
                 </li>
               </ol>
+              <button
+                v-if="timelineEntries.length > 5"
+                @click="showAllHistory = !showAllHistory"
+                class="mt-3 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+              >
+                {{ showAllHistory ? 'Show recent only' : `Show all (${timelineEntries.length})` }}
+              </button>
             </div>
           </div>
         </div>
 
-        <!-- Right column: sidebar cards -->
+        <!-- Right column: sidebar-style action panels -->
         <div class="space-y-6">
-          <!-- Hosts Card -->
+
+          <!-- ═══ Status Section ═══ -->
           <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
-              <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
-                Hosts
-                <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">
-                  ({{ hosts.length }})
-                </span>
-              </h2>
-            </div>
-            <ul class="divide-y divide-gray-100 dark:divide-gray-800">
-              <li
-                v-for="h in hosts"
-                :key="h.user"
-                class="flex items-center gap-3 px-5 py-3"
-              >
-                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-xs font-medium text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                  {{ getInitials(h.full_name || h.user) }}
-                </div>
-                <div class="min-w-0 flex-1">
-                  <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
-                    {{ h.full_name || h.user }}
-                  </p>
-                  <p v-if="h.email" class="truncate text-xs text-gray-500 dark:text-gray-400">{{ h.email }}</p>
-                </div>
-                <span
-                  v-if="h.is_primary_host"
-                  class="shrink-0 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+              <div class="flex items-center justify-between">
+                <h4 class="bd-label mb-0">Status</h4>
+                <button
+                  v-if="permissions.can_edit && !isFinalized"
+                  @click="togglePanel('status')"
+                  class="rounded px-2 py-0.5 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
                 >
-                  Primary
+                  Change
+                </button>
+              </div>
+              <div class="mt-2 flex items-center gap-2">
+                <span
+                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                  :style="statusBadgeStyle"
+                >
+                  {{ booking.booking_status }}
                 </span>
-              </li>
-              <li v-if="!hosts.length" class="px-5 py-3 text-sm text-gray-400 dark:text-gray-500">
-                No hosts assigned
-              </li>
-            </ul>
+                <span v-if="booking.is_internal" class="rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                  Team
+                </span>
+              </div>
+            </div>
+
+            <!-- Inline status change -->
+            <transition enter-active-class="transition duration-150" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
+              <div v-if="activePanel === 'status'" class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
+                <div class="space-y-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
+                  <div>
+                    <label class="bd-label">New Status</label>
+                    <div class="relative" ref="statusDropdownRef">
+                      <button @click="statusDropdownOpen = !statusDropdownOpen" class="bd-select">
+                        <span class="flex items-center gap-2">
+                          <span v-if="statusForm.status" class="h-2.5 w-2.5 shrink-0 rounded-full" :style="{ backgroundColor: getStatusColor(statusForm.status) }" />
+                          <span :class="statusForm.status ? 'text-gray-900 dark:text-white' : 'text-gray-400'">
+                            {{ statusForm.status || 'Select status...' }}
+                          </span>
+                        </span>
+                        <svg class="h-4 w-4 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                      </button>
+                      <transition enter-active-class="transition duration-100" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-75" leave-from-class="opacity-100" leave-to-class="opacity-0 scale-95">
+                        <div v-if="statusDropdownOpen" class="bd-dropdown">
+                          <button
+                            v-for="s in BOOKING_STATUSES.filter(st => st !== booking.booking_status)"
+                            :key="s"
+                            @click="statusForm.status = s; statusDropdownOpen = false"
+                            class="bd-dropdown-item"
+                          >
+                            <span class="h-2.5 w-2.5 shrink-0 rounded-full" :style="{ backgroundColor: getStatusColor(s) }" />
+                            <span>{{ s }}</span>
+                          </button>
+                        </div>
+                      </transition>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="bd-label">Notes (optional)</label>
+                    <textarea
+                      v-model="statusForm.notes"
+                      rows="2"
+                      placeholder="Add a note about this status change..."
+                      class="bd-field resize-none"
+                    />
+                  </div>
+                  <div class="flex gap-2">
+                    <button @click="activePanel = null" class="bd-btn-secondary">Cancel</button>
+                    <button
+                      @click="changeStatus"
+                      :disabled="!statusForm.status || actionLoading === 'status'"
+                      class="bd-btn-primary"
+                    >
+                      {{ actionLoading === 'status' ? 'Saving...' : 'Update Status' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </transition>
           </div>
 
-          <!-- Customer Bookings Card -->
+          <!-- ═══ Schedule Section ═══ -->
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
+              <div class="flex items-center justify-between">
+                <h4 class="bd-label mb-0">Schedule</h4>
+                <button
+                  v-if="permissions.can_reschedule && !isFinalized"
+                  @click="togglePanel('reschedule')"
+                  class="rounded px-2 py-0.5 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                >
+                  Reschedule
+                </button>
+              </div>
+              <div class="mt-2 space-y-1.5">
+                <div class="flex items-center gap-2 text-sm">
+                  <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span class="text-gray-900 dark:text-white">{{ sidebarFormatDate(booking.start_datetime) }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                  <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="text-gray-900 dark:text-white">{{ formatTimeRange(booking.start_datetime, booking.end_datetime) }}</span>
+                  <span class="text-xs text-gray-400">({{ booking.duration_minutes || booking.duration }} min)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Inline reschedule form -->
+            <transition enter-active-class="transition duration-150" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
+              <div v-if="activePanel === 'reschedule'" class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
+                <div class="space-y-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
+                  <!-- Mini calendar -->
+                  <div class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
+                    <div class="mb-2 flex items-center justify-between">
+                      <button @click="calChangeMonth(-1)" class="rounded p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                      </button>
+                      <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ calMonthLabel }}</span>
+                      <button @click="calChangeMonth(1)" class="rounded p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                      </button>
+                    </div>
+                    <div class="grid grid-cols-7 gap-0.5 text-center">
+                      <div v-for="d in ['Mo','Tu','We','Th','Fr','Sa','Su']" :key="d" class="py-1 text-[10px] font-medium text-gray-400 dark:text-gray-500">{{ d }}</div>
+                      <template v-for="(day, idx) in calDays" :key="idx">
+                        <button
+                          v-if="day.date"
+                          @click="rescheduleForm.date = day.date"
+                          class="mx-auto flex h-8 w-8 items-center justify-center rounded-full text-xs transition-colors"
+                          :class="calDayClass(day)"
+                        >{{ day.day }}</button>
+                        <div v-else class="h-8 w-8" />
+                      </template>
+                    </div>
+                    <div class="mt-2 flex items-center justify-between">
+                      <button @click="calGoToday" class="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400">Today</button>
+                      <span v-if="rescheduleForm.date" class="text-xs text-gray-500 dark:text-gray-400">{{ sidebarFormatDate(rescheduleForm.date + 'T12:00:00') }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Time spinners -->
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="bd-label">Start Time</label>
+                      <div class="flex items-center gap-1">
+                        <button @click="adjustTime('start', -15)" class="time-btn">
+                          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+                        </button>
+                        <input
+                          :value="rescheduleForm.startTime"
+                          @change="onTimeInput('start', $event)"
+                          class="time-input"
+                          placeholder="HH:MM"
+                          maxlength="5"
+                        />
+                        <button @click="adjustTime('start', 15)" class="time-btn">
+                          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="bd-label">End Time</label>
+                      <div class="flex items-center gap-1">
+                        <button @click="adjustTime('end', -15)" class="time-btn">
+                          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+                        </button>
+                        <input
+                          :value="rescheduleForm.endTime"
+                          @change="onTimeInput('end', $event)"
+                          class="time-input"
+                          placeholder="HH:MM"
+                          maxlength="5"
+                        />
+                        <button @click="adjustTime('end', 15)" class="time-btn">
+                          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <p v-if="timeError" class="text-center text-[11px] font-medium text-red-500">{{ timeError }}</p>
+                  <p v-else-if="rescheduleDuration" class="text-center text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                    Duration: {{ rescheduleDuration }} min
+                  </p>
+
+                  <div class="flex gap-2">
+                    <button @click="activePanel = null" class="bd-btn-secondary">Cancel</button>
+                    <button
+                      @click="rescheduleBooking"
+                      :disabled="!rescheduleForm.date || !rescheduleForm.startTime || !rescheduleForm.endTime || !!timeError || actionLoading === 'reschedule'"
+                      class="bd-btn-primary"
+                    >
+                      {{ actionLoading === 'reschedule' ? 'Saving...' : 'Save' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </transition>
+          </div>
+
+          <!-- ═══ Service Section ═══ -->
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
+              <div class="flex items-center justify-between">
+                <h4 class="bd-label mb-0">Service</h4>
+                <button
+                  v-if="permissions.can_edit && !isFinalized"
+                  @click="togglePanel('service')"
+                  class="rounded px-2 py-0.5 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                >
+                  Change
+                </button>
+              </div>
+              <p class="mt-1.5 text-sm text-gray-900 dark:text-white">{{ booking.service_type || 'Not set' }}</p>
+            </div>
+
+            <!-- Inline service change -->
+            <transition enter-active-class="transition duration-150" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
+              <div v-if="activePanel === 'service'" class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
+                <div class="space-y-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
+                  <div class="space-y-1">
+                    <button
+                      v-for="svc in SERVICE_TYPES"
+                      :key="svc"
+                      @click="serviceForm.value = svc"
+                      class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors"
+                      :class="serviceForm.value === svc
+                        ? 'bg-blue-600 text-white font-medium'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                    >
+                      <svg v-if="serviceForm.value === svc" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                      <span v-else class="h-4 w-4 shrink-0" />
+                      {{ svc }}
+                    </button>
+                  </div>
+                  <div class="flex gap-2 pt-1">
+                    <button @click="activePanel = null" class="bd-btn-secondary">Cancel</button>
+                    <button
+                      @click="changeService"
+                      :disabled="!serviceForm.value || serviceForm.value === booking.service_type || actionLoading === 'service'"
+                      class="bd-btn-primary"
+                    >
+                      {{ actionLoading === 'service' ? 'Saving...' : 'Update' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </transition>
+          </div>
+
+          <!-- ═══ Hosts / Assigned To Section ═══ -->
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
+              <div class="flex items-center justify-between">
+                <h4 class="bd-label mb-0">Assigned To</h4>
+                <button
+                  v-if="permissions.can_reassign && !isFinalized && !booking.is_internal"
+                  @click="openReassignPanel"
+                  class="rounded px-2 py-0.5 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                >
+                  Reassign
+                </button>
+              </div>
+            </div>
+            <div class="px-5 py-3">
+              <div class="space-y-2">
+                <div v-for="h in hosts" :key="h.user" class="flex items-center gap-2.5">
+                  <div
+                    class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+                    :class="h.is_primary_host
+                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400'
+                      : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'"
+                  >
+                    {{ getInitials(h.full_name || h.user) }}
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ h.full_name || h.user }}</p>
+                    <p v-if="h.is_primary_host" class="text-[10px] text-blue-600 dark:text-blue-400">Primary host</p>
+                  </div>
+                </div>
+                <p v-if="!hosts.length" class="text-sm text-gray-400 dark:text-gray-500">No hosts assigned</p>
+              </div>
+            </div>
+
+            <!-- Inline reassign -->
+            <transition enter-active-class="transition duration-150" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
+              <div v-if="activePanel === 'reassign'" class="border-t border-gray-100 px-5 py-3 dark:border-gray-800">
+                <div class="space-y-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
+                  <label class="bd-label">Assign to</label>
+                  <div v-if="membersLoading" class="flex items-center gap-2 py-3 text-xs text-gray-400">
+                    <div class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-400 border-t-transparent" />
+                    Loading team members...
+                  </div>
+                  <div v-else-if="departmentMembers.length === 0" class="py-3 text-center text-xs text-gray-400">
+                    No other team members available
+                  </div>
+                  <div v-else class="max-h-48 space-y-1 overflow-y-auto">
+                    <button
+                      v-for="m in departmentMembers"
+                      :key="m.user_id"
+                      @click="reassignForm.user = m.user_id"
+                      class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors"
+                      :class="reassignForm.user === m.user_id
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                    >
+                      <div
+                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+                        :class="reassignForm.user === m.user_id
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'"
+                      >
+                        {{ m.full_name?.charAt(0)?.toUpperCase() || '?' }}
+                      </div>
+                      <span class="text-sm font-medium">{{ m.full_name || m.user_id }}</span>
+                      <svg v-if="reassignForm.user === m.user_id" class="ml-auto h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                  </div>
+                  <div class="flex gap-2 pt-1">
+                    <button @click="activePanel = null" class="bd-btn-secondary">Cancel</button>
+                    <button
+                      @click="reassignBooking"
+                      :disabled="!reassignForm.user || actionLoading === 'reassign'"
+                      class="bd-btn-primary"
+                    >
+                      {{ actionLoading === 'reassign' ? 'Saving...' : 'Reassign' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </transition>
+          </div>
+
+          <!-- ═══ Cancel Section ═══ -->
+          <div v-if="permissions.can_cancel && !isFinalized" class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div class="px-5 py-3">
+              <button
+                @click="togglePanel('cancel')"
+                class="flex w-full items-center justify-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+              >
+                <FeatherIcon name="x-circle" class="h-4 w-4" />
+                Cancel Booking
+              </button>
+
+              <!-- Cancel confirmation -->
+              <transition enter-active-class="transition duration-150" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <div v-if="activePanel === 'cancel'" class="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
+                  <p class="text-xs font-medium text-red-700 dark:text-red-400">
+                    Cancel this booking? This cannot be undone.
+                  </p>
+                  <div>
+                    <label class="bd-label mt-2">Notes (optional)</label>
+                    <textarea
+                      v-model="cancelNotes"
+                      rows="2"
+                      placeholder="Reason for cancellation..."
+                      class="bd-field resize-none"
+                    />
+                  </div>
+                  <div class="mt-2 flex gap-2">
+                    <button @click="activePanel = null" class="bd-btn-secondary">Keep</button>
+                    <button
+                      @click="cancelBooking"
+                      :disabled="actionLoading === 'cancel'"
+                      class="flex-1 rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50 hover:bg-red-700 transition-colors"
+                    >
+                      {{ actionLoading === 'cancel' ? 'Cancelling...' : 'Confirm Cancel' }}
+                    </button>
+                  </div>
+                </div>
+              </transition>
+            </div>
+          </div>
+
+          <!-- ═══ Customer Bookings Card ═══ -->
           <div
             v-if="!booking.is_internal && customerEmail"
             class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
@@ -550,7 +932,7 @@
             </ul>
           </div>
 
-          <!-- Links Card -->
+          <!-- ═══ Links Card ═══ -->
           <div
             v-if="booking.cancel_link || booking.reschedule_link"
             class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
@@ -594,51 +976,50 @@
         </div>
       </div>
     </div>
-
-    <!-- Action Modals -->
-    <ChangeStatusModal
-      :show="showStatusModal"
-      :booking="booking"
-      @close="showStatusModal = false"
-      @success="bookingResource.reload()"
-    />
-
-    <RescheduleModal
-      :show="showRescheduleModal"
-      :booking="booking"
-      @close="showRescheduleModal = false"
-      @success="bookingResource.reload()"
-    />
-
-    <ReassignModal
-      :show="showReassignModal"
-      :booking="booking"
-      :department-name="department?.name"
-      @close="showReassignModal = false"
-      @success="bookingResource.reload()"
-    />
-
-    <CancelBookingModal
-      :show="showCancelDialog"
-      :booking="booking"
-      @close="showCancelDialog = false"
-      @success="bookingResource.reload()"
-    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { createResource, call, toast, Tooltip } from 'frappe-ui'
 import { useBookingNavigation } from '@/composables/useBookingNavigation'
+import { getStatusColor, useCalendarState } from '@/composables/useCalendarState'
 import StatusBadge from '@/components/shared/StatusBadge.vue'
 import ErrorState from '@/components/shared/ErrorState.vue'
 import { useAuthStore } from '@/stores/auth'
-import ChangeStatusModal from '@/components/bookings/ChangeStatusModal.vue'
-import RescheduleModal from '@/components/bookings/RescheduleModal.vue'
-import ReassignModal from '@/components/bookings/ReassignModal.vue'
-import CancelBookingModal from '@/components/bookings/CancelBookingModal.vue'
+
+const API_BASE = 'meeting_manager.meeting_manager.page.mm_enhanced_calendar.api'
+const BOOKING_API = 'meeting_manager.meeting_manager.api.booking'
+
+const SERVICE_TYPES = [
+  'Business',
+  'Business Extended',
+  'Business Rebook',
+  'New Setup Business',
+  'Private / Business Customer',
+  'Private New Sale',
+  'Private Self Book',
+]
+
+const BOOKING_STATUSES = [
+  'New Appointment',
+  'New Booking',
+  'Booking Started',
+  'Sale Approved',
+  'Booking Approved Not Sale',
+  'Call Customer About Sale',
+  'No Answer 1-3',
+  'No Answer 4-5',
+  'Customer Unsure',
+  'No Contact About Offer',
+  'Cancelled',
+  'Optimising Not Possible',
+  'Not Possible',
+  'Rebook',
+  'Rebook Earlier',
+  'Consent Sent Awaiting',
+]
 
 const props = defineProps({
   bookingId: String,
@@ -681,7 +1062,6 @@ const bookingResource = createResource({
   auto: true,
 })
 
-// Re-fetch when navigating to a different booking
 watch(currentBookingId, (newId) => {
   if (newId) {
     bookingResource.update({ params: { booking_id: newId } })
@@ -696,11 +1076,432 @@ const department = computed(() => data.value?.department || {})
 const customer = computed(() => data.value?.customer)
 const hosts = computed(() => data.value?.hosts || [])
 const internalParticipants = computed(() => data.value?.internal_participants || [])
-const externalParticipants = computed(() => data.value?.external_participants || [])
+const currentUserParticipant = computed(() => {
+  return internalParticipants.value.find(p => p.user === auth.user) || null
+})
+const rsvpLoading = ref(false)
+const showParticipantsList = ref(false)
+
+const rsvpCounts = computed(() => {
+  const counts = { accepted: 0, declined: 0, tentative: 0, pending: 0 }
+  for (const p of internalParticipants.value) {
+    const s = (p.response_status || 'Pending').toLowerCase()
+    if (s === 'accepted') counts.accepted++
+    else if (s === 'declined') counts.declined++
+    else if (s === 'tentative') counts.tentative++
+    else counts.pending++
+  }
+  return counts
+})
+
+async function respondToMeeting(response) {
+  rsvpLoading.value = true
+  try {
+    await call('meeting_manager.meeting_manager.api.booking.respond_to_meeting', {
+      booking_id: booking.value.name,
+      response,
+    })
+    toast.success(`Response updated to ${response}`)
+    // Refresh booking data immediately
+    await bookingResource.fetch()
+  } catch (err) {
+    toast.error(extractError(err, 'Failed to update response'))
+  } finally {
+    rsvpLoading.value = false
+  }
+}
+
 const permissions = computed(() => data.value?.permissions || {})
-const userContext = computed(() => data.value?.user_context || {})
+
+const isFinalized = computed(() => {
+  const finalized = ['Cancelled', 'Sale Approved', 'Booking Approved Not Sale', 'Not Possible', 'Completed']
+  return finalized.includes(booking.value?.booking_status)
+})
+
+const statusBadgeStyle = computed(() => {
+  const color = getStatusColor(booking.value?.booking_status || '')
+  return { backgroundColor: color + '1a', color }
+})
+
+// ---- Inline action panels ----
+
+const activePanel = ref(null)
+const actionLoading = ref(null)
+
+// Status
+const statusForm = ref({ status: '', notes: '' })
+const statusDropdownOpen = ref(false)
+const statusDropdownRef = ref(null)
+
+// Reschedule
+const rescheduleForm = ref({ date: '', startTime: '', endTime: '' })
+
+// Service
+const serviceForm = ref({ value: '' })
+
+// Reassign
+const reassignForm = ref({ user: '' })
+const departmentMembers = ref([])
+const membersLoading = ref(false)
+
+// Cancel
+const cancelNotes = ref('')
+
+function togglePanel(panel) {
+  if (activePanel.value === panel) {
+    activePanel.value = null
+  } else {
+    activePanel.value = panel
+    statusDropdownOpen.value = false
+  }
+}
+
+// Click-outside for status dropdown
+function handleClickOutside(e) {
+  if (statusDropdownOpen.value && statusDropdownRef.value && !statusDropdownRef.value.contains(e.target)) {
+    statusDropdownOpen.value = false
+  }
+}
+onMounted(() => document.addEventListener('mousedown', handleClickOutside))
+onBeforeUnmount(() => document.removeEventListener('mousedown', handleClickOutside))
+
+// Pre-fill forms when panels open
+watch(activePanel, (panel) => {
+  if (panel === 'reschedule' && booking.value?.start_datetime) {
+    const startDt = new Date(booking.value.start_datetime)
+    const endDt = booking.value.end_datetime ? new Date(booking.value.end_datetime) : null
+    rescheduleForm.value.date = toLocalDateStr(startDt)
+    rescheduleForm.value.startTime = `${String(startDt.getHours()).padStart(2, '0')}:${String(startDt.getMinutes()).padStart(2, '0')}`
+    rescheduleForm.value.endTime = endDt
+      ? `${String(endDt.getHours()).padStart(2, '0')}:${String(endDt.getMinutes()).padStart(2, '0')}`
+      : ''
+    calViewMonth.value = startDt.getMonth()
+    calViewYear.value = startDt.getFullYear()
+  }
+  if (panel === 'status') {
+    statusForm.value = { status: '', notes: '' }
+  }
+  if (panel === 'service') {
+    serviceForm.value.value = booking.value?.service_type || ''
+  }
+  if (panel === 'cancel') {
+    cancelNotes.value = ''
+  }
+})
+
+// ---- Error extraction helper ----
+function extractError(err, fallback = 'Something went wrong') {
+  // frappe-ui call() sets err.messages from _server_messages, falls back to ['Internal Server Error']
+  if (err?.messages?.length) {
+    // Filter out generic fallback messages to find the real one
+    const real = err.messages.find(m =>
+      typeof m === 'string' && m.trim() &&
+      m !== 'Internal Server Error' &&
+      !m.startsWith('frappe.exceptions.')
+    )
+    if (real) return real
+  }
+  // Parse the traceback in err.exc — the last line has "ExceptionType: Human message"
+  if (err?.exc) {
+    const lines = err.exc.trim().split('\n')
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const line = lines[i].trim()
+      // Match "frappe.exceptions.ValidationError: The actual message"
+      const match = line.match(/(?:frappe\.exceptions\.\w+|[\w.]+Error|[\w.]+Exception):\s*(.+)/)
+      if (match && match[1]) return match[1].trim()
+    }
+  }
+  // Fallback to _error_message or exc_type
+  if (err?._error_message) return err._error_message
+  if (err?.exc_type) return err.exc_type.replace(/([A-Z])/g, ' $1').trim()
+  // err.message from frappe-ui is "method exc_type _error_message" — try to extract meaningful part
+  if (err?.message) {
+    const msg = err.message
+    // If it contains the exc_type, extract text after it
+    if (err?.exc_type && msg.includes(err.exc_type)) {
+      const after = msg.split(err.exc_type).pop()?.trim()
+      if (after && after !== 'Internal Server Error') return after
+    }
+    if (msg !== 'Internal Server Error') return msg
+  }
+  return fallback
+}
+
+// ---- Actions ----
+
+async function changeStatus() {
+  actionLoading.value = 'status'
+  const oldStatus = booking.value.booking_status
+  const newStatus = statusForm.value.status
+  try {
+    const params = {
+      booking_id: booking.value.name,
+      new_status: newStatus,
+    }
+    if (statusForm.value.notes?.trim()) {
+      params.notes = statusForm.value.notes.trim()
+    }
+    const res = await call(`${BOOKING_API}.update_booking_status`, params)
+    if (res?.success) {
+      if (bookingResource.data?.booking) {
+        bookingResource.data.booking.booking_status = newStatus
+      }
+      activePanel.value = null
+      toast.success(`Status updated: ${oldStatus} → ${newStatus}`)
+      bookingResource.reload()
+    } else {
+      toast.error(res?.message || 'Failed to update status')
+    }
+  } catch (err) {
+    toast.error(extractError(err, 'Failed to update status'))
+  } finally {
+    actionLoading.value = null
+  }
+}
+
+async function rescheduleBooking() {
+  actionLoading.value = 'reschedule'
+  const oldStart = booking.value.start_datetime
+  try {
+    const newStartDt = `${rescheduleForm.value.date} ${rescheduleForm.value.startTime}:00`
+    const newEndDt = `${rescheduleForm.value.date} ${rescheduleForm.value.endTime}:00`
+    const res = await call(`${API_BASE}.update_calendar_booking`, {
+      booking_id: booking.value.name,
+      start_datetime: newStartDt,
+      end_datetime: newEndDt,
+    })
+    if (res?.success) {
+      if (bookingResource.data?.booking) {
+        bookingResource.data.booking.start_datetime = newStartDt
+        bookingResource.data.booking.end_datetime = newEndDt
+      }
+      activePanel.value = null
+      const newDateLabel = sidebarFormatDate(newStartDt)
+      const timeLabel = `${rescheduleForm.value.startTime} – ${rescheduleForm.value.endTime}`
+      toast.success(`Rescheduled to ${newDateLabel}, ${timeLabel}`)
+      bookingResource.reload()
+    } else {
+      toast.error(res?.message || 'Failed to reschedule')
+    }
+  } catch (err) {
+    toast.error(extractError(err, 'Failed to reschedule'))
+  } finally {
+    actionLoading.value = null
+  }
+}
+
+async function changeService() {
+  actionLoading.value = 'service'
+  const oldService = booking.value.service_type || 'Not set'
+  const newService = serviceForm.value.value
+  try {
+    const res = await call(`${API_BASE}.update_calendar_booking`, {
+      booking_id: booking.value.name,
+      service_type: newService,
+    })
+    if (res?.success) {
+      if (bookingResource.data?.booking) {
+        bookingResource.data.booking.service_type = newService
+      }
+      activePanel.value = null
+      toast.success(`Service updated: ${oldService} → ${newService}`)
+      bookingResource.reload()
+    } else {
+      toast.error(res?.message || 'Failed to update service')
+    }
+  } catch (err) {
+    toast.error(extractError(err, 'Failed to update service'))
+  } finally {
+    actionLoading.value = null
+  }
+}
+
+async function openReassignPanel() {
+  activePanel.value = 'reassign'
+  statusDropdownOpen.value = false
+  reassignForm.value.user = ''
+  departmentMembers.value = []
+
+  const deptName = department.value?.name
+  if (deptName) {
+    membersLoading.value = true
+    try {
+      const res = await call(`${BOOKING_API}.get_department_members`, {
+        department: deptName,
+      })
+      const currentHostUsers = new Set((hosts.value || []).map((h) => h.user))
+      departmentMembers.value = (res || []).filter(
+        (m) => !currentHostUsers.has(m.user_id)
+      )
+    } catch (e) {
+      console.error('Failed to load members:', e)
+      departmentMembers.value = []
+    } finally {
+      membersLoading.value = false
+    }
+  } else {
+    membersLoading.value = false
+  }
+}
+
+async function reassignBooking() {
+  actionLoading.value = 'reassign'
+  const selectedMember = departmentMembers.value.find(m => m.user_id === reassignForm.value.user)
+  const assigneeName = selectedMember?.full_name || reassignForm.value.user
+  const oldHost = hosts.value.find(h => h.is_primary_host)?.full_name || 'Unassigned'
+  try {
+    const res = await call(`${BOOKING_API}.reassign_booking`, {
+      booking_id: booking.value.name,
+      new_assigned_to: reassignForm.value.user,
+    })
+    if (res?.success) {
+      activePanel.value = null
+      toast.success(`Reassigned: ${oldHost} → ${assigneeName}`)
+      bookingResource.reload()
+    } else {
+      toast.error(res?.message || 'Failed to reassign')
+    }
+  } catch (err) {
+    toast.error(extractError(err, 'Failed to reassign'))
+  } finally {
+    actionLoading.value = null
+  }
+}
+
+async function cancelBooking() {
+  actionLoading.value = 'cancel'
+  const oldStatus = booking.value.booking_status
+  try {
+    const params = {
+      booking_id: booking.value.name,
+      new_status: 'Cancelled',
+    }
+    if (cancelNotes.value?.trim()) {
+      params.notes = cancelNotes.value.trim()
+    }
+    const res = await call(`${BOOKING_API}.update_booking_status`, params)
+    if (res?.success) {
+      if (bookingResource.data?.booking) {
+        bookingResource.data.booking.booking_status = 'Cancelled'
+      }
+      activePanel.value = null
+      toast.success(`Booking cancelled: ${oldStatus} → Cancelled`)
+      bookingResource.reload()
+    } else {
+      toast.error(res?.message || 'Failed to cancel')
+    }
+  } catch (err) {
+    toast.error(extractError(err, 'Failed to cancel'))
+  } finally {
+    actionLoading.value = null
+  }
+}
+
+// ---- Time adjustment (24hr, 15min steps) ----
+
+function adjustTime(which, deltaMinutes) {
+  const key = which === 'start' ? 'startTime' : 'endTime'
+  const current = rescheduleForm.value[key]
+  if (!current) return
+  const [h, m] = current.split(':').map(Number)
+  let total = h * 60 + m + deltaMinutes
+  if (total < 0) total = 0
+  if (total > 23 * 60 + 45) total = 23 * 60 + 45
+  const nh = Math.floor(total / 60)
+  const nm = total % 60
+  rescheduleForm.value[key] = `${String(nh).padStart(2, '0')}:${String(nm).padStart(2, '0')}`
+}
+
+function onTimeInput(which, event) {
+  const raw = event.target.value.trim()
+  const key = which === 'start' ? 'startTime' : 'endTime'
+  const match = raw.match(/^(\d{1,2}):?(\d{2})$/)
+  if (!match) {
+    event.target.value = rescheduleForm.value[key]
+    return
+  }
+  let h = parseInt(match[1], 10)
+  let m = parseInt(match[2], 10)
+  if (h > 23) h = 23
+  if (m > 59) m = 59
+  rescheduleForm.value[key] = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+}
+
+const timeError = computed(() => {
+  if (!rescheduleForm.value.startTime || !rescheduleForm.value.endTime) return null
+  const [sh, sm] = rescheduleForm.value.startTime.split(':').map(Number)
+  const [eh, em] = rescheduleForm.value.endTime.split(':').map(Number)
+  const startMins = sh * 60 + sm
+  const endMins = eh * 60 + em
+  if (endMins <= startMins) return 'End time must be after start time'
+  return null
+})
+
+const rescheduleDuration = computed(() => {
+  if (!rescheduleForm.value.startTime || !rescheduleForm.value.endTime) return null
+  const [sh, sm] = rescheduleForm.value.startTime.split(':').map(Number)
+  const [eh, em] = rescheduleForm.value.endTime.split(':').map(Number)
+  const diff = (eh * 60 + em) - (sh * 60 + sm)
+  return diff > 0 ? diff : null
+})
+
+// ---- Mini calendar ----
+
+const calViewMonth = ref(new Date().getMonth())
+const calViewYear = ref(new Date().getFullYear())
+
+const calMonthLabel = computed(() => {
+  const d = new Date(calViewYear.value, calViewMonth.value, 1)
+  return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+})
+
+const calDays = computed(() => {
+  const year = calViewYear.value
+  const month = calViewMonth.value
+  const firstDay = new Date(year, month, 1)
+  const lastDay = new Date(year, month + 1, 0)
+  const startDow = (firstDay.getDay() + 6) % 7
+  const daysInMonth = lastDay.getDate()
+  const todayStr = toLocalDateStr(new Date())
+
+  const days = []
+  for (let i = 0; i < startDow; i++) days.push({ date: null, day: null })
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+    days.push({ date: dateStr, day: d, isPast: dateStr < todayStr, isToday: dateStr === todayStr })
+  }
+  return days
+})
+
+function calDayClass(day) {
+  if (rescheduleForm.value.date === day.date) return 'bg-blue-600 text-white font-semibold'
+  if (day.isToday) return 'bg-blue-100 text-blue-700 font-semibold dark:bg-blue-900/40 dark:text-blue-400'
+  if (day.isPast) return 'text-gray-300 dark:text-gray-600'
+  return 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+}
+
+function calChangeMonth(delta) {
+  let m = calViewMonth.value + delta
+  let y = calViewYear.value
+  if (m > 11) { m = 0; y++ }
+  if (m < 0) { m = 11; y-- }
+  calViewMonth.value = m
+  calViewYear.value = y
+}
+
+function calGoToday() {
+  const now = new Date()
+  calViewMonth.value = now.getMonth()
+  calViewYear.value = now.getFullYear()
+  rescheduleForm.value.date = toLocalDateStr(now)
+}
+
+function toLocalDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
 // ---- Customer bookings ----
+
 const customerEmail = computed(() => customer.value?.primary_email || booking.value.customer_email_at_booking || '')
 const customerBookings = ref([])
 const customerBookingsLoading = ref(false)
@@ -737,6 +1538,22 @@ function formatTime(dt) {
   return new Date(dt).toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' })
 }
 
+function sidebarFormatDate(dt) {
+  if (!dt) return ''
+  return new Date(dt).toLocaleDateString('en-US', {
+    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
+  })
+}
+
+function formatTimeRange(start, end) {
+  if (!start) return ''
+  const fmt = (d) => {
+    const date = new Date(d)
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+  }
+  return `${fmt(start)} – ${end ? fmt(end) : ''}`
+}
+
 function formatShortDate(dt) {
   if (!dt) return ''
   const d = new Date(dt)
@@ -759,7 +1576,27 @@ function attendanceClass(status) {
   return map[status] || 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
 }
 
+function avatarRingClass(status) {
+  const map = {
+    Accepted: 'border-green-400 bg-green-100 text-green-700 dark:border-green-500 dark:bg-green-900/40 dark:text-green-300',
+    Declined: 'border-red-400 bg-red-100 text-red-700 dark:border-red-500 dark:bg-red-900/40 dark:text-red-300',
+    Tentative: 'border-yellow-400 bg-yellow-100 text-yellow-700 dark:border-yellow-500 dark:bg-yellow-900/40 dark:text-yellow-300',
+  }
+  return map[status] || 'border-gray-300 bg-gray-100 text-gray-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300'
+}
+
+function avatarBgClass(status) {
+  const map = {
+    Accepted: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+    Declined: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+    Tentative: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
+  }
+  return map[status] || 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+}
+
 // ---- History / Timeline ----
+
+const showAllHistory = ref(false)
 
 const hasHistory = computed(() => {
   const bh = booking.value.booking_history
@@ -770,45 +1607,84 @@ const hasHistory = computed(() => {
 const timelineEntries = computed(() => {
   const entries = []
 
-  // Assignment history entries
   const ah = booking.value.assignment_history
   if (Array.isArray(ah)) {
     for (const entry of ah) {
       entries.push({
         icon: 'user-plus',
-        description: entry.description || entry.event_type || 'Assignment change',
+        iconBg: 'bg-blue-100 dark:bg-blue-900/40',
+        iconColor: 'text-blue-600 dark:text-blue-400',
+        title: entry.event_type || 'Assignment Change',
+        detail: entry.description || null,
         time: entry.timestamp ? formatDateTime(entry.timestamp) : '',
         by: entry.changed_by || '',
+        _ts: entry.timestamp,
       })
     }
   }
 
-  // Booking history entries
   const bh = booking.value.booking_history
   if (Array.isArray(bh)) {
     for (const entry of bh) {
-      let desc = entry.description || entry.event_type || 'Status change'
-      if (entry.old_value && entry.new_value) {
-        desc += `: ${entry.old_value} → ${entry.new_value}`
+      const eventType = entry.event_type || 'Update'
+      // Use event_type as title, description as the detail line
+      let title = eventType
+      let detail = entry.description || null
+
+      // Choose icon/color based on event type
+      let icon = 'clock'
+      let iconBg = 'bg-gray-100 dark:bg-gray-700'
+      let iconColor = 'text-gray-500 dark:text-gray-400'
+
+      const et = eventType.toLowerCase()
+      if (et.includes('cancel')) {
+        icon = 'x-circle'
+        iconBg = 'bg-red-100 dark:bg-red-900/30'
+        iconColor = 'text-red-600 dark:text-red-400'
+      } else if (et.includes('reschedule') || et.includes('date') || et.includes('time')) {
+        icon = 'calendar'
+        iconBg = 'bg-orange-100 dark:bg-orange-900/30'
+        iconColor = 'text-orange-600 dark:text-orange-400'
+      } else if (et.includes('status')) {
+        icon = 'refresh-cw'
+        iconBg = 'bg-purple-100 dark:bg-purple-900/30'
+        iconColor = 'text-purple-600 dark:text-purple-400'
+      } else if (et.includes('assign') || et.includes('reassign')) {
+        icon = 'user-plus'
+        iconBg = 'bg-blue-100 dark:bg-blue-900/40'
+        iconColor = 'text-blue-600 dark:text-blue-400'
+      } else if (et.includes('creat') || et.includes('book')) {
+        icon = 'plus-circle'
+        iconBg = 'bg-green-100 dark:bg-green-900/30'
+        iconColor = 'text-green-600 dark:text-green-400'
       }
+
       entries.push({
-        icon: 'clock',
-        description: desc,
+        icon,
+        iconBg,
+        iconColor,
+        title,
+        detail,
         time: entry.timestamp ? formatDateTime(entry.timestamp) : '',
         by: entry.changed_by || '',
+        _ts: entry.timestamp,
       })
     }
   }
 
-  // Sort by timestamp descending (newest first)
   entries.sort((a, b) => {
-    if (!a.time && !b.time) return 0
-    if (!a.time) return 1
-    if (!b.time) return -1
-    return new Date(b.time) - new Date(a.time)
+    if (!a._ts && !b._ts) return 0
+    if (!a._ts) return 1
+    if (!b._ts) return -1
+    return new Date(b._ts) - new Date(a._ts)
   })
 
   return entries
+})
+
+const visibleTimeline = computed(() => {
+  if (showAllHistory.value) return timelineEntries.value
+  return timelineEntries.value.slice(0, 5)
 })
 
 // ---- Clipboard ----
@@ -816,9 +1692,8 @@ const timelineEntries = computed(() => {
 async function copyToClipboard(text, label) {
   try {
     await navigator.clipboard.writeText(text)
-    toast({ title: `${label} copied to clipboard`, icon: 'check' })
+    toast.success(`${label} copied to clipboard`)
   } catch {
-    // Fallback for older browsers
     const ta = document.createElement('textarea')
     ta.value = text
     ta.style.position = 'fixed'
@@ -827,14 +1702,37 @@ async function copyToClipboard(text, label) {
     ta.select()
     document.execCommand('copy')
     document.body.removeChild(ta)
-    toast({ title: `${label} copied to clipboard`, icon: 'check' })
+    toast.success(`${label} copied to clipboard`)
   }
 }
-
-// ---- Modal visibility ----
-
-const showStatusModal = ref(false)
-const showRescheduleModal = ref(false)
-const showReassignModal = ref(false)
-const showCancelDialog = ref(false)
 </script>
+
+<style scoped>
+.bd-field {
+  @apply w-full rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white;
+}
+.bd-label {
+  @apply mb-1 block text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500;
+}
+.bd-btn-primary {
+  @apply flex-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50 hover:bg-blue-700 transition-colors;
+}
+.bd-btn-secondary {
+  @apply flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 dark:border-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors;
+}
+.bd-select {
+  @apply flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-left text-sm shadow-sm transition-colors hover:border-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:border-gray-500;
+}
+.bd-dropdown {
+  @apply absolute left-0 right-0 z-10 mt-1 max-h-52 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800;
+}
+.bd-dropdown-item {
+  @apply flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700;
+}
+.time-btn {
+  @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 active:bg-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200;
+}
+.time-input {
+  @apply w-full rounded-lg border border-gray-300 bg-white py-2 text-center text-sm font-semibold tabular-nums text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white;
+}
+</style>

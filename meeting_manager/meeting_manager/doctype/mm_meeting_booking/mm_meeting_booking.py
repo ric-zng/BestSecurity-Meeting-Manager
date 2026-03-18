@@ -35,13 +35,13 @@ class MMMeetingBooking(Document):
 
 	def before_save(self):
 		"""Hook called before document is saved"""
-		# Track status changes for history
-		if not self.is_new():
+		# Track status changes for history (skip if API already added history via flag)
+		if not self.is_new() and not self.flags.get("skip_auto_history"):
 			old_doc = self.get_doc_before_save()
 			if old_doc and old_doc.booking_status != self.booking_status:
 				self.add_history_entry(
 					event_type="Status Changed",
-					description=f"Booking status changed from '{old_doc.booking_status}' to '{self.booking_status}'"
+					description=f"Status changed from '{old_doc.booking_status}' to '{self.booking_status}'"
 				)
 
 	def set_created_by(self):

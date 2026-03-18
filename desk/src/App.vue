@@ -203,12 +203,16 @@
         <router-view />
       </div>
     </div>
+
+    <!-- Toast notifications -->
+    <AppToasts />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from "vue";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/vue";
+import AppToasts from "@/components/shared/AppToasts.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useNavigation } from "@/composables/useNavigation";
 import { useDarkMode } from "@/composables/useDarkMode";

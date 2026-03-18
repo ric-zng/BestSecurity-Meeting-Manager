@@ -3,7 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import get_datetime, format_datetime, format_time
+from frappe.utils import get_datetime, format_datetime, format_time, now_datetime
 
 
 class MMEmailTemplate(Document):
@@ -252,9 +252,10 @@ def send_booking_email(booking_id: str, template_name: str = None, email_type: s
         # Log the email in booking history if child table exists
         try:
             booking.append("booking_history", {
-                "action": f"Email Sent: {email_type}",
-                "action_by": frappe.session.user,
-                "notes": f"Template: {template.template_name}, Sent to: {recipient}"
+                "event_type": "Reminder Sent",
+                "event_datetime": now_datetime(),
+                "event_by": frappe.session.user,
+                "event_description": f"Email Sent: {email_type} — Template: {template.template_name}, Sent to: {recipient}",
             })
             booking.save(ignore_permissions=True)
         except Exception:

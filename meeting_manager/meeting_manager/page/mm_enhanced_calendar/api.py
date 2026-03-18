@@ -1029,6 +1029,7 @@ def update_calendar_booking(booking_id, start_datetime=None, end_datetime=None,
                     }
 
     # Update service type if provided
+    old_service_type = getattr(booking, "select_mkru", "") or ""
     if service_type:
         # Permission check: members can only change their own, leaders their dept
         if role_level == "department_member":
@@ -1039,9 +1040,41 @@ def update_calendar_booking(booking_id, start_datetime=None, end_datetime=None,
                 return {"success": False, "message": _("You can only update service type in departments you lead")}
         booking.select_mkru = service_type
 
+    # Add booking history entries for what changed
+    if is_reschedule:
+        booking.append("booking_history", {
+            "event_type": "Rescheduled",
+            "event_datetime": now_datetime(),
+            "event_by": frappe.session.user,
+            "event_description": f"Rescheduled from {old_start_datetime} to {booking.start_datetime}",
+        })
+    elif is_extension:
+        booking.append("booking_history", {
+            "event_type": "Rescheduled",
+            "event_datetime": now_datetime(),
+            "event_by": frappe.session.user,
+            "event_description": f"Duration extended — end time changed from {old_end_datetime} to {booking.end_datetime}",
+        })
+    if is_reassignment:
+        new_host_name = frappe.db.get_value("User", new_host, "full_name") or new_host
+        booking.append("booking_history", {
+            "event_type": "Assignment Changed",
+            "event_datetime": now_datetime(),
+            "event_by": frappe.session.user,
+            "event_description": f"Reassigned from {old_primary_host_name or 'Unknown'} to {new_host_name}",
+        })
+    if service_type and old_service_type != service_type:
+        booking.append("booking_history", {
+            "event_type": "Customer Updated",
+            "event_datetime": now_datetime(),
+            "event_by": frappe.session.user,
+            "event_description": f"Service changed from '{old_service_type or 'None'}' to '{service_type}'",
+        })
+
     try:
         # Skip location validation warnings for API-driven saves
         booking.flags.skip_location_validation = True
+        booking.flags.skip_auto_history = True  # We already added history above
         # Mute msgprint warnings so they don't break the API response
         prev_mute = frappe.flags.mute_messages
         frappe.flags.mute_messages = True
@@ -1704,22 +1737,21 @@ def _get_booking_details_inner(booking_id):
     history_entries = []
     for h in booking.booking_history:
         history_entries.append({
-            "event_type": getattr(h, "event_type", ""),
-            "description": getattr(h, "description", ""),
-            "timestamp": str(h.timestamp) if getattr(h, "timestamp", None) else None,
-            "changed_by": getattr(h, "changed_by", ""),
-            "old_value": getattr(h, "old_value", ""),
-            "new_value": getattr(h, "new_value", ""),
+            "event_type": getattr(h, "event_type", "") or getattr(h, "action", ""),
+            "description": getattr(h, "event_description", "") or getattr(h, "description", ""),
+            "timestamp": str(getattr(h, "event_datetime", None) or getattr(h, "timestamp", None) or ""),
+            "changed_by": getattr(h, "event_by", "") or getattr(h, "changed_by", "") or getattr(h, "performed_by", ""),
         })
 
     # Build assignment history entries
     assignment_entries = []
     for ah in booking.assignment_history:
         assignment_entries.append({
-            "event_type": getattr(ah, "event_type", ""),
-            "description": getattr(ah, "description", ""),
-            "timestamp": str(ah.timestamp) if getattr(ah, "timestamp", None) else None,
-            "changed_by": getattr(ah, "changed_by", ""),
+            "event_type": getattr(ah, "action_type", "") or getattr(ah, "event_type", ""),
+            "description": getattr(ah, "notes", "") or getattr(ah, "description", ""),
+            "timestamp": str(getattr(ah, "action_datetime", None) or getattr(ah, "timestamp", None) or ""),
+            "changed_by": getattr(ah, "action_by", "") or getattr(ah, "changed_by", ""),
+            "user": getattr(ah, "user", ""),
         })
 
     return {

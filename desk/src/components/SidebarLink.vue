@@ -41,7 +41,9 @@ const isActive = computed(() => {
   const currentPath = route.path;
   const targetPath = props.to;
   if (currentPath === targetPath) return true;
-  if (targetPath !== "/" && targetPath !== "/calendar" && currentPath.startsWith(targetPath + "/")) return true;
+  // Only match prefix for routes that won't collide (exclude /book which would match /book/team)
+  const exactOnlyRoutes = ["/", "/calendar", "/book"];
+  if (!exactOnlyRoutes.includes(targetPath) && currentPath.startsWith(targetPath + "/")) return true;
   return false;
 });
 </script>
