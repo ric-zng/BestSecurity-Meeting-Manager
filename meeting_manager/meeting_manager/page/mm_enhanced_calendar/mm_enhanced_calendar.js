@@ -38,20 +38,14 @@ class EnhancedCalendarController {
         // State
         this.userContext = null;
         this.calendar = null;
-        // All available statuses - select all by default
-        this.allStatuses = [
-            'New Booking', 'New Appointment', 'Booking Started', 'Sale Approved',
-            'Booking Approved Not Sale', 'Call Customer About Sale', 'No Answer 1-3',
-            'No Answer 4-5', 'Customer Unsure', 'No Contact About Offer', 'Cancelled',
-            'Optimising Not Possible', 'Not Possible', 'Rebook', 'Rebook Earlier',
-            'Consent Sent Awaiting'
-        ];
+        this.statusColors = [];   // [{status, color, is_final}, ...] loaded from MM Booking Status
+        this.allStatuses = [];    // populated from statusColors
         this.filterState = {
             mode: 'multi',
             departments: [],
             focusDepartment: null,
             meetingTypes: [],
-            statuses: [...this.allStatuses], // Select all statuses by default
+            statuses: [],
             services: []
         };
         this.resources = [];
@@ -89,6 +83,9 @@ class EnhancedCalendarController {
 
             // Initialize filter state with all departments selected
             this.filterState.departments = this.userContext.accessible_departments.map(d => d.name);
+
+            // Load status colors from MM Booking Status doctype
+            await this.loadStatusColors();
 
             // Build UI
             this.buildUI();
@@ -183,6 +180,32 @@ class EnhancedCalendarController {
         return response.message;
     }
 
+    async loadStatusColors() {
+        try {
+            const response = await frappe.call({
+                method: 'meeting_manager.meeting_manager.page.mm_enhanced_calendar.api.get_status_colors'
+            });
+            const data = response.message || {};
+            // API returns {status: {color, is_final}} — convert to array
+            this.statusColors = Object.entries(data).map(([status, info]) => ({
+                status,
+                color: info.color,
+                is_final: info.is_final,
+            }));
+            this.allStatuses = this.statusColors.map(sc => sc.status);
+            this.filterState.statuses = [...this.allStatuses];
+        } catch (error) {
+            console.error('Failed to load status colors:', error);
+            this.statusColors = [];
+            this.allStatuses = [];
+        }
+    }
+
+    getStatusColor(status) {
+        const sc = this.statusColors.find(s => s.status === status);
+        return sc ? sc.color : '#6b7280';
+    }
+
     buildUI() {
         this.$container.empty();
 
@@ -255,70 +278,12 @@ class EnhancedCalendarController {
                             <div class="ec-filter-item">
                                 <label class="ec-label">${__('Status')}</label>
                                 <div class="ec-status-toggles" id="ec-status-toggles">
-                                    <button class="ec-status-btn active" data-status="New Booking" style="--status-color: #1e40af;">
-                                        <span class="ec-status-dot" style="background-color: #1e40af;"></span>
-                                        ${__('New Booking')}
-                                    </button>
-                                    <button class="ec-status-btn active" data-status="New Appointment" style="--status-color: #ec4899;">
-                                        <span class="ec-status-dot" style="background-color: #ec4899;"></span>
-                                        ${__('New Appointment')}
-                                    </button>
-                                    <button class="ec-status-btn active" data-status="Booking Started" style="--status-color: #60a5fa;">
-                                        <span class="ec-status-dot" style="background-color: #60a5fa;"></span>
-                                        ${__('Booking Started')}
-                                    </button>
-                                    <button class="ec-status-btn active" data-status="Sale Approved" style="--status-color: #22c55e;">
-                                        <span class="ec-status-dot" style="background-color: #22c55e;"></span>
-                                        ${__('Sale Approved')}
-                                    </button>
-                                    <button class="ec-status-btn active" data-status="Booking Approved Not Sale" style="--status-color: #ef4444;">
-                                        <span class="ec-status-dot" style="background-color: #ef4444;"></span>
-                                        ${__('Approved (No Sale)')}
-                                    </button>
-                                    <button class="ec-status-btn active" data-status="Call Customer About Sale" style="--status-color: #f97316;">
-                                        <span class="ec-status-dot" style="background-color: #f97316;"></span>
-                                        ${__('Call Customer')}
-                                    </button>
-                                    <button class="ec-status-btn active" data-status="No Answer 1-3" style="--status-color: #9ca3af;">
-                                        <span class="ec-status-dot" style="background-color: #9ca3af;"></span>
-                                        ${__('No Answer 1-3')}
-                                    </button>
-                                    <button class="ec-status-btn active" data-status="No Answer 4-5" style="--status-color: #964B00;">
-                                        <span class="ec-status-dot" style="background-color: #964B00;"></span>
-                                        ${__('No Answer 4-5')}
-                                    </button>
-                                    <button class="ec-status-btn active" data-status="Customer Unsure" style="--status-color: #7dd3fc;">
-                                        <span class="ec-status-dot" style="background-color: #7dd3fc;"></span>
-                                        ${__('Customer Unsure')}
-                                    </button>
-                                    <button class="ec-status-btn active" data-status="No Contact About Offer" style="--status-color: #b91c1c;">
-                                        <span class="ec-status-dot" style="background-color: #b91c1c;"></span>
-                                        ${__('No Contact Offer')}
-                                    </button>
-                                    <button class="ec-status-btn active" data-status="Cancelled" style="--status-color: #d1d5db;">
-                                        <span class="ec-status-dot" style="background-color: #d1d5db;"></span>
-                                        ${__('Cancelled')}
-                                    </button>
-                                    <button class="ec-status-btn active" data-status="Optimising Not Possible" style="--status-color: #fbbf24;">
-                                        <span class="ec-status-dot" style="background-color: #fbbf24;"></span>
-                                        ${__('Optimising N/P')}
-                                    </button>
-                                    <button class="ec-status-btn active" data-status="Not Possible" style="--status-color: #dc2626;">
-                                        <span class="ec-status-dot" style="background-color: #dc2626;"></span>
-                                        ${__('Not Possible')}
-                                    </button>
-                                    <button class="ec-status-btn active" data-status="Rebook" style="--status-color: #a855f7;">
-                                        <span class="ec-status-dot" style="background-color: #a855f7;"></span>
-                                        ${__('Rebook')}
-                                    </button>
-                                    <button class="ec-status-btn active" data-status="Rebook Earlier" style="--status-color: #9333ea;">
-                                        <span class="ec-status-dot" style="background-color: #9333ea;"></span>
-                                        ${__('Rebook Earlier')}
-                                    </button>
-                                    <button class="ec-status-btn active" data-status="Consent Sent Awaiting" style="--status-color: #3b82f6;">
-                                        <span class="ec-status-dot" style="background-color: #3b82f6;"></span>
-                                        ${__('Consent Awaiting')}
-                                    </button>
+                                    ${this.statusColors.map(sc => `
+                                        <button class="ec-status-btn active" data-status="${sc.status}" style="--status-color: ${sc.color};">
+                                            <span class="ec-status-dot" style="background-color: ${sc.color};"></span>
+                                            ${__(sc.status)}
+                                        </button>
+                                    `).join('')}
                                 </div>
                             </div>
                         </div>

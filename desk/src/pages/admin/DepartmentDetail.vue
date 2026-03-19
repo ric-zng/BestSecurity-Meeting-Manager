@@ -774,10 +774,10 @@ async function saveSection(section) {
 
     await doc.setValue.submit(payload)
     await doc.reload()
-    toast({ title: 'Saved successfully', icon: 'check-circle', iconClasses: 'text-green-600' })
+    toast({ title: 'Saved successfully', icon: 'check',  })
   } catch (e) {
     console.error('Failed to save:', e)
-    toast({ title: 'Failed to save', icon: 'alert-circle', iconClasses: 'text-red-600' })
+    toast({ title: 'Failed to save', icon: 'x',  })
   } finally {
     saving.value = false
   }
@@ -791,11 +791,11 @@ async function deleteDepartment() {
   deleting.value = true
   try {
     await doc.delete.submit()
-    toast({ title: 'Department deleted', icon: 'check-circle', iconClasses: 'text-green-600' })
+    toast({ title: 'Department deleted', icon: 'check',  })
     router.push('/admin/departments')
   } catch (e) {
     console.error('Failed to delete department:', e)
-    toast({ title: 'Failed to delete', icon: 'alert-circle', iconClasses: 'text-red-600' })
+    toast({ title: 'Failed to delete', icon: 'x',  })
   } finally {
     deleting.value = false
   }
@@ -807,7 +807,7 @@ function copyUrl(url) {
   if (!url) return
   navigator.clipboard.writeText(url)
   copied.value = true
-  toast({ title: 'URL copied to clipboard', icon: 'check-circle', iconClasses: 'text-green-600' })
+  toast({ title: 'URL copied to clipboard', icon: 'check',  })
   setTimeout(() => { copied.value = false }, 2000)
 }
 

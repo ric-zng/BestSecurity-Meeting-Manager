@@ -277,21 +277,21 @@
         </div>
 
         <!-- Usage Info -->
-        <div v-if="usageInfo" class="rounded-lg border border-amber-200 bg-amber-50 shadow-sm dark:border-amber-900/50 dark:bg-amber-950/30">
-          <div class="border-b border-amber-100 px-5 py-3 dark:border-amber-900/30">
-            <h2 class="flex items-center gap-1.5 text-sm font-semibold text-amber-800 dark:text-amber-400">
+        <div v-if="usageInfo" class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
+            <h2 class="flex items-center gap-1.5 text-sm font-semibold text-amber-600 dark:text-amber-400">
               <FeatherIcon name="zap" class="h-3.5 w-3.5" />
               When This Email Is Sent
             </h2>
           </div>
           <div class="px-5 py-3">
-            <p class="text-xs leading-relaxed text-amber-900 dark:text-amber-300">{{ usageInfo.trigger }}</p>
+            <p class="text-xs leading-relaxed text-gray-700 dark:text-gray-300">{{ usageInfo.trigger }}</p>
             <div class="mt-2 flex items-center gap-1.5">
-              <FeatherIcon name="user" class="h-3 w-3 text-amber-600 dark:text-amber-500" />
-              <span class="text-[11px] font-medium text-amber-700 dark:text-amber-400">Sent to: {{ usageInfo.sentTo }}</span>
+              <FeatherIcon name="user" class="h-3 w-3 text-gray-500 dark:text-gray-400" />
+              <span class="text-[11px] font-medium text-gray-600 dark:text-gray-300">Sent to: {{ usageInfo.sentTo }}</span>
             </div>
-            <div v-if="usageInfo.note" class="mt-2 rounded-md bg-amber-100 px-3 py-1.5 dark:bg-amber-900/40 dark:border dark:border-amber-800/40">
-              <p class="text-[11px] text-amber-800 dark:text-amber-200">{{ usageInfo.note }}</p>
+            <div v-if="usageInfo.note" class="mt-2 rounded-md bg-gray-50 px-3 py-1.5 dark:bg-gray-700/50">
+              <p class="text-[11px] text-gray-600 dark:text-gray-400">{{ usageInfo.note }}</p>
             </div>
           </div>
         </div>

@@ -211,5 +211,48 @@
     "email_body": "<p>Hi {{ recipient_name }},</p><p>You have been added to a meeting by {{ booker }}.</p><p><strong>Meeting Details:</strong></p><ul><li><strong>Customer:</strong> {{ customer_name }}{% if company %} ({{ company }}){% endif %}</li><li><strong>Date:</strong> {{ event_date }}</li><li><strong>Time:</strong> {{ event_time }}</li><li><strong>Duration:</strong> {{ duration }} minutes</li><li><strong>Primary Host:</strong> {{ provider }}</li></ul><p><a href=\"{{ booking_url }}\" style=\"display: inline-block; padding: 10px 20px; background-color: #2490ef; color: white; text-decoration: none; border-radius: 5px;\">View Booking Details</a></p>",
     "include_remote_support_link": 0,
     "include_brochure": 0
+  },
+  {
+    "doctype": "MM Email Template",
+    "template_name": "Customer - Meeting Reminder",
+    "email_type": "Reminder",
+    "recipient_type": "Customer",
+    "service_type": "",
+    "is_active": 1,
+    "language": "en",
+    "priority": 0,
+    "subject": "Reminder: Your Upcoming Meeting - {{ booking_reference }}",
+    "email_body": "<p>Dear {{ customer_name }},</p><p>This is a friendly reminder about your upcoming meeting with BestSecurity.</p><p><strong>Meeting Details:</strong></p><ul><li><strong>Date:</strong> {{ event_date }}</li><li><strong>Time:</strong> {{ event_time }}</li><li><strong>Consultant:</strong> {{ provider }}</li><li><strong>Duration:</strong> {{ duration }} minutes</li></ul>{% if custom_message %}<p><strong>Note from your consultant:</strong></p><p>{{ custom_message }}</p>{% endif %}<p>Please ensure you have our remote support software installed before the meeting:</p><p><a href=\"{{ remote_support_link }}\" style=\"display: inline-block; padding: 10px 20px; background-color: #2490ef; color: white; text-decoration: none; border-radius: 5px;\">Install Remote Support Software</a></p><p>Need to make changes?</p><p><a href=\"{{ reschedule_link }}\">Reschedule Meeting</a> | <a href=\"{{ cancel_link }}\">Cancel Meeting</a></p><p>Best regards,<br>BestSecurity</p>",
+    "include_remote_support_link": 1,
+    "remote_support_url": "https://rmmeu-bestsecurity.screenconnect.com/",
+    "include_brochure": 0
+  },
+  {
+    "doctype": "MM Email Template",
+    "template_name": "Host - Meeting Reminder",
+    "email_type": "Reminder",
+    "recipient_type": "Host",
+    "service_type": "",
+    "is_active": 1,
+    "language": "en",
+    "priority": 0,
+    "subject": "Reminder: Upcoming Meeting - {{ booking_reference }}",
+    "email_body": "<p>Hi {{ recipient_name }},</p><p>This is a reminder about an upcoming meeting you are hosting.</p><p><strong>Meeting Details:</strong></p><ul><li><strong>Customer:</strong> {{ customer_name }}{% if company %} ({{ company }}){% endif %}</li><li><strong>Date:</strong> {{ event_date }}</li><li><strong>Time:</strong> {{ event_time }}</li><li><strong>Duration:</strong> {{ duration }} minutes</li><li><strong>Service Type:</strong> {{ service_type }}</li></ul><p><strong>Customer Contact:</strong></p><ul><li><strong>Email:</strong> {{ customer_email }}</li>{% if customer_phone %}<li><strong>Phone:</strong> {{ customer_phone }}</li>{% endif %}</ul>{% if custom_message %}<p><strong>Note:</strong> {{ custom_message }}</p>{% endif %}<p>Reminder sent by: {{ reminder_sent_by }}</p><p><a href=\"{{ booking_url }}\" style=\"display: inline-block; padding: 10px 20px; background-color: #2490ef; color: white; text-decoration: none; border-radius: 5px;\">View Booking Details</a></p>",
+    "include_remote_support_link": 0,
+    "include_brochure": 0
+  },
+  {
+    "doctype": "MM Email Template",
+    "template_name": "Participant - Meeting Reminder",
+    "email_type": "Reminder",
+    "recipient_type": "Participant",
+    "service_type": "",
+    "is_active": 1,
+    "language": "en",
+    "priority": 0,
+    "subject": "Reminder: Upcoming Meeting - {{ meeting_title }}",
+    "email_body": "<p>Hi {{ recipient_name }},</p><p>This is a reminder about an upcoming meeting you are participating in.</p><p><strong>Meeting Details:</strong></p><ul><li><strong>Title:</strong> {{ meeting_title }}</li><li><strong>Date:</strong> {{ event_date }}</li><li><strong>Time:</strong> {{ event_time }}</li><li><strong>Duration:</strong> {{ duration }} minutes</li></ul>{% if custom_message %}<p><strong>Note:</strong> {{ custom_message }}</p>{% endif %}<p>Reminder sent by: {{ reminder_sent_by }}</p><p><a href=\"{{ booking_url }}\" style=\"display: inline-block; padding: 10px 20px; background-color: #2490ef; color: white; text-decoration: none; border-radius: 5px;\">View Meeting Details</a></p>",
+    "include_remote_support_link": 0,
+    "include_brochure": 0
   }
 ]

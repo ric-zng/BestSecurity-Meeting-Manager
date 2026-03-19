@@ -13,6 +13,8 @@ and Department Members) to manage bookings internally:
 - Manage approvals
 """
 
+from meeting_manager.meeting_manager.doctype.mm_booking_status.mm_booking_status import get_finalized_statuses, get_active_statuses
+
 import frappe
 from frappe import _
 from frappe.utils import getdate, get_time, get_datetime, now_datetime
@@ -313,8 +315,7 @@ def reassign_booking(booking_id, new_assigned_to, reason=None):
 		frappe.throw(_("You don't have permission to reassign this booking"))
 
 	# Finalized bookings cannot be reassigned
-	finalized_statuses = ["Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed"]
-	if booking.booking_status in finalized_statuses:
+	if booking.booking_status in get_finalized_statuses():
 		frappe.throw(_(f"Cannot reassign '{booking.booking_status}' bookings"))
 
 	# Get department from meeting type if not directly on booking
@@ -448,8 +449,7 @@ def reschedule_booking_internal(booking_id, new_date, new_time, reason=None):
 		frappe.throw(_("You don't have permission to reschedule this booking"))
 
 	# Finalized bookings cannot be rescheduled
-	finalized_statuses = ["Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed"]
-	if booking.booking_status in finalized_statuses:
+	if booking.booking_status in get_finalized_statuses():
 		frappe.throw(_(f"Cannot reschedule '{booking.booking_status}' bookings"))
 
 	# Validate new date and time
@@ -540,15 +540,8 @@ def update_booking_status(booking_id, new_status, notes=None):
 	if not has_permission_to_manage_booking(booking):
 		frappe.throw(_("You don't have permission to update this booking"))
 
-	# Validate status against the doctype's allowed options
-	valid_statuses = [
-		"New Appointment", "New Booking", "Booking Started",
-		"Sale Approved", "Booking Approved Not Sale",
-		"Call Customer About Sale", "No Answer 1-3", "No Answer 4-5",
-		"Customer Unsure", "No Contact About Offer", "Cancelled",
-		"Optimising Not Possible", "Not Possible",
-		"Rebook", "Rebook Earlier", "Consent Sent Awaiting",
-	]
+	# Validate status against active booking statuses
+	valid_statuses = get_active_statuses()
 	if new_status not in valid_statuses:
 		frappe.throw(_(f"Invalid status. Must be one of: {', '.join(valid_statuses)}"))
 

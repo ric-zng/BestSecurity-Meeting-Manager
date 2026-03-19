@@ -596,11 +596,12 @@ function confirmBulkDelete() {
 }
 
 async function executeConfirmedAction() {
-  const modal = confirmModal.value
-  modal.loading = true
+  confirmModal.value.loading = true
+  const action = confirmModal.value.action
+  const payload = confirmModal.value.payload
   const names = Array.from(selectedRows.value)
   try {
-    if (modal.action === 'toggle_active') {
+    if (action === 'toggle_active') {
       let succeeded = 0, failed = 0
       for (const name of names) {
         try {
@@ -608,15 +609,18 @@ async function executeConfirmedAction() {
             doctype: 'MM Department',
             name,
             fieldname: 'is_active',
-            value: modal.payload ? 1 : 0,
+            value: payload ? 1 : 0,
           })
           succeeded++
         } catch { failed++ }
       }
-      const label = modal.payload ? 'activated' : 'deactivated'
-      if (failed === 0) toast({ title: `${succeeded} department${succeeded > 1 ? 's' : ''} ${label}`, icon: 'check-circle', iconClasses: 'text-green-600' })
-      else toast({ title: `${succeeded} ${label}, ${failed} failed`, icon: 'alert-circle', iconClasses: 'text-amber-600' })
-    } else if (modal.action === 'delete') {
+      // Optimistic UI
+      const nameSet = new Set(names)
+      rows.value = rows.value.map(r => nameSet.has(r.name) ? { ...r, is_active: payload ? 1 : 0 } : r)
+      const label = payload ? 'activated' : 'deactivated'
+      if (failed === 0) toast({ title: `${succeeded} department${succeeded > 1 ? 's' : ''} ${label}`, icon: 'check' })
+      else toast({ title: `${succeeded} ${label}, ${failed} failed`, icon: 'x' })
+    } else if (action === 'delete') {
       let succeeded = 0, failed = 0
       for (const name of names) {
         try {
@@ -624,27 +628,20 @@ async function executeConfirmedAction() {
           succeeded++
         } catch { failed++ }
       }
-      if (failed === 0) toast({ title: `${succeeded} department${succeeded > 1 ? 's' : ''} deleted`, icon: 'check-circle', iconClasses: 'text-green-600' })
-      else toast({ title: `${succeeded} deleted, ${failed} failed`, icon: 'alert-circle', iconClasses: 'text-amber-600' })
-    }
-    selectedRows.value.clear()
-    // Optimistic UI update
-    if (modal.action === 'toggle_active') {
-      const nameSet = new Set(names)
-      rows.value = rows.value.map(r => nameSet.has(r.name) ? { ...r, is_active: modal.payload ? 1 : 0 } : r)
-    } else if (modal.action === 'delete') {
+      // Optimistic UI
       const nameSet = new Set(names)
       rows.value = rows.value.filter(r => !nameSet.has(r.name))
       totalCount.value = Math.max(0, totalCount.value - names.length)
+      if (failed === 0) toast({ title: `${succeeded} department${succeeded > 1 ? 's' : ''} deleted`, icon: 'check' })
+      else toast({ title: `${succeeded} deleted, ${failed} failed`, icon: 'x' })
     }
-    modal.loading = false
-    modal.show = false
-    // Background refetch for consistency
-    await fetchDepartments()
+    selectedRows.value.clear()
   } catch (e) {
-    toast({ title: `Action failed: ${e.message || 'Unknown error'}`, icon: 'alert-circle', iconClasses: 'text-red-600' })
-    modal.loading = false
-    modal.show = false
+    toast({ title: `Action failed: ${e.message || 'Unknown error'}`, icon: 'x' })
+  } finally {
+    confirmModal.value.loading = false
+    confirmModal.value.show = false
+    fetchDepartments()
   }
 }
 
@@ -672,11 +669,11 @@ async function createDepartment() {
     })
     showNewModal.value = false
     newDept.value = { department_name: '', department_slug: '', timezone: 'Europe/Copenhagen' }
-    toast({ title: 'Department created', icon: 'check-circle', iconClasses: 'text-green-600' })
+    toast({ title: 'Department created', icon: 'check' })
     router.push(`/admin/departments/${doc.name}`)
   } catch (e) {
     console.error('Failed to create department:', e)
-    toast({ title: 'Failed to create department', icon: 'alert-circle', iconClasses: 'text-red-600' })
+    toast({ title: 'Failed to create department', icon: 'x' })
   } finally {
     creatingDept.value = false
   }

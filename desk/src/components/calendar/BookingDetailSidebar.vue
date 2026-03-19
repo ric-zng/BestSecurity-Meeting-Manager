@@ -400,6 +400,74 @@
             <p class="mt-1.5 whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-300">{{ booking.notes || booking.meeting_description }}</p>
           </div>
 
+          <!-- ═══ Send Reminder ═══ -->
+          <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+            <div class="flex items-center justify-between">
+              <h4 class="sidebar-label mb-0">Reminders</h4>
+              <button
+                @click="togglePanel('reminder')"
+                class="rounded px-2 py-0.5 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+              >
+                Send
+              </button>
+            </div>
+            <p v-if="booking.last_reminder_sent" class="mt-1 text-xs text-gray-400 dark:text-gray-500">
+              Last sent: {{ formatDate(booking.last_reminder_sent) }}
+            </p>
+            <p v-else class="mt-1 text-xs text-gray-400 dark:text-gray-500">No reminders sent yet</p>
+            <button @click="showReminderHelp = !showReminderHelp" class="mt-1 text-[11px] text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300">
+              {{ showReminderHelp ? 'Hide info' : 'How it works' }}
+            </button>
+            <transition enter-active-class="transition duration-150" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
+              <div v-if="showReminderHelp" class="mt-2 rounded-lg bg-blue-50 p-2.5 text-[11px] leading-relaxed text-gray-600 dark:bg-blue-900/20 dark:text-gray-400">
+                <p><strong class="text-gray-800 dark:text-gray-200">Manual:</strong> Click "Send" to choose recipients and add a custom note. Logged in history.</p>
+                <p class="mt-1"><strong class="text-gray-800 dark:text-gray-200">Automated:</strong> Sent automatically based on the meeting type's reminder schedule (e.g. 24h before). Configure under Meeting Types.</p>
+              </div>
+            </transition>
+
+            <transition enter-active-class="transition duration-150" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
+              <div v-if="activePanel === 'reminder'" class="mt-3 space-y-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
+                <div>
+                  <label class="sidebar-label">Send to</label>
+                  <div class="space-y-2">
+                    <label v-if="!booking.is_internal" class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                      <input type="checkbox" v-model="reminderForm.notifyCustomer" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800" />
+                      Customer
+                      <span v-if="customerEmail" class="text-xs text-gray-400">({{ customerEmail }})</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                      <input type="checkbox" v-model="reminderForm.notifyHost" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800" />
+                      Host(s)
+                    </label>
+                    <label v-if="booking.is_internal" class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                      <input type="checkbox" v-model="reminderForm.notifyParticipants" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800" />
+                      Participants
+                    </label>
+                  </div>
+                </div>
+                <div>
+                  <label class="sidebar-label">Message (optional)</label>
+                  <textarea
+                    v-model="reminderForm.message"
+                    rows="2"
+                    placeholder="Add a custom note to the reminder..."
+                    class="fld resize-none"
+                  />
+                </div>
+                <div class="flex gap-2">
+                  <button @click="activePanel = null" class="sidebar-btn-secondary">Cancel</button>
+                  <button
+                    @click="sendReminder"
+                    :disabled="!canSendReminder || actionLoading === 'reminder'"
+                    class="sidebar-btn-primary"
+                  >
+                    {{ actionLoading === 'reminder' ? 'Sending...' : 'Send Reminder' }}
+                  </button>
+                </div>
+              </div>
+            </transition>
+          </div>
+
           <!-- ═══ Action Buttons ═══ -->
           <div class="px-5 py-4">
             <div class="flex gap-2">
@@ -470,7 +538,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { call } from "frappe-ui";
-import { getStatusColor, useCalendarState } from "@/composables/useCalendarState";
+import { getStatusColor, isFinalizedStatus, useCalendarState } from "@/composables/useCalendarState";
 
 const API_BASE = "meeting_manager.meeting_manager.page.mm_enhanced_calendar.api";
 const BOOKING_API = "meeting_manager.meeting_manager.api.booking";
@@ -485,24 +553,9 @@ const SERVICE_TYPES = [
   "Private Self Book",
 ];
 
-const BOOKING_STATUSES = [
-  "New Appointment",
-  "New Booking",
-  "Booking Started",
-  "Sale Approved",
-  "Booking Approved Not Sale",
-  "Call Customer About Sale",
-  "No Answer 1-3",
-  "No Answer 4-5",
-  "Customer Unsure",
-  "No Contact About Offer",
-  "Cancelled",
-  "Optimising Not Possible",
-  "Not Possible",
-  "Rebook",
-  "Rebook Earlier",
-  "Consent Sent Awaiting",
-];
+const BOOKING_STATUSES = computed(() =>
+  allStatuses.value.map(s => s.value)
+);
 
 const props = defineProps({
   bookingId: { type: String, default: null },
@@ -538,12 +591,26 @@ const statusForm = ref({ status: "", notes: "" });
 const serviceForm = ref({ value: "" });
 const cancelNotes = ref("");
 
+// Reminder form
+const reminderForm = ref({ notifyCustomer: true, notifyHost: false, notifyParticipants: false, message: "" });
+const showReminderHelp = ref(false);
+
+const NOTIFICATION_API = "meeting_manager.meeting_manager.utils.email_notifications";
+
+const customerEmail = computed(() => {
+  if (booking.value?.is_internal) return "";
+  return customer.value?.email || booking.value?.customer_email_at_booking || "";
+});
+
+const canSendReminder = computed(() => {
+  return reminderForm.value.notifyCustomer || reminderForm.value.notifyHost || reminderForm.value.notifyParticipants;
+});
+
 // Computed
 const { allStatuses } = useCalendarState();
 
 const isFinalized = computed(() => {
-  const finalized = ["Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed"];
-  return finalized.includes(booking.value?.booking_status);
+  return isFinalizedStatus(booking.value?.booking_status || "");
 });
 
 const statusBadgeStyle = computed(() => {
@@ -829,6 +896,34 @@ async function cancelBooking() {
   }
 }
 
+async function sendReminder() {
+  actionLoading.value = "reminder";
+  try {
+    const res = await call(`${NOTIFICATION_API}.send_booking_reminder`, {
+      booking_id: booking.value.name,
+      notify_customer: reminderForm.value.notifyCustomer ? 1 : 0,
+      notify_host: reminderForm.value.notifyHost ? 1 : 0,
+      notify_participants: reminderForm.value.notifyParticipants ? 1 : 0,
+      custom_message: reminderForm.value.message?.trim() || "",
+    });
+    if (res?.success && res.sent_count > 0) {
+      activePanel.value = null;
+      reminderForm.value = { notifyCustomer: true, notifyHost: false, notifyParticipants: false, message: "" };
+      showSuccess(`Reminder sent to ${res.sent_count} recipient(s)`);
+      emit("refresh");
+      await fetchDetails();
+    } else if (res?.success && res.sent_count === 0) {
+      showError("No recipients found to send reminder to");
+    } else {
+      showError(res?.message || "Failed to send reminder");
+    }
+  } catch (err) {
+    showError(err?.messages?.[0] || err?.message || "Failed to send reminder");
+  } finally {
+    actionLoading.value = null;
+  }
+}
+
 // ── Mini calendar ────────────────────────────────────────────────────────────
 const calViewMonth = ref(new Date().getMonth());
 const calViewYear = ref(new Date().getFullYear());
@@ -904,6 +999,14 @@ watch(activePanel, (panel) => {
   }
   if (panel === "cancel") {
     cancelNotes.value = "";
+  }
+  if (panel === "reminder") {
+    reminderForm.value = {
+      notifyCustomer: !booking.value?.is_internal,
+      notifyHost: false,
+      notifyParticipants: !!booking.value?.is_internal,
+      message: "",
+    };
   }
 });
 

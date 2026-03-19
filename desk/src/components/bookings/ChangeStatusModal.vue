@@ -60,8 +60,8 @@
 </template>
 
 <script setup>
-import { computed, reactive } from 'vue'
-import { createResource, toast } from 'frappe-ui'
+import { computed, reactive, ref, onMounted } from 'vue'
+import { createResource, toast, call } from 'frappe-ui'
 import {
   Dialog as HDialog,
   DialogPanel,
@@ -77,27 +77,25 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'success'])
 
-const allStatuses = [
-  'New Appointment',
-  'New Booking',
-  'Booking Started',
-  'Sale Approved',
-  'Booking Approved Not Sale',
-  'Call Customer About Sale',
-  'No Answer 1-3',
-  'No Answer 4-5',
-  'Customer Unsure',
-  'No Contact About Offer',
-  'Cancelled',
-  'Optimising Not Possible',
-  'Not Possible',
-  'Rebook',
-  'Rebook Earlier',
-  'Consent Sent Awaiting',
-]
+const allStatuses = ref([])
+
+onMounted(async () => {
+  try {
+    const res = await call('frappe.client.get_list', {
+      doctype: 'MM Booking Status',
+      filters: { is_active: 1 },
+      fields: ['name'],
+      limit_page_length: 0,
+      order_by: 'status asc',
+    })
+    allStatuses.value = (res || []).map(r => r.name)
+  } catch {
+    // fallback empty
+  }
+})
 
 const validStatuses = computed(() =>
-  allStatuses.filter((s) => s !== props.booking?.booking_status)
+  allStatuses.value.filter((s) => s !== props.booking?.booking_status)
 )
 
 const statusForm = reactive({ newStatus: '', notes: '' })

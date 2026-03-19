@@ -17,7 +17,7 @@ const allNavItems: NavItem[] = [
     label: "Dashboard",
     to: "/dashboard",
     icon: "bar-chart-2",
-    minRole: "department_leader",
+    minRole: "department_member",
     section: "main",
   },
   {
@@ -86,8 +86,8 @@ const allNavItems: NavItem[] = [
     section: "admin",
   },
   {
-    label: "Status Colors",
-    to: "/admin/status-colors",
+    label: "Booking Statuses",
+    to: "/admin/booking-statuses",
     icon: "droplet",
     minRole: "system_manager",
     section: "admin",

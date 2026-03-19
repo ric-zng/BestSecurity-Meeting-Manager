@@ -14,6 +14,7 @@ from frappe.utils import getdate, get_datetime, nowdate, now_datetime, add_days,
 import json
 from datetime import datetime, timedelta
 from meeting_manager.meeting_manager.utils.validation import check_member_availability
+from meeting_manager.meeting_manager.doctype.mm_booking_status.mm_booking_status import get_finalized_statuses, get_status_color_map
 
 
 def get_user_role_level():
@@ -338,32 +339,8 @@ def get_calendar_events(start, end, departments=None, focus_department=None,
         limit=500
     )
 
-    # Color mapping based on status
-    color_map = {
-        # New statuses
-        "New Appointment": "#ec4899",        # Pink/Purple
-        "New Booking": "#1e40af",            # Dark Blue
-        "Booking Started": "#60a5fa",        # Light Blue
-        "Sale Approved": "#22c55e",          # Green
-        "Booking Approved Not Sale": "#ef4444",  # Red
-        "Call Customer About Sale": "#f97316",   # Orange
-        "No Answer 1-3": "#9ca3af",          # Grey
-        "No Answer 4-5": "#964B00",          # Light Brown/Olive
-        "Customer Unsure": "#7dd3fc",        # Baby Blue
-        "No Contact About Offer": "#b91c1c", # Dark Red
-        "Cancelled": "#d1d5db",              # Light Grey
-        "Optimising Not Possible": "#fbbf24", # Yellow
-        "Not Possible": "#dc2626",           # Another Red
-        "Rebook": "#a855f7",                 # Purple
-        "Rebook Earlier": "#9333ea",         # Darker Purple
-        "Consent Sent Awaiting": "#3b82f6",  # Another Blue
-        # Legacy statuses (for backwards compatibility until migration runs)
-        "Confirmed": "#10b981",              # Green
-        "Pending": "#f59e0b",                # Yellow/Orange
-        "Completed": "#3b82f6",              # Blue
-        "No-Show": "#6b7280",                # Gray
-        "Rescheduled": "#8b5cf6"             # Purple
-    }
+    # Load color mapping from MM Status Color doctype
+    color_map = _get_status_color_map()
 
     # Build events list
     events = []
@@ -467,8 +444,7 @@ def get_calendar_events(start, end, departments=None, focus_department=None,
         for assigned_user in assigned_users:
             # Finalized bookings cannot be modified (Cancelled, Sale Approved, Not Possible, etc.)
             # Include legacy statuses for backwards compatibility
-            finalized_statuses = ("Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed")
-            if meeting.booking_status in finalized_statuses:
+            if meeting.booking_status in get_finalized_statuses():
                 can_reschedule = False
                 can_reassign = False
             else:
@@ -636,33 +612,9 @@ def check_can_reassign_event(department, current_user, role_level, led_dept_name
 
 
 def get_status_color(status):
-    """Get color for booking status."""
-    colors = {
-        # New statuses
-        "New Appointment": "#ec4899",        # Pink/Purple
-        "New Booking": "#1e40af",            # Dark Blue
-        "Booking Started": "#60a5fa",        # Light Blue
-        "Sale Approved": "#22c55e",          # Green
-        "Booking Approved Not Sale": "#ef4444",  # Red
-        "Call Customer About Sale": "#f97316",   # Orange
-        "No Answer 1-3": "#9ca3af",          # Grey
-        "No Answer 4-5": "#964B00",          # Light Brown/Olive
-        "Customer Unsure": "#7dd3fc",        # Baby Blue
-        "No Contact About Offer": "#b91c1c", # Dark Red
-        "Cancelled": "#d1d5db",              # Light Grey
-        "Optimising Not Possible": "#fbbf24", # Yellow
-        "Not Possible": "#dc2626",           # Another Red
-        "Rebook": "#a855f7",                 # Purple
-        "Rebook Earlier": "#9333ea",         # Darker Purple
-        "Consent Sent Awaiting": "#3b82f6",  # Another Blue
-        # Legacy statuses (for backwards compatibility)
-        "Confirmed": "#10b981",              # Green
-        "Pending": "#f59e0b",                # Yellow/Orange
-        "Completed": "#3b82f6",              # Blue
-        "No-Show": "#6b7280",                # Gray
-        "Rescheduled": "#8b5cf6"             # Purple
-    }
-    return colors.get(status, "#6b7280")
+    """Get color for booking status from MM Booking Status doctype."""
+    color_map = _get_status_color_map()
+    return color_map.get(status, "#6b7280")
 
 
 @frappe.whitelist()
@@ -820,8 +772,7 @@ def update_calendar_booking(booking_id, start_datetime=None, end_datetime=None,
     is_extension = False
 
     # Prevent modifications to finalized bookings
-    finalized_statuses = ("Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed")
-    if booking.booking_status in finalized_statuses:
+    if booking.booking_status in get_finalized_statuses():
         return {
             "success": False,
             "message": _("Cannot modify a '{0}' booking. Only active bookings can be rescheduled, extended, or reassigned.").format(
@@ -1182,8 +1133,7 @@ def check_booking_permission(booking_id, action="view"):
     booking = frappe.get_doc("MM Meeting Booking", booking_id)
 
     # Finalized bookings cannot be modified (but can be viewed)
-    finalized_statuses = ("Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed")
-    if action in ("reschedule", "reassign", "extend") and booking.booking_status in finalized_statuses:
+    if action in ("reschedule", "reassign", "extend") and booking.booking_status in get_finalized_statuses():
         return {
             "allowed": False,
             "reason": _("Cannot modify a '{0}' booking. Only active bookings can be modified.").format(
@@ -1700,8 +1650,7 @@ def _get_booking_details_inner(booking_id):
     can_cancel = False
 
     # Finalized bookings cannot be modified
-    finalized_statuses = ("Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed")
-    if booking.booking_status not in finalized_statuses:
+    if booking.booking_status not in get_finalized_statuses():
         if role_level == "system_manager":
             can_edit = True
             can_reschedule = True
@@ -2297,15 +2246,15 @@ def update_blocked_slot(blocked_slot_name, blocked_date=None, start_time=None, e
 
 @frappe.whitelist()
 def get_status_colors():
-    """Get all active status colors from MM Status Color doctype."""
+    """Get all active booking statuses with colors and finality from MM Booking Status doctype."""
     try:
-        colors = frappe.get_all(
-            "MM Status Color",
+        statuses = frappe.get_all(
+            "MM Booking Status",
             filters={"is_active": 1},
-            fields=["status", "color"],
+            fields=["status", "color", "is_final"],
             order_by="status asc",
         )
-        return {c["status"]: c["color"] for c in colors}
+        return {s["status"]: {"color": s["color"], "is_final": s["is_final"]} for s in statuses}
     except Exception:
         # Fallback if doctype doesn't exist yet (pre-migration)
         return {}
@@ -2464,3 +2413,15 @@ def get_customer_bookings(customer_email, exclude_booking=None):
     )
 
     return bookings
+
+
+# ============================================================================
+# Status Color helpers
+# ============================================================================
+
+def _get_status_color_map():
+    """
+    Load status→color mapping from MM Booking Status doctype.
+    Returns a dict like {"New Booking": "#1e40af", ...}.
+    """
+    return get_status_color_map()

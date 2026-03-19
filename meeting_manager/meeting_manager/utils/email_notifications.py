@@ -729,6 +729,151 @@ def send_team_meeting_invitations(booking_id: str, notify_participants: bool = T
 # Legacy Functions (for backward compatibility)
 # ==========================================
 
+@frappe.whitelist()
+def send_booking_reminder(
+	booking_id: str,
+	notify_customer: bool = False,
+	notify_host: bool = False,
+	notify_participants: bool = False,
+	custom_message: str = None
+) -> dict:
+	"""
+	Send reminder notifications for a booking and log to booking history.
+
+	Args:
+		booking_id: MM Meeting Booking ID
+		notify_customer: Send reminder to customer
+		notify_host: Send reminder to host(s)
+		notify_participants: Send reminder to participants (internal meetings)
+		custom_message: Optional custom message to include in the reminder
+
+	Returns:
+		Dict with results per recipient group
+	"""
+	import json
+
+	try:
+		booking = frappe.get_doc("MM Meeting Booking", booking_id)
+		service_type = booking.select_mkru or ""
+		results = {"customer": None, "hosts": [], "participants": []}
+		sent_to = []
+
+		extra_context = {
+			"custom_message": custom_message or "",
+			"reminder_sent_by": frappe.db.get_value("User", frappe.session.user, "full_name") or frappe.session.user,
+		}
+
+		# Send to customer (non-internal meetings)
+		if notify_customer and not booking.is_internal:
+			customer_email = booking.customer_email_at_booking
+			if not customer_email and booking.customer:
+				customer = frappe.get_doc("Contact", booking.customer)
+				customer_email = customer.email_id
+
+			if customer_email:
+				context = build_booking_context(booking, extra_context=extra_context)
+				result = send_notification(
+					customer_email,
+					"Reminder",
+					"Customer",
+					context,
+					service_type,
+					booking_id
+				)
+				results["customer"] = result
+				if result.get("success"):
+					sent_to.append(f"Customer ({customer_email})")
+
+		# Send to host(s)
+		if notify_host and booking.assigned_users:
+			for assignment in booking.assigned_users:
+				user = frappe.get_doc("User", assignment.user)
+				if user.email:
+					context = build_booking_context(booking, recipient_name=user.full_name, extra_context=extra_context)
+					result = send_notification(
+						user.email,
+						"Reminder",
+						"Host",
+						context,
+						service_type,
+						booking_id
+					)
+					results["hosts"].append({"user": user.email, "result": result})
+					if result.get("success"):
+						sent_to.append(f"Host ({user.full_name or user.email})")
+
+		# Send to participants (internal meetings)
+		if notify_participants and booking.is_internal and booking.participants:
+			host_users = set()
+			if booking.assigned_users:
+				host_users = {au.user for au in booking.assigned_users}
+
+			for participant in booking.participants:
+				if not participant.user:
+					continue
+				# Skip hosts if already notified above
+				if notify_host and participant.user in host_users:
+					continue
+				user = frappe.get_doc("User", participant.user)
+				if user.email:
+					context = build_booking_context(booking, recipient_name=user.full_name, extra_context=extra_context)
+					result = send_notification(
+						user.email,
+						"Reminder",
+						"Participant",
+						context,
+						service_type,
+						booking_id
+					)
+					results["participants"].append({"user": user.email, "result": result})
+					if result.get("success"):
+						sent_to.append(f"Participant ({user.full_name or user.email})")
+
+		# Log to booking history
+		if sent_to:
+			description = f"Reminder sent to: {', '.join(sent_to)}"
+			if custom_message:
+				description += f"\nMessage: {custom_message}"
+
+			booking.append("booking_history", {
+				"event_type": "Reminder Sent",
+				"event_datetime": frappe.utils.now_datetime(),
+				"event_by": frappe.session.user,
+				"event_description": description,
+			})
+
+			# Update reminders_sent JSON field
+			existing_reminders = []
+			if booking.reminders_sent:
+				try:
+					existing_reminders = json.loads(booking.reminders_sent)
+				except (json.JSONDecodeError, TypeError):
+					existing_reminders = []
+
+			existing_reminders.append({
+				"sent_at": str(frappe.utils.now_datetime()),
+				"sent_by": frappe.session.user,
+				"recipients": sent_to,
+				"custom_message": custom_message or "",
+			})
+			booking.reminders_sent = json.dumps(existing_reminders)
+			booking.last_reminder_sent = frappe.utils.now_datetime()
+
+			booking.flags.ignore_validate = True
+			booking.save(ignore_permissions=True)
+
+		return {
+			"success": True,
+			"sent_count": len(sent_to),
+			"sent_to": sent_to,
+			"results": results,
+		}
+
+	except Exception as e:
+		frappe.log_error(f"Error in send_booking_reminder: {str(e)}\n{frappe.get_traceback()}")
+		return {"success": False, "message": str(e)}
+
+
 def send_booking_confirmation_email(booking_id):
 	"""Legacy function - now uses template system"""
 	return send_booking_confirmation(booking_id, notify_customer=True, notify_host=True)

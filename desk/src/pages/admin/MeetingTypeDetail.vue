@@ -207,6 +207,122 @@
             </div>
           </div>
 
+          <!-- Reminder Schedule -->
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
+              <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
+                Reminder Schedule
+                <span v-if="reminderRows.length" class="ml-1 text-xs font-normal text-gray-400">({{ reminderRows.length }})</span>
+              </h2>
+              <div class="flex items-center gap-2">
+                <transition name="fade">
+                  <button v-if="hasReminderChanges" @click="saveReminders" :disabled="savingReminders" class="mtd-save-btn">
+                    {{ savingReminders ? 'Saving...' : 'Save' }}
+                  </button>
+                </transition>
+                <button @click="addReminderRow" class="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700">
+                  + Add
+                </button>
+              </div>
+            </div>
+            <!-- Guide -->
+            <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
+              <button @click="showReminderGuide = !showReminderGuide" class="flex w-full items-center gap-2 text-left text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
+                <FeatherIcon :name="showReminderGuide ? 'chevron-up' : 'info'" class="h-3.5 w-3.5" />
+                {{ showReminderGuide ? 'Hide guide' : 'How do reminders work?' }}
+              </button>
+              <transition enter-active-class="transition duration-150" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <div v-if="showReminderGuide" class="mt-3 space-y-3 rounded-lg bg-blue-50 p-4 text-xs text-gray-700 dark:bg-blue-900/20 dark:text-gray-300">
+                  <div>
+                    <h4 class="mb-1 font-semibold text-gray-900 dark:text-white">Automated Reminders</h4>
+                    <p>The system checks every <strong>5 minutes</strong> for upcoming bookings that use this meeting type. For each active reminder row configured below, it calculates the send time:</p>
+                    <p class="mt-1 rounded bg-white px-2 py-1 font-mono text-[11px] dark:bg-gray-800">send_time = meeting start &minus; hours before</p>
+                    <p class="mt-1">When the current time passes the send time, the reminder is sent automatically. Each reminder fires only once per booking (tracked by a unique key like <code class="rounded bg-white px-1 dark:bg-gray-800">auto_24h</code>).</p>
+                  </div>
+                  <div>
+                    <h4 class="mb-1 font-semibold text-gray-900 dark:text-white">Who receives automated reminders?</h4>
+                    <ul class="ml-4 list-disc space-y-0.5">
+                      <li><strong>External bookings:</strong> Customer + Host(s)</li>
+                      <li><strong>Internal meetings:</strong> Host(s) + Participants</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 class="mb-1 font-semibold text-gray-900 dark:text-white">Manual Reminders</h4>
+                    <p>Users can also send reminders manually from the <strong>Booking Detail</strong> page or the <strong>Calendar Sidebar</strong>. Manual reminders let you choose exactly who to notify (customer, hosts, and/or participants) and include a custom message. Each manual send is logged in the booking's history.</p>
+                  </div>
+                  <div>
+                    <h4 class="mb-1 font-semibold text-gray-900 dark:text-white">Logging</h4>
+                    <p>Every reminder (automated or manual) is recorded in the booking's <strong>History</strong> timeline as a "Reminder Sent" event, showing who was notified and when. The <code class="rounded bg-white px-1 dark:bg-gray-800">reminders_sent</code> and <code class="rounded bg-white px-1 dark:bg-gray-800">last_reminder_sent</code> fields are also updated on the booking.</p>
+                  </div>
+                  <div>
+                    <h4 class="mb-1 font-semibold text-gray-900 dark:text-white">Configuration Tips</h4>
+                    <ul class="ml-4 list-disc space-y-0.5">
+                      <li>Common setups: <strong>24h</strong> + <strong>1h</strong> before meeting</li>
+                      <li>Use the <strong>On/Off</strong> toggle to temporarily disable a reminder without deleting it</li>
+                      <li>SMS requires a gateway integration &mdash; only <strong>Email</strong> is active currently</li>
+                      <li>Reminders use the <strong>Email Templates</strong> system &mdash; customize them under Management &rarr; Email Templates (type: Reminder)</li>
+                    </ul>
+                  </div>
+                </div>
+              </transition>
+            </div>
+
+            <div class="p-5">
+              <p v-if="reminderRows.length === 0" class="text-center text-sm text-gray-400 dark:text-gray-500">
+                No reminders configured. Add a reminder to automatically notify participants before meetings.
+              </p>
+              <div v-else class="space-y-3">
+                <div
+                  v-for="(row, idx) in reminderRows" :key="idx"
+                  class="flex items-center gap-3 rounded-lg border p-3 transition-colors"
+                  :class="row.is_active
+                    ? 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800'
+                    : 'border-gray-100 bg-gray-50 opacity-60 dark:border-gray-800 dark:bg-gray-900'"
+                >
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3">
+                      <div class="flex items-center gap-1.5">
+                        <FeatherIcon name="bell" class="h-4 w-4 text-yellow-500" />
+                        <input
+                          v-model.number="row.hours_before_meeting"
+                          type="number"
+                          min="0"
+                          max="720"
+                          class="w-16 rounded border border-gray-300 px-2 py-1 text-center text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        />
+                        <span class="text-xs text-gray-500 dark:text-gray-400">hours before</span>
+                      </div>
+                      <div class="relative" :ref="el => reminderDropdownRefs[idx] = el">
+                        <button
+                          @click="toggleReminderDropdown(idx)"
+                          class="flex items-center gap-1 rounded border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                        >
+                          {{ row.notification_type }}
+                          <FeatherIcon name="chevron-down" class="h-3 w-3" />
+                        </button>
+                        <div v-if="reminderDropdownIdx === idx" class="absolute left-0 top-full z-10 mt-1 w-28 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                          <button
+                            v-for="nt in ['Email', 'SMS', 'Both']" :key="nt"
+                            @click="row.notification_type = nt; reminderDropdownIdx = null"
+                            class="flex w-full items-center px-3 py-1.5 text-left text-xs text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                            :class="row.notification_type === nt ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : ''"
+                          >{{ nt }}</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <label class="flex cursor-pointer items-center gap-1.5" :title="row.is_active ? 'Active' : 'Inactive'">
+                    <input type="checkbox" v-model="row.is_active" class="rounded border-gray-300 text-green-600 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700" />
+                    <span class="text-[10px] text-gray-400">{{ row.is_active ? 'On' : 'Off' }}</span>
+                  </label>
+                  <button @click="removeReminderRow(idx)" class="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400" title="Remove">
+                    <FeatherIcon name="trash-2" class="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Recent Bookings -->
           <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
@@ -453,6 +569,86 @@ const hasVisibilityChanges = computed(() =>
   form.is_active !== original.is_active || form.is_public !== original.is_public ||
   form.is_internal !== original.is_internal || form.requires_approval !== original.requires_approval
 )
+
+// ── Reminder Schedule ──────────────────────────────────────────────────────
+
+const reminderRows = ref([])
+const originalReminders = ref([])
+const savingReminders = ref(false)
+const reminderDropdownIdx = ref(null)
+const reminderDropdownRefs = ref({})
+const showReminderGuide = ref(false)
+
+// Load reminders from doc when it changes
+watch(() => doc.doc, (d) => {
+  if (d && d.reminder_schedule) {
+    const rows = d.reminder_schedule.map(r => ({
+      hours_before_meeting: r.hours_before_meeting,
+      notification_type: r.notification_type || 'Email',
+      is_active: !!r.is_active,
+    }))
+    reminderRows.value = JSON.parse(JSON.stringify(rows))
+    originalReminders.value = JSON.parse(JSON.stringify(rows))
+  } else {
+    reminderRows.value = []
+    originalReminders.value = []
+  }
+}, { immediate: true })
+
+const hasReminderChanges = computed(() => {
+  return JSON.stringify(reminderRows.value) !== JSON.stringify(originalReminders.value)
+})
+
+function addReminderRow() {
+  reminderRows.value.push({ hours_before_meeting: 24, notification_type: 'Email', is_active: true })
+}
+
+function removeReminderRow(idx) {
+  reminderRows.value.splice(idx, 1)
+}
+
+function toggleReminderDropdown(idx) {
+  reminderDropdownIdx.value = reminderDropdownIdx.value === idx ? null : idx
+}
+
+async function saveReminders() {
+  savingReminders.value = true
+  try {
+    // Build child table rows for frappe
+    const rows = reminderRows.value.map(r => ({
+      hours_before_meeting: r.hours_before_meeting,
+      notification_type: r.notification_type,
+      is_active: r.is_active ? 1 : 0,
+    }))
+
+    await call('frappe.client.set_value', {
+      doctype: 'MM Meeting Type',
+      name: currentId.value,
+      fieldname: 'reminder_schedule',
+      value: rows,
+    })
+
+    // Reload doc to get updated child table with names
+    doc.reload()
+    loadActivities()
+  } catch (e) {
+    console.error('Failed to save reminders:', e)
+  } finally {
+    savingReminders.value = false
+  }
+}
+
+// Close reminder dropdown on click outside
+function handleReminderClickOutside(e) {
+  if (reminderDropdownIdx.value !== null) {
+    const ref = reminderDropdownRefs.value[reminderDropdownIdx.value]
+    if (ref && !ref.contains(e.target)) {
+      reminderDropdownIdx.value = null
+    }
+  }
+}
+onMounted(() => document.addEventListener('click', handleReminderClickOutside))
+onBeforeUnmount(() => document.removeEventListener('click', handleReminderClickOutside))
 
 // Department name
 const selectedDeptName = computed(() => {

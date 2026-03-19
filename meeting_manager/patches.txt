@@ -7,3 +7,4 @@
 meeting_manager.meeting_manager.patches.migrate_customers
 meeting_manager.meeting_manager.patches.sync_department_roles
 meeting_manager.meeting_manager.patches.migrate_booking_statuses
+meeting_manager.meeting_manager.patches.consolidate_booking_status

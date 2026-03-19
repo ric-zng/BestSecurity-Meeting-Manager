@@ -15,7 +15,7 @@ const routes = [
     path: "/dashboard",
     name: "Dashboard",
     component: () => import("@/pages/Dashboard.vue"),
-    meta: { minRole: "department_leader", title: "Dashboard" },
+    meta: { minRole: "department_member", title: "Dashboard" },
   },
   {
     path: "/bookings",
@@ -112,10 +112,25 @@ const routes = [
     meta: { minRole: "system_manager", title: "OAuth Settings" },
   },
   {
+    path: "/admin/booking-statuses",
+    name: "BookingStatuses",
+    component: () => import("@/pages/admin/BookingStatuses.vue"),
+    meta: { minRole: "system_manager", title: "Booking Statuses" },
+  },
+  {
+    path: "/admin/booking-statuses/:id",
+    name: "BookingStatusDetail",
+    component: () => import("@/pages/admin/BookingStatusDetail.vue"),
+    props: true,
+    meta: { minRole: "system_manager", title: "Booking Status" },
+  },
+  {
     path: "/admin/status-colors",
-    name: "StatusColors",
-    component: () => import("@/pages/admin/StatusColors.vue"),
-    meta: { minRole: "system_manager", title: "Status Colors" },
+    redirect: "/admin/booking-statuses",
+  },
+  {
+    path: "/admin/status-colors/:id",
+    redirect: (to: any) => `/admin/booking-statuses/${to.params.id}`,
   },
   {
     path: "/:pathMatch(.*)*",

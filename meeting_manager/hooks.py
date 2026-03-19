@@ -182,6 +182,10 @@ scheduler_events = {
 		"*/10 * * * *": [
 			"meeting_manager.meeting_manager.services.calendar_sync.sync_all_users_calendars"
 		],
+		# Process automated meeting reminders every 5 minutes
+		"*/5 * * * *": [
+			"meeting_manager.meeting_manager.services.reminder_service.process_scheduled_reminders"
+		],
 	}
 }
 

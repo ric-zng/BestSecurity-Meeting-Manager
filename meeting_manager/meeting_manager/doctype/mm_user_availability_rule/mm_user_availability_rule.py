@@ -65,7 +65,7 @@ class MMUserAvailabilityRule(Document):
 
 	def validate_scheduling_constraints(self):
 		"""Validate scheduling constraints are positive and reasonable"""
-		if not self.min_notice_hours:
+		if self.min_notice_hours is None:
 			frappe.throw("Minimum Notice Hours is required.")
 
 		if self.min_notice_hours < 0:

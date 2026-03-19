@@ -23,8 +23,14 @@ const FALLBACK_COLORS: Record<string, string> = {
   "Consent Sent Awaiting": "#3b82f6",
 };
 
+interface StatusInfo {
+  color: string;
+  is_final: boolean;
+}
+
 // Module-level shared state
 const statusColors = ref<Record<string, string>>({ ...FALLBACK_COLORS });
+const statusData = ref<Record<string, StatusInfo>>({});
 let colorsLoaded = false;
 
 async function loadStatusColors() {
@@ -32,7 +38,13 @@ async function loadStatusColors() {
   try {
     const res = await call(`${API_BASE}.get_status_colors`);
     if (res && Object.keys(res).length > 0) {
-      statusColors.value = res;
+      statusData.value = res;
+      // Build simple color map for backwards compatibility
+      const colorMap: Record<string, string> = {};
+      for (const [status, info] of Object.entries(res) as [string, StatusInfo][]) {
+        colorMap[status] = info.color;
+      }
+      statusColors.value = colorMap;
     }
     colorsLoaded = true;
   } catch {
@@ -43,6 +55,17 @@ async function loadStatusColors() {
 export function getStatusColor(status: string): string {
   return statusColors.value[status] || "#6b7280";
 }
+
+export function isFinalizedStatus(status: string): boolean {
+  const info = statusData.value[status];
+  return info ? !!info.is_final : false;
+}
+
+export const finalizedStatuses = computed(() =>
+  Object.entries(statusData.value)
+    .filter(([, info]) => info.is_final)
+    .map(([status]) => status)
+);
 
 export function useCalendarState() {
   const currentView = ref("resourceTimeGridDay");
@@ -126,6 +149,6 @@ export function useCalendarState() {
     currentView, orientation, filters,
     allStatuses, serviceTypes, activeViews,
     toggleOrientation, toggleStatus, toggleDepartment,
-    statusColors,
+    statusColors, finalizedStatuses, isFinalizedStatus,
   };
 }

@@ -329,7 +329,7 @@ def check_booking_conflicts(member, scheduled_date, start_time, end_time, exclud
 		INNER JOIN `tabMM Meeting Booking Assigned User` au
 			ON au.parent = mb.name AND au.parenttype = 'MM Meeting Booking'
 		WHERE au.user = %(member)s
-			AND mb.booking_status IN ('Confirmed', 'Pending')
+			AND mb.booking_status NOT IN (SELECT name FROM `tabMM Booking Status` WHERE is_final = 1)
 			AND mb.start_datetime < %(end_datetime)s
 			AND mb.end_datetime > %(start_datetime)s
 			{exclude_condition}
@@ -350,7 +350,7 @@ def check_booking_conflicts(member, scheduled_date, start_time, end_time, exclud
 			ON p.parent = mb.name AND p.parenttype = 'MM Meeting Booking'
 		WHERE p.user = %(member)s
 			AND p.participant_type = 'Internal'
-			AND mb.booking_status IN ('Confirmed', 'Pending')
+			AND mb.booking_status NOT IN (SELECT name FROM `tabMM Booking Status` WHERE is_final = 1)
 			AND mb.start_datetime < %(end_datetime)s
 			AND mb.end_datetime > %(start_datetime)s
 			{exclude_condition}
@@ -482,7 +482,7 @@ def check_buffer_time_conflicts(member, start_datetime, end_datetime, exclude_bo
 			ON au.parent = mb.name AND au.parenttype = 'MM Meeting Booking'
 		WHERE au.user = %(member)s
 			AND DATE(mb.start_datetime) = %(scheduled_date)s
-			AND mb.booking_status IN ('Confirmed', 'Pending')
+			AND mb.booking_status NOT IN (SELECT name FROM `tabMM Booking Status` WHERE is_final = 1)
 			AND (
 				(mb.start_datetime >= %(buffer_start)s AND mb.start_datetime < %(buffer_end)s)
 				OR (mb.end_datetime > %(buffer_start)s AND mb.end_datetime <= %(buffer_end)s)
@@ -504,7 +504,7 @@ def check_buffer_time_conflicts(member, start_datetime, end_datetime, exclude_bo
 		WHERE p.user = %(member)s
 			AND p.participant_type = 'Internal'
 			AND DATE(mb.start_datetime) = %(scheduled_date)s
-			AND mb.booking_status IN ('Confirmed', 'Pending')
+			AND mb.booking_status NOT IN (SELECT name FROM `tabMM Booking Status` WHERE is_final = 1)
 			AND (
 				(mb.start_datetime >= %(buffer_start)s AND mb.start_datetime < %(buffer_end)s)
 				OR (mb.end_datetime > %(buffer_start)s AND mb.end_datetime <= %(buffer_end)s)
@@ -591,7 +591,7 @@ def check_availability_rules(member, scheduled_date):
 					ON au.parent = mb.name AND au.parenttype = 'MM Meeting Booking'
 				WHERE au.user = %(member)s
 					AND DATE(mb.start_datetime) = %(scheduled_date)s
-					AND mb.booking_status IN ('Confirmed', 'Pending')
+					AND mb.booking_status NOT IN (SELECT name FROM `tabMM Booking Status` WHERE is_final = 1)
 				UNION
 				SELECT DISTINCT mb.name
 				FROM `tabMM Meeting Booking` mb
@@ -600,7 +600,7 @@ def check_availability_rules(member, scheduled_date):
 				WHERE p.user = %(member)s
 					AND p.participant_type = 'Internal'
 					AND DATE(mb.start_datetime) = %(scheduled_date)s
-					AND mb.booking_status IN ('Confirmed', 'Pending')
+					AND mb.booking_status NOT IN (SELECT name FROM `tabMM Booking Status` WHERE is_final = 1)
 			) as all_bookings
 		"""
 		result = frappe.db.sql(query, {"member": member, "scheduled_date": scheduled_date}, as_dict=True)
@@ -627,7 +627,7 @@ def check_availability_rules(member, scheduled_date):
 					ON au.parent = mb.name AND au.parenttype = 'MM Meeting Booking'
 				WHERE au.user = %(member)s
 					AND DATE(mb.start_datetime) BETWEEN %(week_start)s AND %(week_end)s
-					AND mb.booking_status IN ('Confirmed', 'Pending')
+					AND mb.booking_status NOT IN (SELECT name FROM `tabMM Booking Status` WHERE is_final = 1)
 				UNION
 				SELECT DISTINCT mb.name
 				FROM `tabMM Meeting Booking` mb
@@ -636,7 +636,7 @@ def check_availability_rules(member, scheduled_date):
 				WHERE p.user = %(member)s
 					AND p.participant_type = 'Internal'
 					AND DATE(mb.start_datetime) BETWEEN %(week_start)s AND %(week_end)s
-					AND mb.booking_status IN ('Confirmed', 'Pending')
+					AND mb.booking_status NOT IN (SELECT name FROM `tabMM Booking Status` WHERE is_final = 1)
 			) as all_bookings
 		"""
 		result = frappe.db.sql(query, {"member": member, "week_start": week_start, "week_end": week_end}, as_dict=True)

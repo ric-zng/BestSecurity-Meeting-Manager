@@ -316,7 +316,7 @@ function handleEventMount(info) {
     return;
   }
 
-  const color = getStatusColor(ep.booking_status);
+  const color = getStatusColor(ep.status);
   if (color) {
     info.el.style.backgroundColor = color;
     info.el.style.borderColor = color;
@@ -346,8 +346,8 @@ function showTooltip(info) {
   tooltip.position = { x: rect.left + rect.width / 2, y: rect.top };
   tooltip.event = {
     title: info.event.title, start: info.event.start, end: info.event.end,
-    status: ep.booking_status, customerName: ep.customer_name,
-    serviceType: ep.select_mkru, locationType: ep.location_type,
+    status: ep.status, customerName: ep.customer_name,
+    serviceType: ep.service_type, locationType: ep.location_type,
     resourceTitle: info.event.getResources()[0]?.title,
   };
   tooltip.show = true;

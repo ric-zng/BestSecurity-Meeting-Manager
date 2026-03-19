@@ -13,6 +13,8 @@ customer-facing booking interface. They handle the 6-step booking flow:
 5. Create Customer Booking
 """
 
+from meeting_manager.meeting_manager.doctype.mm_booking_status.mm_booking_status import get_finalized_statuses
+
 import frappe
 from frappe import _
 from frappe.utils import getdate, get_time, get_datetime, now_datetime
@@ -455,8 +457,7 @@ def cancel_booking(token):
 		frappe.throw(_("Invalid or expired cancellation link"))
 
 	# Finalized bookings cannot be cancelled again
-	finalized_statuses = ["Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed"]
-	if booking.booking_status in finalized_statuses:
+	if booking.booking_status in get_finalized_statuses():
 		frappe.throw(_("This booking has already been {0}").format(booking.booking_status.lower()))
 
 	# Cancel the booking
@@ -514,8 +515,7 @@ def get_booking_details(token):
 		frappe.throw(_("Invalid or expired link"))
 
 	# Finalized bookings cannot be rescheduled
-	finalized_statuses = ["Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed"]
-	if booking.booking_status in finalized_statuses:
+	if booking.booking_status in get_finalized_statuses():
 		frappe.throw(_("This booking has already been {0}").format(booking.booking_status.lower()))
 
 	# Get meeting type details to extract department
@@ -581,8 +581,7 @@ def reschedule_booking(token, new_date, new_time):
 		frappe.throw(_("Invalid or expired reschedule link"))
 
 	# Finalized bookings cannot be rescheduled
-	finalized_statuses = ["Cancelled", "Sale Approved", "Booking Approved Not Sale", "Not Possible", "Completed"]
-	if booking_data.booking_status in finalized_statuses:
+	if booking_data.booking_status in get_finalized_statuses():
 		frappe.throw(_("This booking has already been {0}").format(booking_data.booking_status.lower()))
 
 	# Get full booking document to access assigned users
