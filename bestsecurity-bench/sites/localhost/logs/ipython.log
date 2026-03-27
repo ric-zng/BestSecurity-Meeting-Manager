@@ -1,0 +1,30 @@
+2026-01-05 18:57:45,512 INFO ipython === bench console session ===
+2026-01-05 18:57:45,512 INFO ipython import frappe
+2026-01-05 18:57:45,512 INFO ipython print('ADMIN_EMAIL:', frappe.db.get_value('User','Administrator','email'))
+2026-01-05 18:57:45,512 INFO ipython === session end ===
+2026-01-05 19:06:01,353 INFO ipython === bench console session ===
+2026-01-05 19:06:01,353 INFO ipython import frappe
+2026-01-05 19:06:01,353 INFO ipython u = frappe.get_doc('User', 'Administrator')
+2026-01-05 19:06:01,353 INFO ipython print('name:', u.name)
+2026-01-05 19:06:01,353 INFO ipython print('email:', u.email)
+2026-01-05 19:06:01,353 INFO ipython print('enabled:', u.enabled)
+2026-01-05 19:06:01,353 INFO ipython print('\nALL USERS:')
+2026-01-05 19:06:01,353 INFO ipython === session end ===
+2026-01-05 19:12:12,892 INFO ipython === bench console session ===
+2026-01-05 19:12:12,892 INFO ipython import frappe
+2026-01-05 19:12:12,892 INFO ipython email = 'jb@gmail.com'
+2026-01-05 19:12:12,892 INFO ipython full_name = 'Justus Buyu'
+2026-01-05 19:12:12,892 INFO ipython password = 'Test123'
+2026-01-05 19:12:12,892 INFO ipython role = 'System Manager'
+2026-01-05 19:12:12,892 INFO ipython existing = frappe.db.exists('User', email)
+2026-01-05 19:12:12,892 INFO ipython === session end ===
+2026-01-05 19:14:57,093 INFO ipython === bench console session ===
+2026-01-05 19:14:57,093 INFO ipython import frappe
+2026-01-05 19:14:57,093 INFO ipython email = 'jb@gmail.com'
+2026-01-05 19:14:57,094 INFO ipython full_name = 'Justus Buyu'
+2026-01-05 19:14:57,094 INFO ipython password = 'Test123'
+2026-01-05 19:14:57,094 INFO ipython role = 'System Manager'
+2026-01-05 19:14:57,094 INFO ipython existing = frappe.db.exists('User', email)
+2026-01-05 19:14:57,094 INFO ipython === session end ===
+2026-01-07 15:15:37,970 INFO ipython === bench console session ===
+2026-01-07 15:15:37,971 INFO ipython === session end ===
