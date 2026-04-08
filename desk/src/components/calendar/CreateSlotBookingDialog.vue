@@ -529,13 +529,18 @@ async function handleSubmit() {
   if (!form.customerEmail) { errorMessage.value = 'Customer email is required'; return }
   submitting.value = true
   try {
+    const dateStr = toDateStr(props.slotInfo?.start)
     await call(`${API_BASE}.create_slot_booking`, {
-      assigned_to: props.slotInfo?.resourceId, date: toDateStr(props.slotInfo?.start),
-      start_time: toTimeStr(props.slotInfo?.start), end_time: toTimeStr(props.slotInfo?.end),
-      department: form.department, meeting_type: form.meetingType, service_type: form.serviceType,
-      customer_name: form.customerName, customer_email: form.customerEmail,
-      customer_phone: form.customerPhone || undefined, customer_company: form.customerCompany || undefined,
-      agenda: form.agenda || undefined, notify_customer: form.notifyCustomer, notify_host: form.notifyHost,
+      booking_data: {
+        assigned_to: props.slotInfo?.resourceId,
+        department: form.department, meeting_type: form.meetingType, service_type: form.serviceType,
+        start_datetime: `${dateStr} ${toTimeStr(props.slotInfo?.start)}:00`,
+        end_datetime: `${dateStr} ${toTimeStr(props.slotInfo?.end)}:00`,
+        customer_name: form.customerName, customer_email: form.customerEmail,
+        customer_phone: form.customerPhone || undefined, customer_company: form.customerCompany || undefined,
+        meeting_agenda: form.agenda || undefined,
+        send_notification: form.notifyCustomer ? 1 : 0,
+      },
     })
     emit('close'); emit('success')
   } catch (err) { errorMessage.value = err.messages?.[0] || err.message || 'Failed to create booking' }
