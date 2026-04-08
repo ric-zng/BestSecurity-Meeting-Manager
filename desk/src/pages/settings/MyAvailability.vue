@@ -1,7 +1,7 @@
 <template>
-  <div class="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900">
+  <div class="h-full overflow-y-auto bg-gray-50 dark:bg-gray-950">
     <!-- Header -->
-    <div class="sticky top-0 z-20 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-800">
+    <div class="sticky top-0 z-20 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-900">
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-lg font-semibold text-gray-900 dark:text-white">My Availability</h1>
@@ -27,7 +27,7 @@
 
     <!-- Empty State -->
     <div v-else-if="rules.length === 0" class="flex flex-col items-center justify-center py-24">
-      <div class="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+      <div class="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-900">
         <FeatherIcon name="sliders" class="h-7 w-7 text-gray-400" />
       </div>
       <h3 class="mt-4 text-sm font-semibold text-gray-900 dark:text-white">No availability rules</h3>
@@ -47,7 +47,7 @@
         <div
           v-for="rule in rules"
           :key="rule.name"
-          class="rounded-lg border bg-white shadow-sm dark:bg-gray-800"
+          class="rounded-lg border bg-white shadow-sm dark:bg-gray-900"
           :class="rule.is_active ? 'border-gray-200 dark:border-gray-700' : 'border-gray-200 opacity-70 dark:border-gray-700'"
         >
           <!-- Rule Header -->
@@ -202,7 +202,7 @@
         </div>
 
         <!-- Date Overrides Section (separate from rules) -->
-        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
             <div>
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Date Overrides</h2>
@@ -300,7 +300,7 @@
       <!-- Right column (1/3) -->
       <div class="space-y-6">
         <!-- Summary -->
-        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
             <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Summary</h2>
           </div>
@@ -329,7 +329,7 @@
         </div>
 
         <!-- How It Works -->
-        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
             <h2 class="text-sm font-semibold text-gray-900 dark:text-white">How It Works</h2>
           </div>
@@ -407,7 +407,7 @@
     <!-- Create Rule Modal -->
     <transition name="modal">
       <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="showCreateModal = false">
-        <div class="mx-4 w-full max-w-lg rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
+        <div class="mx-4 w-full max-w-lg rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900">
           <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
             <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Create Availability Rule</h2>
             <button @click="showCreateModal = false" class="rounded-md p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
@@ -497,7 +497,7 @@
     <!-- Add/Edit Override Modal -->
     <transition name="modal">
       <div v-if="showAddOverrideModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="showAddOverrideModal = false">
-        <div class="mx-4 w-full max-w-md rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
+        <div class="mx-4 w-full max-w-md rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900">
           <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
             <h2 class="text-sm font-semibold text-gray-900 dark:text-white">{{ overrideForm._editing ? 'Edit' : 'Add' }} Date Override</h2>
             <button @click="showAddOverrideModal = false" class="rounded-md p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">

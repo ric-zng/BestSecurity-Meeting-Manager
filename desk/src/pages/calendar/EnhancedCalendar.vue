@@ -268,7 +268,10 @@ function resetDrag() {
 // ── Event click ───────────────────────────────────────────────────────────────
 function handleEventClick(info) {
   const ep = info.event.extendedProps;
+  // Ignore clicks on unavailable/background events
+  if (ep?.type === "unavailable" || info.event.display === "background") return;
   if (ep?.type === "blocked_slot") {
+    const isPast = info.event.start < new Date();
     if (canManageBlockedSlot(info.event.getResources()[0]?.id)) {
       deleteSlot.info = {
         title: info.event.title,
@@ -276,6 +279,7 @@ function handleEventClick(info) {
         start: info.event.start,
         end: info.event.end,
         slotName: ep.slot_name,
+        isPast,
       };
       deleteSlot.show = true;
     }
@@ -290,6 +294,24 @@ async function handleDeleteConfirm(slotName) {
     calendar?.refetchEvents();
   } catch { /* error handled silently */ }
   deleteSlot.show = false;
+}
+
+// ── Slot availability check (prevents selection on unavailable times) ─────────
+function isSlotAvailable(selectInfo) {
+  if (!calendar) return true;
+  const resourceId = selectInfo.resource?.id;
+  if (!resourceId) return false;
+  const start = selectInfo.start;
+  const end = selectInfo.end;
+  const allEvents = calendar.getEvents();
+  for (const evt of allEvents) {
+    const ep = evt.extendedProps;
+    if (ep?.type !== "unavailable" && ep?.type !== "blocked_slot") continue;
+    if (evt.getResources().some(r => r.id === resourceId)) {
+      if (evt.start < end && evt.end > start) return false;
+    }
+  }
+  return true;
 }
 
 // ── Select (time slot click) ──────────────────────────────────────────────────
@@ -386,6 +408,7 @@ onMounted(() => {
     eventDurationEditable: true,
     selectable: true,
     selectMirror: true,
+    selectAllow: isSlotAvailable,
 
     eventClick: handleEventClick,
     eventDrop: handleEventDrop,
@@ -426,10 +449,10 @@ watch(filters, () => {
 /* ── FullCalendar Dark Mode ─────────────────────────────────────────────────── */
 .dark .fc,
 .ec-root.dark .fc {
-  --fc-border-color: #374151;
-  --fc-page-bg-color: #111827;
-  --fc-neutral-bg-color: #1f2937;
-  --fc-list-event-hover-bg-color: #1f2937;
+  --fc-border-color: #111827;
+  --fc-page-bg-color: #030712;
+  --fc-neutral-bg-color: #111827;
+  --fc-list-event-hover-bg-color: #111827;
   --fc-today-bg-color: rgba(59, 130, 246, 0.08);
   --fc-now-indicator-color: #3b82f6;
   --fc-event-bg-color: #1e40af;
@@ -442,26 +465,26 @@ watch(filters, () => {
 .dark .fc .fc-timegrid-col,
 .dark .fc .fc-timeline-lane,
 .dark .fc .fc-timeline-slot {
-  background-color: #111827;
+  background-color: #030712;
 }
 
 /* Resource area + datagrid */
 .dark .fc .fc-datagrid-cell-frame,
 .dark .fc .fc-resource-area {
-  background-color: #1f2937;
+  background-color: #111827;
 }
 
 /* Column headers + timeline header */
 .dark .fc .fc-col-header-cell,
 .dark .fc .fc-timeline-header-row th,
 .dark .fc .fc-resource-timeline .fc-datagrid-header {
-  background-color: #1f2937;
+  background-color: #111827;
 }
 
 /* Timeline shaded cells (weekends, etc) */
 .dark .fc .fc-cell-shaded,
 .dark .fc .fc-day-disabled {
-  background-color: #1a2332;
+  background-color: #0a0f1a;
 }
 
 /* All text in dark mode */
@@ -484,24 +507,24 @@ watch(filters, () => {
 .dark .fc td,
 .dark .fc th,
 .dark .fc .fc-scrollgrid {
-  border-color: #374151;
+  border-color: #111827;
 }
 
 /* Divider line */
 .dark .fc .fc-timegrid-divider {
-  background-color: #1f2937;
-  border-color: #374151;
+  background-color: #111827;
+  border-color: #111827;
 }
 
 /* Scrollbar */
 .dark .fc .fc-scroller {
-  scrollbar-color: #4b5563 #1f2937;
+  scrollbar-color: #374151 #030712;
 }
 
 /* Month/DayGrid dark mode */
 .dark .fc .fc-daygrid-day,
 .dark .fc .fc-daygrid-body {
-  background-color: #111827;
+  background-color: #030712;
 }
 .dark .fc .fc-daygrid-day-number,
 .dark .fc .fc-daygrid-day-top a {
@@ -537,11 +560,11 @@ watch(filters, () => {
   opacity: 0.8;
 }
 .dark .ec-nonworking-block {
-  background: repeating-linear-gradient(45deg, #475569, #475569 4px, #1e293b 4px, #1e293b 8px) !important;
+  background: repeating-linear-gradient(45deg, #1e293b, #1e293b 4px, #0f172a 4px, #0f172a 8px) !important;
   opacity: 0.9;
 }
 .dark .ec-dayoff-block {
-  background: repeating-linear-gradient(45deg, #374151, #374151 4px, #111827 4px, #111827 8px) !important;
+  background: repeating-linear-gradient(45deg, #1e293b, #1e293b 4px, #030712 4px, #030712 8px) !important;
   opacity: 0.9;
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
-  <div class="relative flex h-full flex-col bg-gray-50 dark:bg-gray-900">
+  <div class="relative flex h-full flex-col bg-gray-50 dark:bg-gray-950">
     <!-- Header -->
-    <div class="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-800">
+    <div class="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-900">
       <div>
         <h1 class="text-lg font-semibold text-gray-900 dark:text-white">Meeting Types</h1>
         <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{{ totalLabel }}</p>
@@ -9,7 +9,7 @@
       <div class="flex items-center gap-2">
         <button
           @click="fetchMeetingTypes"
-          class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white p-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+          class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white p-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
           title="Reload"
         >
           <FeatherIcon name="refresh-cw" class="h-4 w-4" />
@@ -25,7 +25,7 @@
     </div>
 
     <!-- Filters bar -->
-    <div class="border-b border-gray-200 bg-white px-6 py-2.5 dark:border-gray-800 dark:bg-gray-800">
+    <div class="border-b border-gray-200 bg-white px-6 py-2.5 dark:border-gray-800 dark:bg-gray-900">
       <div class="flex flex-wrap items-center gap-2">
         <!-- Search -->
         <div class="relative min-w-[220px] flex-1 sm:max-w-sm">
@@ -37,7 +37,7 @@
             v-model="searchQuery"
             type="text"
             placeholder="Search meeting types..."
-            class="h-8 w-full rounded-md border border-gray-300 bg-white pl-8 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+            class="h-8 w-full rounded-md border border-gray-300 bg-white pl-8 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500"
           />
         </div>
 
@@ -96,7 +96,7 @@
     </div>
 
     <!-- Content -->
-    <div class="flex-1 overflow-auto bg-white dark:bg-gray-800">
+    <div class="flex-1 overflow-auto bg-white dark:bg-gray-900">
       <!-- Loading -->
       <LoadingSpinner v-if="loading && !rows.length" />
 
@@ -128,10 +128,10 @@
 
       <!-- Desktop table -->
       <div v-else class="hidden sm:block">
-        <table class="w-full bg-white dark:bg-gray-800">
+        <table class="w-full bg-white dark:bg-gray-900">
           <thead>
             <tr class="border-b border-gray-200 dark:border-gray-700">
-              <th class="w-10 bg-gray-50 px-4 py-3 dark:bg-gray-800/50">
+              <th class="w-10 bg-gray-50 px-4 py-3 dark:bg-gray-900/50">
                 <input
                   type="checkbox"
                   :checked="allVisibleSelected"
@@ -140,14 +140,14 @@
                   class="h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
                 />
               </th>
-              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Name</th>
-              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Department</th>
-              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Duration</th>
-              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Location</th>
-              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Visibility</th>
-              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Bookings</th>
-              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Status</th>
-              <th class="w-10 bg-gray-50 px-4 py-3 dark:bg-gray-800/50"></th>
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Name</th>
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Department</th>
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Duration</th>
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Location</th>
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Visibility</th>
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Bookings</th>
+              <th class="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Status</th>
+              <th class="w-10 bg-gray-50 px-4 py-3 dark:bg-gray-900/50"></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -155,7 +155,7 @@
               v-for="mt in rows"
               :key="mt.name"
               @click="goToMeetingType(mt.name)"
-              class="cursor-pointer bg-white transition-colors hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-800/50"
+              class="cursor-pointer bg-white transition-colors hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800/50"
               :class="selectedRows.has(mt.name) ? '!bg-blue-50 dark:!bg-blue-900/20' : ''"
             >
               <td class="px-4 py-3" @click.stop>
@@ -233,7 +233,7 @@
           v-for="mt in rows"
           :key="mt.name"
           @click="goToMeetingType(mt.name)"
-          class="cursor-pointer rounded-lg border border-gray-200 bg-white p-3 transition-colors hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600"
+          class="cursor-pointer rounded-lg border border-gray-200 bg-white p-3 transition-colors hover:border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600"
           :class="selectedRows.has(mt.name) ? '!border-blue-300 !bg-blue-50 dark:!border-blue-700 dark:!bg-blue-900/20' : ''"
         >
           <div class="flex items-start justify-between">
@@ -273,14 +273,14 @@
     <!-- Pagination -->
     <div
       v-if="rows.length"
-      class="flex flex-col items-center justify-between gap-3 border-t border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-800 sm:flex-row"
+      class="flex flex-col items-center justify-between gap-3 border-t border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-900 sm:flex-row"
     >
       <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
         <span>Show</span>
         <select
           :value="pageLength"
           @change="changePageLength(Number($event.target.value))"
-          class="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+          class="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300"
         >
           <option :value="10">10</option>
           <option :value="20">20</option>
@@ -300,7 +300,7 @@
     <!-- Loading overlay -->
     <div
       v-if="loading && rows.length"
-      class="pointer-events-none absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-gray-800/50"
+      class="pointer-events-none absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-gray-900/50"
     >
       <LoadingSpinner size="lg" />
     </div>
@@ -317,7 +317,7 @@
           <MenuButton class="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
             <FeatherIcon name="more-horizontal" class="h-4 w-4" />
           </MenuButton>
-          <MenuItems class="absolute bottom-full left-0 mb-1 w-48 rounded-lg border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+          <MenuItems class="absolute bottom-full left-0 mb-1 w-48 rounded-lg border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
             <MenuItem v-slot="{ active }">
               <button @click="bulkSetActive(true)" :class="active ? 'bg-gray-100 dark:bg-gray-700' : ''" class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
                 <FeatherIcon name="check-circle" class="h-4 w-4" /> Activate
@@ -360,7 +360,7 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
         @click.self="showNewModal = false"
       >
-        <div class="w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-800">
+        <div class="w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-900">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">New Meeting Type</h2>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Create a new meeting type</p>
 
@@ -371,7 +371,7 @@
                 v-model="newMT.meeting_name"
                 type="text"
                 placeholder="e.g. Initial Consultation"
-                class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500"
+                class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-950 dark:text-white dark:placeholder-gray-500"
               />
             </div>
 
@@ -379,14 +379,14 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Department</label>
               <Listbox v-model="newMT.department" as="div" class="relative mt-1">
-                <ListboxButton class="relative w-full cursor-pointer rounded-lg border border-gray-300 bg-white py-2 pl-3 pr-10 text-left text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
+                <ListboxButton class="relative w-full cursor-pointer rounded-lg border border-gray-300 bg-white py-2 pl-3 pr-10 text-left text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-950 dark:text-white">
                   <span class="block truncate">{{ selectedDeptLabel }}</span>
                   <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                     <FeatherIcon name="chevron-down" class="h-4 w-4 text-gray-400" />
                   </span>
                 </ListboxButton>
                 <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-                  <ListboxOptions class="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-lg border border-gray-200 bg-white py-1 text-sm shadow-lg focus:outline-none dark:border-gray-600 dark:bg-gray-900">
+                  <ListboxOptions class="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-lg border border-gray-200 bg-white py-1 text-sm shadow-lg focus:outline-none dark:border-gray-600 dark:bg-gray-950">
                     <ListboxOption v-slot="{ active, selected }" value="" as="template">
                       <li :class="[active ? 'bg-blue-600 text-white' : 'text-gray-700 dark:text-gray-300', 'relative cursor-pointer select-none py-2 pl-3 pr-9']">
                         <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">Select a department</span>
@@ -416,7 +416,7 @@
                 min="5"
                 step="5"
                 placeholder="30"
-                class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500"
+                class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-950 dark:text-white dark:placeholder-gray-500"
               />
             </div>
 
@@ -424,14 +424,14 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Location Type</label>
               <Listbox v-model="newMT.location_type" as="div" class="relative mt-1">
-                <ListboxButton class="relative w-full cursor-pointer rounded-lg border border-gray-300 bg-white py-2 pl-3 pr-10 text-left text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
+                <ListboxButton class="relative w-full cursor-pointer rounded-lg border border-gray-300 bg-white py-2 pl-3 pr-10 text-left text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-950 dark:text-white">
                   <span class="block truncate">{{ newMT.location_type }}</span>
                   <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                     <FeatherIcon name="chevron-down" class="h-4 w-4 text-gray-400" />
                   </span>
                 </ListboxButton>
                 <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-                  <ListboxOptions class="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-lg border border-gray-200 bg-white py-1 text-sm shadow-lg focus:outline-none dark:border-gray-600 dark:bg-gray-900">
+                  <ListboxOptions class="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-lg border border-gray-200 bg-white py-1 text-sm shadow-lg focus:outline-none dark:border-gray-600 dark:bg-gray-950">
                     <ListboxOption v-for="loc in LOCATION_ITEMS" :key="loc.value" :value="loc.value" v-slot="{ active, selected }" as="template">
                       <li :class="[active ? 'bg-blue-600 text-white' : 'text-gray-700 dark:text-gray-300', 'relative cursor-pointer select-none py-2 pl-3 pr-9']">
                         <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ loc.label }}</span>
@@ -449,7 +449,7 @@
           <div class="mt-6 flex items-center justify-end gap-3">
             <button
               @click="showNewModal = false"
-              class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700"
             >
               Cancel
             </button>

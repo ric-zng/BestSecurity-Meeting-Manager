@@ -5,7 +5,7 @@
     :class="[
       expanded ? 'w-full' : 'w-8 justify-center',
       isActive
-        ? 'bg-white shadow-sm dark:bg-gray-800 dark:shadow-none font-medium text-gray-900 dark:text-white'
+        ? 'bg-white shadow-sm dark:bg-gray-900 dark:shadow-none font-medium text-gray-900 dark:text-white'
         : 'hover:bg-gray-200/60 dark:hover:bg-gray-800/60',
     ]"
     v-slot="{ isActive: active }"

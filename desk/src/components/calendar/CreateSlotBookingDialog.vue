@@ -10,7 +10,7 @@
         <TransitionChild as="template"
           enter="duration-200 ease-out" enter-from="opacity-0 scale-95" enter-to="opacity-100 scale-100"
           leave="duration-150 ease-in" leave-from="opacity-100 scale-100" leave-to="opacity-0 scale-95">
-          <DialogPanel class="w-full max-w-2xl rounded-lg bg-white shadow-xl dark:bg-gray-800">
+          <DialogPanel class="w-full max-w-2xl rounded-lg bg-white shadow-xl dark:bg-gray-900">
             <!-- Header with slot info -->
             <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
               <DialogTitle class="text-base font-semibold text-gray-900 dark:text-white">
@@ -59,7 +59,7 @@
                     </span>
                     <span class="hidden sm:inline">{{ s.label }}</span>
                   </button>
-                  <svg v-if="i < steps.length - 1" class="h-4 w-4 shrink-0 text-gray-300 dark:text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                  <svg v-if="i < steps.length - 1" class="h-4 w-4 shrink-0 text-gray-300 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
                   </svg>
                 </template>
@@ -77,8 +77,8 @@
                     :key="dept.name"
                     class="flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors"
                     :class="form.department === dept.name
-                      ? 'border-blue-500 bg-blue-50 dark:border-blue-600 dark:bg-blue-950'
-                      : 'border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800'"
+                      ? 'border-blue-500 bg-blue-50 dark:border-blue-500 dark:bg-blue-900/40'
+                      : 'border-gray-200 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800/50 dark:hover:bg-gray-800'"
                     @click="selectDepartment(dept.name)"
                   >
                     <div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
@@ -100,7 +100,7 @@
               <div v-else-if="step === 1">
                 <label class="lbl mb-2">Select Meeting Type <span class="text-red-500">*</span></label>
                 <div v-if="loadingMeetingTypes" class="flex items-center justify-center py-8">
-                  <svg class="h-5 w-5 animate-spin text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg class="h-5 w-5 animate-spin text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
@@ -115,8 +115,8 @@
                     :key="mt.name"
                     class="flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors"
                     :class="form.meetingType === mt.name
-                      ? 'border-blue-500 bg-blue-50 dark:border-blue-600 dark:bg-blue-950'
-                      : 'border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800'"
+                      ? 'border-blue-500 bg-blue-50 dark:border-blue-500 dark:bg-blue-900/40'
+                      : 'border-gray-200 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800/50 dark:hover:bg-gray-800'"
                     @click="form.meetingType = mt.name"
                   >
                     <div class="flex-1">
@@ -134,7 +134,7 @@
               <div v-else-if="step === 2">
                 <label class="lbl mb-2">Select Service Type <span class="text-red-500">*</span></label>
                 <div v-if="loadingServices" class="flex items-center justify-center py-8">
-                  <svg class="h-5 w-5 animate-spin text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg class="h-5 w-5 animate-spin text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
@@ -146,8 +146,8 @@
                     :key="svc.value"
                     class="flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors"
                     :class="form.serviceType === svc.value
-                      ? 'border-blue-500 bg-blue-50 dark:border-blue-600 dark:bg-blue-950'
-                      : 'border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800'"
+                      ? 'border-blue-500 bg-blue-50 dark:border-blue-500 dark:bg-blue-900/40'
+                      : 'border-gray-200 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800/50 dark:hover:bg-gray-800'"
                     @click="form.serviceType = svc.value"
                   >
                     <div class="flex-1">
@@ -179,7 +179,7 @@
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
                     </div>
-                    <ul v-if="customerResults.length" class="mt-1 max-h-48 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+                    <ul v-if="customerResults.length" class="mt-1 max-h-48 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-900">
                       <li
                         v-for="c in customerResults"
                         :key="`${c.source}-${c.name}`"
@@ -262,11 +262,11 @@
                 <!-- Notifications -->
                 <div class="mt-4 flex flex-wrap gap-4">
                   <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                    <input v-model="form.notifyCustomer" type="checkbox" class="rounded border-gray-300 text-blue-600 dark:border-gray-600 dark:bg-gray-800" />
+                    <input v-model="form.notifyCustomer" type="checkbox" class="rounded border-gray-300 text-blue-600 dark:border-gray-600 dark:bg-gray-900" />
                     Notify Customer
                   </label>
                   <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                    <input v-model="form.notifyHost" type="checkbox" class="rounded border-gray-300 text-blue-600 dark:border-gray-600 dark:bg-gray-800" />
+                    <input v-model="form.notifyHost" type="checkbox" class="rounded border-gray-300 text-blue-600 dark:border-gray-600 dark:bg-gray-900" />
                     Notify Host
                   </label>
                 </div>
@@ -395,13 +395,13 @@ const canAdvance = computed(() => {
 function stepClass(i) {
   if (i < step.value) return 'cursor-pointer text-blue-600 dark:text-blue-400'
   if (i === step.value) return 'text-blue-700 dark:text-blue-300 font-semibold'
-  return 'text-gray-400 dark:text-gray-500 cursor-default'
+  return 'text-gray-400 dark:text-gray-300 cursor-default'
 }
 
 function stepBadgeClass(i) {
   if (i < step.value) return 'bg-blue-600 text-white dark:bg-blue-500'
   if (i === step.value) return 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-  return 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500'
+  return 'bg-gray-100 text-gray-400 dark:bg-gray-600 dark:text-gray-300'
 }
 
 function goToStep(i) {
@@ -544,7 +544,7 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
-.fld { @apply w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500; }
+.fld { @apply w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500; }
 .lbl { @apply block text-xs font-medium text-gray-700 dark:text-gray-300; }
 .sub-lbl { @apply block text-xs text-gray-500 dark:text-gray-400 mb-1; }
 </style>

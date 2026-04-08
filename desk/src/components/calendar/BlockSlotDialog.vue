@@ -14,13 +14,13 @@
           enter="duration-200 ease-out" enter-from="opacity-0 scale-95" enter-to="opacity-100 scale-100"
           leave="duration-150 ease-in" leave-from="opacity-100 scale-100" leave-to="opacity-0 scale-95"
         >
-          <DialogPanel class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800">
+          <DialogPanel class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-900">
             <DialogTitle class="text-base font-semibold text-gray-900 dark:text-white">
               Block Time Slot
             </DialogTitle>
 
             <!-- Slot info card -->
-            <div class="mt-4 rounded-md bg-gray-800 p-3 dark:bg-gray-800">
+            <div class="mt-4 rounded-md bg-gray-800 p-3 dark:bg-gray-900">
               <dl class="space-y-1 text-sm">
                 <div class="flex justify-between">
                   <dt class="text-gray-400">For</dt>
@@ -50,7 +50,7 @@
                 v-model="reason"
                 type="text"
                 placeholder="e.g. Lunch break, Team standup, Personal time..."
-                class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+                class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500"
               />
               <p v-if="validationError" class="mt-1 text-xs text-red-500">{{ validationError }}</p>
             </div>

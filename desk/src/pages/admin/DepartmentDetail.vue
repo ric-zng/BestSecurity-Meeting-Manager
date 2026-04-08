@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-full bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-full bg-gray-50 dark:bg-gray-950">
     <!-- Header -->
-    <div class="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-900">
+    <div class="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-950">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
           <button
@@ -52,7 +52,7 @@
         <div class="space-y-6 lg:col-span-2">
 
           <!-- Basic Information -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Basic Information</h2>
               <transition name="fade">
@@ -80,7 +80,7 @@
           </div>
 
           <!-- Settings -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Settings</h2>
               <transition name="fade">
@@ -216,7 +216,7 @@
           </div>
 
           <!-- Department Members -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
                 Department Members
@@ -273,12 +273,12 @@
               <table class="w-full text-sm">
                 <thead>
                   <tr class="border-b border-gray-200 dark:border-gray-700">
-                    <th class="bg-gray-50 px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Member</th>
-                    <th class="bg-gray-50 px-5 py-2.5 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Status</th>
-                    <th class="bg-gray-50 px-5 py-2.5 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Priority</th>
-                    <th class="bg-gray-50 px-5 py-2.5 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Assignments</th>
-                    <th class="bg-gray-50 px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Last Assigned</th>
-                    <th class="w-16 bg-gray-50 px-5 py-2.5 dark:bg-gray-800/50"></th>
+                    <th class="bg-gray-50 px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Member</th>
+                    <th class="bg-gray-50 px-5 py-2.5 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Status</th>
+                    <th class="bg-gray-50 px-5 py-2.5 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Priority</th>
+                    <th class="bg-gray-50 px-5 py-2.5 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Assignments</th>
+                    <th class="bg-gray-50 px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Last Assigned</th>
+                    <th class="w-16 bg-gray-50 px-5 py-2.5 dark:bg-gray-900/50"></th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
@@ -350,7 +350,7 @@
           </div>
 
           <!-- Danger Zone -->
-          <div class="rounded-lg border border-red-200 bg-white shadow-sm dark:border-red-900/50 dark:bg-gray-800">
+          <div class="rounded-lg border border-red-200 bg-white shadow-sm dark:border-red-900/50 dark:bg-gray-900">
             <div class="border-b border-red-100 px-5 py-3 dark:border-red-900/30">
               <h2 class="text-sm font-semibold text-red-700 dark:text-red-400">Danger Zone</h2>
             </div>
@@ -373,7 +373,7 @@
         <!-- Right column (1/3) -->
         <div class="space-y-6">
           <!-- Metadata -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Details</h2>
             </div>
@@ -416,7 +416,7 @@
           </div>
 
           <!-- Public Booking URL -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Public Booking URL</h2>
             </div>
@@ -440,16 +440,16 @@
           </div>
 
           <!-- Stats -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Stats</h2>
             </div>
             <div class="grid grid-cols-2 gap-px bg-gray-100 dark:bg-gray-700">
-              <div class="bg-white px-4 py-3 dark:bg-gray-800">
+              <div class="bg-white px-4 py-3 dark:bg-gray-900">
                 <p class="text-lg font-bold text-gray-900 dark:text-white">{{ activeMemberCount }}</p>
                 <p class="text-[10px] text-gray-500 dark:text-gray-400">Active Members</p>
               </div>
-              <div class="bg-white px-4 py-3 dark:bg-gray-800">
+              <div class="bg-white px-4 py-3 dark:bg-gray-900">
                 <p class="text-lg font-bold text-gray-900 dark:text-white">{{ totalAssignments }}</p>
                 <p class="text-[10px] text-gray-500 dark:text-gray-400">Total Assignments</p>
               </div>
@@ -457,7 +457,7 @@
           </div>
 
           <!-- Activity -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Activity</h2>
             </div>

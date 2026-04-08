@@ -2,14 +2,14 @@
   <div class="relative" ref="rootRef">
     <button
       @click.stop="open = !open"
-      class="flex h-8 items-center gap-1 rounded-md border border-gray-300 bg-white px-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+      class="flex h-8 items-center gap-1 rounded-md border border-gray-300 bg-white px-2.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700"
     >
       <span class="max-w-[140px] truncate">{{ label }}</span>
       <FeatherIcon name="chevron-down" class="h-3 w-3 shrink-0" />
     </button>
     <div
       v-if="open"
-      class="absolute right-0 z-50 mt-1 max-h-72 w-64 overflow-y-auto rounded-lg border border-gray-200 bg-white p-1.5 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+      class="absolute right-0 z-50 mt-1 max-h-72 w-64 overflow-y-auto rounded-lg border border-gray-200 bg-white p-1.5 shadow-lg dark:border-gray-700 dark:bg-gray-900"
     >
       <label
         v-for="item in items" :key="itemKey(item)"

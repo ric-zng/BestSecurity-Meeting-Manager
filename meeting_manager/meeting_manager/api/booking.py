@@ -233,14 +233,40 @@ def create_customer_booking_for_member(booking_data):
 	if not availability["available"]:
 		frappe.throw(_(f"Member is not available at the requested time: {availability['reason']}"))
 
+	# Find or create Contact record for the customer
+	from meeting_manager.meeting_manager.services.customer_service import get_customer_by_email
+	customer_doc = get_customer_by_email(booking_data["customer_email"])
+
+	if not customer_doc:
+		# Create new contact
+		customer_doc = frappe.get_doc({
+			"doctype": "Contact",
+			"first_name": booking_data["customer_name"],
+			"mm_is_active": 1
+		})
+		customer_doc.append("email_ids", {
+			"email_id": booking_data["customer_email"],
+			"is_primary": 1
+		})
+		if booking_data.get("customer_phone"):
+			customer_doc.append("phone_nos", {
+				"phone": booking_data["customer_phone"],
+				"is_primary_phone": 1
+			})
+		customer_doc.insert(ignore_permissions=True)
+
 	# Create booking
 	import secrets
 	booking = frappe.get_doc({
 		"doctype": "MM Meeting Booking",
 		"booking_type": "Customer Booking",
+		"meeting_title": f"{meeting_type.meeting_name} with {booking_data['customer_name']}",
 		"department": department.name,
 		"meeting_type": meeting_type.name,
 		"assigned_to": booking_data["assigned_to"],
+
+		# Link to Contact record
+		"customer": customer_doc.name,
 
 		# Customer information
 		"customer_name": booking_data["customer_name"],
@@ -250,6 +276,8 @@ def create_customer_booking_for_member(booking_data):
 		"customer_notes": booking_data.get("customer_notes"),
 
 		# Scheduling
+		"start_datetime": start_datetime,
+		"end_datetime": end_datetime,
 		"scheduled_date": scheduled_date,
 		"scheduled_start_time": scheduled_start_time,
 		"scheduled_end_time": scheduled_end_time,
@@ -267,9 +295,19 @@ def create_customer_booking_for_member(booking_data):
 		# Assignment
 		"assignment_method": "Manual (Admin/Leader)",
 
+		# Service type
+		"select_mkru": booking_data.get("service_type") or "",
+
 		# Security tokens
 		"cancel_token": secrets.token_urlsafe(32),
 		"reschedule_token": secrets.token_urlsafe(32)
+	})
+
+	# Add assigned user as primary host
+	booking.append("assigned_users", {
+		"user": booking_data["assigned_to"],
+		"is_primary_host": 1,
+		"assigned_by": frappe.session.user
 	})
 
 	# Insert booking

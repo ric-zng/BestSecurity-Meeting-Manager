@@ -12,7 +12,7 @@
       class="fixed inset-x-0 bottom-6 z-50 mx-auto w-max"
     >
       <div
-        class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-2.5 shadow-2xl dark:border-gray-700 dark:bg-gray-800"
+        class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-2.5 shadow-2xl dark:border-gray-700 dark:bg-gray-900"
       >
         <!-- Checked checkbox -->
         <input

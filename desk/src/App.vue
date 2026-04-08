@@ -1,8 +1,8 @@
 <template>
-  <div class="flex h-screen w-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
+  <div class="flex h-screen w-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
     <!-- Sidebar -->
     <div
-      class="flex select-none flex-col border-r border-gray-200 bg-gray-50 p-2 text-base duration-300 ease-in-out dark:border-gray-800 dark:bg-gray-900"
+      class="flex select-none flex-col border-r border-gray-200 bg-gray-50 p-2 text-base duration-300 ease-in-out dark:border-gray-800 dark:bg-gray-950"
       :style="{ 'min-width': sidebarWidth, 'max-width': sidebarWidth }"
     >
       <!-- Brand / User Menu Popover -->
@@ -199,7 +199,7 @@
       <!-- Page header slot -->
       <div id="app-header"></div>
       <!-- Page content -->
-      <div class="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
+      <div class="flex-1 overflow-auto bg-gray-50 dark:bg-gray-950">
         <router-view />
       </div>
     </div>

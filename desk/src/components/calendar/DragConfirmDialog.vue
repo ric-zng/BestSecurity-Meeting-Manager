@@ -14,13 +14,13 @@
           enter="duration-200 ease-out" enter-from="opacity-0 scale-95" enter-to="opacity-100 scale-100"
           leave="duration-150 ease-in" leave-from="opacity-100 scale-100" leave-to="opacity-0 scale-95"
         >
-          <DialogPanel class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800">
+          <DialogPanel class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-900">
             <DialogTitle class="text-base font-semibold text-gray-900 dark:text-white">
               {{ dialogTitle }}
             </DialogTitle>
 
             <!-- Meeting details card -->
-            <div class="mt-4 rounded-md bg-gray-50 p-3 dark:bg-gray-800">
+            <div class="mt-4 rounded-md bg-gray-50 p-3 dark:bg-gray-900">
               <dl class="space-y-1 text-sm">
                 <div class="flex justify-between">
                   <dt class="text-gray-500 dark:text-gray-400">Meeting</dt>
@@ -108,7 +108,7 @@
                   <input
                     v-model="notifications.notifyCustomer"
                     type="checkbox"
-                    class="rounded border-gray-300 text-blue-600 dark:border-gray-600 dark:bg-gray-800"
+                    class="rounded border-gray-300 text-blue-600 dark:border-gray-600 dark:bg-gray-900"
                   />
                   Notify Customer
                 </label>
@@ -116,7 +116,7 @@
                   <input
                     v-model="notifications.notifyHost"
                     type="checkbox"
-                    class="rounded border-gray-300 text-blue-600 dark:border-gray-600 dark:bg-gray-800"
+                    class="rounded border-gray-300 text-blue-600 dark:border-gray-600 dark:bg-gray-900"
                   />
                   Notify Host
                 </label>
@@ -128,7 +128,7 @@
                   <input
                     v-model="notifications.notifyHost"
                     type="checkbox"
-                    class="rounded border-gray-300 text-blue-600 dark:border-gray-600 dark:bg-gray-800"
+                    class="rounded border-gray-300 text-blue-600 dark:border-gray-600 dark:bg-gray-900"
                   />
                   Notify Host
                 </label>
@@ -136,7 +136,7 @@
                   <input
                     v-model="notifications.notifyParticipants"
                     type="checkbox"
-                    class="rounded border-gray-300 text-blue-600 dark:border-gray-600 dark:bg-gray-800"
+                    class="rounded border-gray-300 text-blue-600 dark:border-gray-600 dark:bg-gray-900"
                   />
                   Notify Participants
                 </label>

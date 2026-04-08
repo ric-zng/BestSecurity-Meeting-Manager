@@ -1,5 +1,5 @@
 <template>
-  <div class="relative flex h-full flex-col bg-gray-50 dark:bg-gray-900">
+  <div class="relative flex h-full flex-col bg-gray-50 dark:bg-gray-950">
     <!-- Loading -->
     <div v-if="auth.isLoading" class="flex flex-1 items-center justify-center">
       <LoadingSpinner />
@@ -12,7 +12,7 @@
 
     <template v-else>
       <!-- Header -->
-      <div class="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-800">
+      <div class="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-900">
         <div>
           <h1 class="text-lg font-semibold text-gray-900 dark:text-white">Team Settings</h1>
           <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
@@ -23,7 +23,7 @@
         <div class="flex items-center gap-2">
           <button
             @click="refreshCurrent"
-            class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white p-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+            class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white p-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
             title="Reload"
           >
             <FeatherIcon name="refresh-cw" class="h-4 w-4" />
@@ -31,7 +31,7 @@
           <router-link
             v-if="auth.isSystemManager && selectedDept"
             :to="`/admin/departments/${selectedDept.name}`"
-            class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             <FeatherIcon name="settings" class="h-4 w-4" />
             Department Settings
@@ -40,7 +40,7 @@
       </div>
 
       <!-- Department tabs + search bar -->
-      <div class="border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-800">
+      <div class="border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
         <!-- Tabs row -->
         <div class="flex items-center gap-2 overflow-x-auto px-6 pt-2" v-if="departments.length > 1">
           <button
@@ -49,7 +49,7 @@
             @click="selectDept(dept)"
             class="relative shrink-0 rounded-t-md border border-b-0 px-4 py-2 text-sm font-medium transition-colors"
             :class="selectedDeptName === dept.name
-              ? 'border-gray-200 bg-white text-blue-600 dark:border-gray-700 dark:bg-gray-800 dark:text-blue-400'
+              ? 'border-gray-200 bg-white text-blue-600 dark:border-gray-700 dark:bg-gray-900 dark:text-blue-400'
               : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'"
           >
             {{ dept.department_name }}
@@ -69,7 +69,7 @@
               v-model="memberSearch"
               type="text"
               placeholder="Search members..."
-              class="h-8 w-full rounded-md border border-gray-300 bg-white pl-8 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+              class="h-8 w-full rounded-md border border-gray-300 bg-white pl-8 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500"
             />
           </div>
 
@@ -78,17 +78,17 @@
             <button
               @click="statusFilter = ''"
               class="rounded-l-md px-3 py-1 text-xs font-medium transition-colors"
-              :class="statusFilter === '' ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900' : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'"
+              :class="statusFilter === '' ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900' : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-700'"
             >All</button>
             <button
               @click="statusFilter = 'active'"
               class="px-3 py-1 text-xs font-medium transition-colors"
-              :class="statusFilter === 'active' ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900' : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'"
+              :class="statusFilter === 'active' ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900' : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-700'"
             >Active</button>
             <button
               @click="statusFilter = 'inactive'"
               class="rounded-r-md px-3 py-1 text-xs font-medium transition-colors"
-              :class="statusFilter === 'inactive' ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900' : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'"
+              :class="statusFilter === 'inactive' ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900' : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-700'"
             >Inactive</button>
           </div>
 
@@ -112,7 +112,7 @@
       </div>
 
       <!-- Content area -->
-      <div class="flex-1 overflow-auto bg-white dark:bg-gray-800">
+      <div class="flex-1 overflow-auto bg-white dark:bg-gray-900">
         <!-- No departments -->
         <div v-if="departments.length === 0" class="flex flex-1 items-center justify-center py-24">
           <EmptyState icon="users" title="No departments" description="You are not leading any departments." />
@@ -152,22 +152,22 @@
 
         <!-- Members table -->
         <div v-else class="hidden sm:block">
-          <table class="w-full bg-white dark:bg-gray-800">
+          <table class="w-full bg-white dark:bg-gray-900">
             <thead>
               <tr class="border-b border-gray-200 dark:border-gray-700">
-                <th class="bg-gray-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Member</th>
-                <th class="bg-gray-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Email</th>
-                <th class="bg-gray-50 px-5 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Assignments</th>
-                <th class="bg-gray-50 px-5 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Workload</th>
-                <th class="bg-gray-50 px-5 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Status</th>
-                <th class="bg-gray-50 px-5 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">Actions</th>
+                <th class="bg-gray-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Member</th>
+                <th class="bg-gray-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Email</th>
+                <th class="bg-gray-50 px-5 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Assignments</th>
+                <th class="bg-gray-50 px-5 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Workload</th>
+                <th class="bg-gray-50 px-5 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Status</th>
+                <th class="bg-gray-50 px-5 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
               <tr
                 v-for="member in paginatedMembers"
                 :key="member.user_id"
-                class="bg-white transition-colors hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-800/50"
+                class="bg-white transition-colors hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800/50"
               >
                 <td class="px-5 py-3">
                   <div class="flex items-center gap-3">
@@ -249,7 +249,7 @@
           <div
             v-for="member in paginatedMembers"
             :key="member.user_id"
-            class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800"
+            class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900"
           >
             <div class="flex items-start justify-between">
               <div class="flex items-center gap-2">
@@ -278,14 +278,14 @@
       <!-- Pagination -->
       <div
         v-if="filteredMembers.length > pageLength"
-        class="flex flex-col items-center justify-between gap-3 border-t border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-800 sm:flex-row"
+        class="flex flex-col items-center justify-between gap-3 border-t border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-900 sm:flex-row"
       >
         <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
           <span>Show</span>
           <select
             :value="pageLength"
             @change="pageLength = Number($event.target.value); currentPage = 1"
-            class="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+            class="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300"
           >
             <option :value="10">10</option>
             <option :value="20">20</option>

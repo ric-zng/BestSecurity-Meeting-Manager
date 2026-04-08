@@ -14,7 +14,7 @@
           enter="duration-200 ease-out" enter-from="opacity-0 scale-95" enter-to="opacity-100 scale-100"
           leave="duration-150 ease-in" leave-from="opacity-100 scale-100" leave-to="opacity-0 scale-95"
         >
-          <DialogPanel class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800">
+          <DialogPanel class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-900">
             <DialogTitle class="text-base font-semibold text-gray-900 dark:text-white">
               Change Status
             </DialogTitle>
@@ -26,7 +26,7 @@
                 <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">New Status</label>
                 <select
                   v-model="statusForm.newStatus"
-                  class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                  class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                 >
                   <option value="" disabled>Select status...</option>
                   <option v-for="s in validStatuses" :key="s" :value="s">{{ s }}</option>
@@ -37,7 +37,7 @@
                 <textarea
                   v-model="statusForm.notes"
                   rows="3"
-                  class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                  class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                   placeholder="Add a note about this status change..."
                 />
               </div>

@@ -1,7 +1,7 @@
 <template>
-  <div class="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900">
+  <div class="h-full overflow-y-auto bg-gray-50 dark:bg-gray-950">
     <!-- Sticky Header -->
-    <div class="sticky top-0 z-20 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-800">
+    <div class="sticky top-0 z-20 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-900">
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-lg font-semibold text-gray-900 dark:text-white">
@@ -13,7 +13,7 @@
         </div>
         <div class="flex items-center gap-3">
           <!-- Scope filter -->
-          <div class="flex items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 p-0.5 dark:border-gray-700 dark:bg-gray-900">
+          <div class="flex items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 p-0.5 dark:border-gray-700 dark:bg-gray-950">
             <button
               v-for="s in availableScopes"
               :key="s.key"
@@ -59,7 +59,7 @@
         <div
           v-for="stat in statsCards"
           :key="stat.label"
-          class="rounded-lg border bg-white p-4 transition-all hover:shadow-sm dark:bg-gray-800"
+          class="rounded-lg border bg-white p-4 transition-all hover:shadow-sm dark:bg-gray-900"
           :class="stat.borderClass"
         >
           <div class="flex items-center justify-between">
@@ -80,7 +80,7 @@
         <!-- Left: 2/3 -->
         <div class="space-y-6 lg:col-span-2">
           <!-- Today's Schedule -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Today's Schedule</h2>
               <span class="text-[10px] text-gray-400 dark:text-gray-500">{{ todayMeetings.length }} meeting{{ todayMeetings.length !== 1 ? 's' : '' }}</span>
@@ -151,7 +151,7 @@
           </div>
 
           <!-- Upcoming This Week -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Upcoming This Week</h2>
               <router-link to="/bookings" class="text-[10px] font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400">View all</router-link>
@@ -196,7 +196,7 @@
         <!-- Right: 1/3 -->
         <div class="space-y-4">
           <!-- Quick Actions -->
-          <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
             <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Quick Actions</h3>
             <div class="space-y-1.5">
               <router-link to="/book" class="dash-action">
@@ -227,7 +227,7 @@
           </div>
 
           <!-- Recent Bookings -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-700">
               <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Recent Bookings</h3>
               <router-link to="/bookings" class="text-[10px] font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400">View all</router-link>

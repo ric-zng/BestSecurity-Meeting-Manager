@@ -1,7 +1,7 @@
 <template>
-  <div class="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900">
+  <div class="h-full overflow-y-auto bg-gray-50 dark:bg-gray-950">
     <!-- Sticky Header -->
-    <div class="sticky top-0 z-20 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-800">
+    <div class="sticky top-0 z-20 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-900">
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-lg font-semibold text-gray-900 dark:text-white">My Blocked Slots</h1>
@@ -27,7 +27,7 @@
 
     <!-- Empty -->
     <div v-else-if="slots.length === 0" class="flex flex-col items-center justify-center py-24">
-      <div class="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+      <div class="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-900">
         <FeatherIcon name="slash" class="h-7 w-7 text-gray-400" />
       </div>
       <h3 class="mt-4 text-sm font-semibold text-gray-900 dark:text-white">No blocked slots</h3>
@@ -43,7 +43,7 @@
       <!-- Left: Slots list -->
       <div class="space-y-4 lg:col-span-2">
         <!-- Filter tabs -->
-        <div class="flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1 dark:border-gray-700 dark:bg-gray-800">
+        <div class="flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1 dark:border-gray-700 dark:bg-gray-900">
           <button
             v-for="tab in filterTabs"
             :key="tab.key"
@@ -78,7 +78,7 @@
               <div
                 v-for="slot in group.slots"
                 :key="slot.name"
-                class="group flex items-center gap-4 rounded-lg border bg-white px-4 py-3 transition-all hover:shadow-sm dark:bg-gray-800"
+                class="group flex items-center gap-4 rounded-lg border bg-white px-4 py-3 transition-all hover:shadow-sm dark:bg-gray-900"
                 :class="isPast(slot.blocked_date)
                   ? 'border-gray-200 opacity-60 dark:border-gray-700'
                   : isToday(slot.blocked_date)
@@ -133,13 +133,13 @@
         </div>
 
         <!-- No results for filter -->
-        <div v-else class="rounded-lg border border-gray-200 bg-white py-12 text-center dark:border-gray-700 dark:bg-gray-800">
+        <div v-else class="rounded-lg border border-gray-200 bg-white py-12 text-center dark:border-gray-700 dark:bg-gray-900">
           <FeatherIcon name="search" class="mx-auto h-8 w-8 text-gray-300 dark:text-gray-600" />
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">No {{ activeFilter === 'all' ? '' : activeFilter }} blocked slots found.</p>
         </div>
 
         <!-- Pagination -->
-        <div v-if="totalPages > 1" class="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-2.5 dark:border-gray-700 dark:bg-gray-800">
+        <div v-if="totalPages > 1" class="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-2.5 dark:border-gray-700 dark:bg-gray-900">
           <span class="text-xs text-gray-500 dark:text-gray-400">
             Page {{ currentPage }} of {{ totalPages }} &middot; {{ filteredSlots.length }} slot{{ filteredSlots.length !== 1 ? 's' : '' }}
           </span>
@@ -157,7 +157,7 @@
       <!-- Right: Guide -->
       <div class="space-y-4">
         <!-- Quick Stats -->
-        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
           <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Overview</h3>
           <div class="grid grid-cols-2 gap-3">
             <div class="rounded-md bg-gray-50 p-3 dark:bg-gray-700/50">
@@ -180,7 +180,7 @@
         </div>
 
         <!-- Guide -->
-        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
           <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">How It Works</h3>
           <div class="space-y-3">
             <div class="flex gap-2.5">
@@ -208,7 +208,7 @@
         </div>
 
         <!-- Tips -->
-        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
           <h3 class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Tips</h3>
           <ul class="space-y-2 text-[11px] text-gray-600 dark:text-gray-300">
             <li class="flex items-start gap-2">
@@ -239,7 +239,7 @@
     <!-- Add/Edit Modal -->
     <transition name="bs-fade">
       <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @mousedown.self="showModal = false">
-        <div class="w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-800">
+        <div class="w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900">
           <!-- Modal header -->
           <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3.5 dark:border-gray-700">
             <h3 class="text-sm font-semibold text-gray-900 dark:text-white">

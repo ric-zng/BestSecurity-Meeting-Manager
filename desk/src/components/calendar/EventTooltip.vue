@@ -10,7 +10,7 @@
     >
       <div
         v-if="show && event"
-        class="fixed z-[100] w-72 rounded-lg border border-gray-200 bg-white p-3 shadow-xl dark:border-gray-700 dark:bg-gray-800"
+        class="fixed z-[100] w-72 rounded-lg border border-gray-200 bg-white p-3 shadow-xl dark:border-gray-700 dark:bg-gray-900"
         :style="{ top: position.y + 'px', left: position.x + 'px' }"
       >
         <!-- Header: status badge + close -->

@@ -1,7 +1,7 @@
 <template>
-  <div class="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900">
+  <div class="h-full overflow-y-auto bg-gray-50 dark:bg-gray-950">
     <!-- Header -->
-    <div class="sticky top-0 z-20 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-800">
+    <div class="sticky top-0 z-20 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-900">
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-lg font-semibold text-gray-900 dark:text-white">OAuth Settings</h1>
@@ -11,7 +11,7 @@
           <button
             @click="testConnection"
             :disabled="testingConnection"
-            class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             <FeatherIcon name="zap" class="h-4 w-4" />
             {{ testingConnection ? 'Testing...' : 'Test Connection' }}
@@ -79,7 +79,7 @@
         </div>
 
         <!-- Microsoft Outlook Card -->
-        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-700">
             <div class="flex items-center gap-3">
               <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
@@ -194,7 +194,7 @@
         </div>
 
         <!-- Google Calendar Card -->
-        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-700">
             <div class="flex items-center gap-3">
               <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/30">
@@ -219,7 +219,7 @@
         </div>
 
         <!-- How It Works -->
-        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-700">
             <h2 class="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white">
               <FeatherIcon name="git-merge" class="h-4 w-4 text-gray-400" />
@@ -269,7 +269,7 @@
         </div>
 
         <!-- Sync Directions Explained -->
-        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-700">
             <h2 class="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white">
               <FeatherIcon name="repeat" class="h-4 w-4 text-gray-400" />
@@ -300,7 +300,7 @@
         </div>
 
         <!-- Supported Integrations Table -->
-        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-700">
             <h2 class="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white">
               <FeatherIcon name="layers" class="h-4 w-4 text-gray-400" />
@@ -344,7 +344,7 @@
       <div class="space-y-6">
 
         <!-- Status Card -->
-        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
             <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Integration Status</h2>
           </div>
@@ -380,7 +380,7 @@
         </div>
 
         <!-- Outlook Setup Guide -->
-        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
             <h2 class="flex items-center gap-1.5 text-sm font-semibold text-gray-900 dark:text-white">
               <FeatherIcon name="book-open" class="h-3.5 w-3.5 text-gray-400" />
@@ -434,7 +434,7 @@
         </div>
 
         <!-- Security Note -->
-        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
             <h2 class="flex items-center gap-1.5 text-sm font-semibold text-gray-900 dark:text-white">
               <FeatherIcon name="shield" class="h-3.5 w-3.5 text-gray-400" />
@@ -577,6 +577,6 @@ async function testConnection() {
   @apply mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300;
 }
 .oa-input {
-  @apply mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500;
+  @apply mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-950 dark:text-white dark:placeholder-gray-500;
 }
 </style>

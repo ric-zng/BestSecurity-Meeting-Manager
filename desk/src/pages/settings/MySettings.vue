@@ -1,7 +1,7 @@
 <template>
-  <div class="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900">
+  <div class="h-full overflow-y-auto bg-gray-50 dark:bg-gray-950">
     <!-- Header -->
-    <div class="sticky top-0 z-20 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-800">
+    <div class="sticky top-0 z-20 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-900">
       <div>
         <h1 class="text-lg font-semibold text-gray-900 dark:text-white">My Settings</h1>
         <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Manage your personal preferences and working hours.</p>
@@ -22,7 +22,7 @@
       <div class="space-y-6 lg:col-span-2">
 
         <!-- Profile -->
-        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
             <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Profile</h2>
           </div>
@@ -78,7 +78,7 @@
         </div>
 
         <!-- Working Hours -->
-        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
             <div>
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Working Hours</h2>
@@ -182,7 +182,7 @@
         </div>
 
         <!-- Calendar Integrations -->
-        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
             <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Calendar Integrations</h2>
             <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Connect your external calendar to sync meetings automatically.</p>
@@ -347,7 +347,7 @@
         </div>
 
         <!-- Activity -->
-        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
             <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Activity</h2>
             <button v-if="activities.length > 5 && !showAllActivities" @click="showAllActivities = true" class="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400">
@@ -380,7 +380,7 @@
       <!-- Right column (1/3) -->
       <div class="space-y-6">
         <!-- Summary Card -->
-        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
             <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Summary</h2>
           </div>
@@ -405,7 +405,7 @@
         </div>
 
         <!-- Quick Reference -->
-        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
             <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Quick Reference</h2>
           </div>
@@ -430,7 +430,7 @@
         </div>
 
         <!-- Metadata -->
-        <div v-if="settingsDocName" class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div v-if="settingsDocName" class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
           <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
             <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Details</h2>
           </div>

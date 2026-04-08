@@ -9,4 +9,13 @@ export default {
     "./node_modules/frappe-ui/src/**/*.{vue,js,ts,jsx,tsx}",
     "../node_modules/frappe-ui/src/**/*.{vue,js,ts,jsx,tsx}",
   ],
+  theme: {
+    extend: {
+      colors: {
+        gray: {
+          950: "#030712",
+        },
+      },
+    },
+  },
 };

@@ -4,7 +4,7 @@
       <FeatherIcon name="calendar" class="h-3.5 w-3.5" />
     </button>
 
-    <div v-if="open" class="absolute left-0 z-50 mt-1 w-64 rounded-lg border border-gray-200 bg-white p-3 shadow-xl dark:border-gray-700 dark:bg-gray-800">
+    <div v-if="open" class="absolute left-0 z-50 mt-1 w-64 rounded-lg border border-gray-200 bg-white p-3 shadow-xl dark:border-gray-700 dark:bg-gray-900">
       <!-- Month/Year header -->
       <div class="mb-2 flex items-center justify-between">
         <button @click="changeMonth(-1)" class="rounded p-1 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700">
@@ -131,6 +131,6 @@ onBeforeUnmount(() => document.removeEventListener('click', onOutsideClick))
 
 <style scoped>
 .tb-btn {
-  @apply inline-flex h-8 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700;
+  @apply inline-flex h-8 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700;
 }
 </style>

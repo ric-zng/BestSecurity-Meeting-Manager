@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-full bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-full bg-gray-50 dark:bg-gray-950">
     <!-- Header -->
-    <div class="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-900">
+    <div class="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-950">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
           <button
@@ -54,7 +54,7 @@
         <div class="space-y-6 lg:col-span-2">
 
           <!-- Basic Info -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Basic Information</h2>
               <transition name="fade">
@@ -106,7 +106,7 @@
           </div>
 
           <!-- Location -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Location Settings</h2>
               <transition name="fade">
@@ -160,7 +160,7 @@
           </div>
 
           <!-- Visibility -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Visibility & Options</h2>
               <transition name="fade">
@@ -208,7 +208,7 @@
           </div>
 
           <!-- Reminder Schedule -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
                 Reminder Schedule
@@ -236,8 +236,8 @@
                   <div>
                     <h4 class="mb-1 font-semibold text-gray-900 dark:text-white">Automated Reminders</h4>
                     <p>The system checks every <strong>5 minutes</strong> for upcoming bookings that use this meeting type. For each active reminder row configured below, it calculates the send time:</p>
-                    <p class="mt-1 rounded bg-white px-2 py-1 font-mono text-[11px] dark:bg-gray-800">send_time = meeting start &minus; hours before</p>
-                    <p class="mt-1">When the current time passes the send time, the reminder is sent automatically. Each reminder fires only once per booking (tracked by a unique key like <code class="rounded bg-white px-1 dark:bg-gray-800">auto_24h</code>).</p>
+                    <p class="mt-1 rounded bg-white px-2 py-1 font-mono text-[11px] dark:bg-gray-900">send_time = meeting start &minus; hours before</p>
+                    <p class="mt-1">When the current time passes the send time, the reminder is sent automatically. Each reminder fires only once per booking (tracked by a unique key like <code class="rounded bg-white px-1 dark:bg-gray-900">auto_24h</code>).</p>
                   </div>
                   <div>
                     <h4 class="mb-1 font-semibold text-gray-900 dark:text-white">Who receives automated reminders?</h4>
@@ -252,7 +252,7 @@
                   </div>
                   <div>
                     <h4 class="mb-1 font-semibold text-gray-900 dark:text-white">Logging</h4>
-                    <p>Every reminder (automated or manual) is recorded in the booking's <strong>History</strong> timeline as a "Reminder Sent" event, showing who was notified and when. The <code class="rounded bg-white px-1 dark:bg-gray-800">reminders_sent</code> and <code class="rounded bg-white px-1 dark:bg-gray-800">last_reminder_sent</code> fields are also updated on the booking.</p>
+                    <p>Every reminder (automated or manual) is recorded in the booking's <strong>History</strong> timeline as a "Reminder Sent" event, showing who was notified and when. The <code class="rounded bg-white px-1 dark:bg-gray-900">reminders_sent</code> and <code class="rounded bg-white px-1 dark:bg-gray-900">last_reminder_sent</code> fields are also updated on the booking.</p>
                   </div>
                   <div>
                     <h4 class="mb-1 font-semibold text-gray-900 dark:text-white">Configuration Tips</h4>
@@ -276,8 +276,8 @@
                   v-for="(row, idx) in reminderRows" :key="idx"
                   class="flex items-center gap-3 rounded-lg border p-3 transition-colors"
                   :class="row.is_active
-                    ? 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800'
-                    : 'border-gray-100 bg-gray-50 opacity-60 dark:border-gray-800 dark:bg-gray-900'"
+                    ? 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900'
+                    : 'border-gray-100 bg-gray-50 opacity-60 dark:border-gray-800 dark:bg-gray-950'"
                 >
                   <div class="flex-1">
                     <div class="flex items-center gap-3">
@@ -300,7 +300,7 @@
                           {{ row.notification_type }}
                           <FeatherIcon name="chevron-down" class="h-3 w-3" />
                         </button>
-                        <div v-if="reminderDropdownIdx === idx" class="absolute left-0 top-full z-10 mt-1 w-28 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                        <div v-if="reminderDropdownIdx === idx" class="absolute left-0 top-full z-10 mt-1 w-28 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
                           <button
                             v-for="nt in ['Email', 'SMS', 'Both']" :key="nt"
                             @click="row.notification_type = nt; reminderDropdownIdx = null"
@@ -324,7 +324,7 @@
           </div>
 
           <!-- Recent Bookings -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
                 Recent Bookings
@@ -357,7 +357,7 @@
           </div>
 
           <!-- Activity -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Activity</h2>
               <button v-if="activities.length > 5 && !showAllActivities" @click="showAllActivities = true" class="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400">
@@ -381,7 +381,7 @@
           </div>
 
           <!-- Danger Zone -->
-          <div class="rounded-lg border border-red-200 bg-white shadow-sm dark:border-red-900/50 dark:bg-gray-800">
+          <div class="rounded-lg border border-red-200 bg-white shadow-sm dark:border-red-900/50 dark:bg-gray-900">
             <div class="px-5 py-4">
               <div class="flex items-center justify-between">
                 <div>
@@ -401,24 +401,24 @@
         <!-- Right sidebar -->
         <div class="space-y-6">
           <!-- Stats -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Statistics</h2>
             </div>
             <div class="grid grid-cols-2 gap-px bg-gray-100 dark:bg-gray-700">
-              <div class="bg-white p-4 dark:bg-gray-800">
+              <div class="bg-white p-4 dark:bg-gray-900">
                 <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.total }}</p>
                 <p class="text-[11px] font-medium text-gray-500 dark:text-gray-400">Total Bookings</p>
               </div>
-              <div class="bg-white p-4 dark:bg-gray-800">
+              <div class="bg-white p-4 dark:bg-gray-900">
                 <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ stats.upcoming }}</p>
                 <p class="text-[11px] font-medium text-gray-500 dark:text-gray-400">Upcoming</p>
               </div>
-              <div class="bg-white p-4 dark:bg-gray-800">
+              <div class="bg-white p-4 dark:bg-gray-900">
                 <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ stats.completed }}</p>
                 <p class="text-[11px] font-medium text-gray-500 dark:text-gray-400">Completed</p>
               </div>
-              <div class="bg-white p-4 dark:bg-gray-800">
+              <div class="bg-white p-4 dark:bg-gray-900">
                 <p class="text-2xl font-bold text-red-600 dark:text-red-400">{{ stats.cancelled }}</p>
                 <p class="text-[11px] font-medium text-gray-500 dark:text-gray-400">Cancelled</p>
               </div>
@@ -426,7 +426,7 @@
           </div>
 
           <!-- Details -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Details</h2>
             </div>
@@ -455,13 +455,13 @@
           </div>
 
           <!-- Public URL -->
-          <div v-if="doc.doc.is_public && doc.doc.public_booking_url" class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div v-if="doc.doc.is_public && doc.doc.public_booking_url" class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Public Booking URL</h2>
             </div>
             <div class="px-5 py-3">
               <div class="flex items-center gap-2">
-                <input :value="doc.doc.public_booking_url" readonly class="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400" />
+                <input :value="doc.doc.public_booking_url" readonly class="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-400" />
                 <button @click="copyUrl(doc.doc.public_booking_url)" class="shrink-0 rounded-lg border border-gray-200 p-2 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700">
                   <FeatherIcon :name="copied ? 'check' : 'copy'" class="h-3.5 w-3.5" />
                 </button>
@@ -475,13 +475,13 @@
     <!-- Delete Modal -->
     <teleport to="body">
       <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="showDeleteModal = false">
-        <div class="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-800">
+        <div class="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-900">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Delete Meeting Type</h3>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             Are you sure you want to delete "{{ doc.doc?.meeting_name }}"? This action cannot be undone.
           </p>
           <div class="mt-6 flex items-center justify-end gap-3">
-            <button @click="showDeleteModal = false" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</button>
+            <button @click="showDeleteModal = false" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</button>
             <button @click="deleteMeetingType" :disabled="deleting" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50">
               {{ deleting ? 'Deleting...' : 'Delete' }}
             </button>

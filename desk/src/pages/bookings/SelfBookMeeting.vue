@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-full bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-full bg-gray-50 dark:bg-gray-950">
     <!-- Header -->
-    <div class="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-900">
+    <div class="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-950">
       <button
         @click="router.back()"
         class="mb-2 inline-flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -16,7 +16,7 @@
     </div>
 
     <!-- Step indicator (breadcrumb style) -->
-    <div class="border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-900">
+    <div class="border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-950">
       <nav class="flex items-center gap-1 overflow-x-auto text-sm">
         <template v-for="(step, idx) in wizardSteps" :key="step.id">
           <button
@@ -66,7 +66,7 @@
             v-for="dept in departments.data"
             :key="dept.name"
             @click="selectDepartment(dept)"
-            class="group flex items-center gap-3 rounded-xl border-2 bg-white p-4 text-left transition-all dark:bg-gray-800"
+            class="group flex items-center gap-3 rounded-xl border-2 bg-white p-4 text-left transition-all dark:bg-gray-900"
             :class="form.department === dept.name
               ? 'border-blue-500 ring-2 ring-blue-500/20 dark:border-blue-400 dark:ring-blue-400/20'
               : 'border-gray-200 hover:border-gray-300 hover:shadow-sm dark:border-gray-700 dark:hover:border-gray-600'"
@@ -90,7 +90,7 @@
             </svg>
           </button>
         </div>
-        <div v-else class="rounded-xl border border-gray-200 bg-white p-12 text-center dark:border-gray-700 dark:bg-gray-800">
+        <div v-else class="rounded-xl border border-gray-200 bg-white p-12 text-center dark:border-gray-700 dark:bg-gray-900">
           <p class="text-gray-500 dark:text-gray-400">You are not a member of any department.</p>
         </div>
         <div class="mt-8 flex justify-end">
@@ -116,7 +116,7 @@
             v-for="mt in meetingTypes.data"
             :key="mt.name"
             @click="selectMeetingType(mt)"
-            class="group flex items-center gap-3 rounded-xl border-2 bg-white p-4 text-left transition-all dark:bg-gray-800"
+            class="group flex items-center gap-3 rounded-xl border-2 bg-white p-4 text-left transition-all dark:bg-gray-900"
             :class="form.meeting_type === mt.name
               ? 'border-blue-500 ring-2 ring-blue-500/20 dark:border-blue-400 dark:ring-blue-400/20'
               : 'border-gray-200 hover:border-gray-300 hover:shadow-sm dark:border-gray-700 dark:hover:border-gray-600'"
@@ -154,7 +154,7 @@
             </svg>
           </button>
         </div>
-        <div v-else class="rounded-xl border border-gray-200 bg-white p-12 text-center dark:border-gray-700 dark:bg-gray-800">
+        <div v-else class="rounded-xl border border-gray-200 bg-white p-12 text-center dark:border-gray-700 dark:bg-gray-900">
           <p class="text-gray-500 dark:text-gray-400">No meeting types available for this department.</p>
         </div>
         <div class="mt-8 flex justify-between">
@@ -177,7 +177,7 @@
             v-for="svc in serviceOptions"
             :key="svc.value"
             @click="form.service_type = svc.value"
-            class="group flex items-center gap-3 rounded-xl border-2 bg-white p-4 text-left transition-all dark:bg-gray-800"
+            class="group flex items-center gap-3 rounded-xl border-2 bg-white p-4 text-left transition-all dark:bg-gray-900"
             :class="form.service_type === svc.value
               ? 'border-blue-500 ring-2 ring-blue-500/20 dark:border-blue-400 dark:ring-blue-400/20'
               : 'border-gray-200 hover:border-gray-300 hover:shadow-sm dark:border-gray-700 dark:hover:border-gray-600'"
@@ -195,7 +195,7 @@
             </svg>
           </button>
         </div>
-        <div v-else class="rounded-xl border border-gray-200 bg-white p-12 text-center dark:border-gray-700 dark:bg-gray-800">
+        <div v-else class="rounded-xl border border-gray-200 bg-white p-12 text-center dark:border-gray-700 dark:bg-gray-900">
           <p class="text-gray-500 dark:text-gray-400">No service types available.</p>
         </div>
         <div class="mt-8 flex justify-between">
@@ -210,7 +210,7 @@
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Select Date</h2>
           <p class="text-sm text-gray-500 dark:text-gray-400">Pick an available date for your meeting</p>
         </div>
-        <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
           <!-- Month navigation -->
           <div class="mb-4 flex items-center justify-between">
             <button
@@ -280,7 +280,7 @@
             Available times for <span class="font-medium text-gray-700 dark:text-gray-300">{{ formatDate(form.scheduled_date) }}</span>
           </p>
         </div>
-        <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
           <div v-if="availableSlots.loading" class="flex justify-center py-12">
             <LoadingSpinner />
           </div>
@@ -319,7 +319,7 @@
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Customer Details</h2>
           <p class="text-sm text-gray-500 dark:text-gray-400">Search for an existing customer or enter details manually</p>
         </div>
-        <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
           <!-- Search -->
           <div class="relative mb-4">
             <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Search by name, email, phone, or CVR</label>
@@ -337,7 +337,7 @@
               </svg>
             </div>
             <!-- Results dropdown -->
-            <ul v-if="customerResultsList.length" class="mt-1 max-h-52 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+            <ul v-if="customerResultsList.length" class="mt-1 max-h-52 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-900">
               <li
                 v-for="c in customerResultsList"
                 :key="`${c.source}-${c.name}`"
@@ -413,7 +413,7 @@
           <p class="text-sm text-gray-500 dark:text-gray-400">Review the booking details before confirming</p>
         </div>
 
-        <div class="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
           <!-- Summary rows -->
           <dl class="divide-y divide-gray-100 dark:divide-gray-700">
             <div class="flex items-center justify-between px-6 py-4">

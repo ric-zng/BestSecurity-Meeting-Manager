@@ -1,5 +1,5 @@
 <template>
-  <div class="border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-800">
+  <div class="border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-900">
     <div class="flex items-center justify-between gap-3">
       <!-- Left: Nav + date picker + title -->
       <div class="flex items-center gap-2">
@@ -44,7 +44,7 @@
             class="px-3 py-1.5 text-xs font-medium transition-colors"
             :class="v.key === currentView
               ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'"
+              : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700'"
           >{{ v.label }}</button>
         </div>
 
@@ -110,6 +110,6 @@ defineEmits<{
 
 <style scoped>
 .tb-btn {
-  @apply inline-flex h-8 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700;
+  @apply inline-flex h-8 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-full bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-full bg-gray-50 dark:bg-gray-950">
     <!-- Loading state -->
     <div v-if="bookingResource.loading && !data" class="p-6">
       <div class="mb-6 flex items-center gap-3">
@@ -8,21 +8,21 @@
       </div>
       <div class="grid gap-6 lg:grid-cols-3">
         <div class="lg:col-span-2 space-y-6">
-          <div v-for="i in 2" :key="i" class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+          <div v-for="i in 2" :key="i" class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
             <div class="h-5 w-32 animate-pulse rounded bg-gray-200 dark:bg-gray-700 mb-4" />
             <div class="space-y-3">
-              <div class="h-4 w-full animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
-              <div class="h-4 w-3/4 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
-              <div class="h-4 w-1/2 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
+              <div class="h-4 w-full animate-pulse rounded bg-gray-100 dark:bg-gray-900" />
+              <div class="h-4 w-3/4 animate-pulse rounded bg-gray-100 dark:bg-gray-900" />
+              <div class="h-4 w-1/2 animate-pulse rounded bg-gray-100 dark:bg-gray-900" />
             </div>
           </div>
         </div>
         <div class="space-y-6">
-          <div v-for="i in 3" :key="i" class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+          <div v-for="i in 3" :key="i" class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
             <div class="h-5 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700 mb-4" />
             <div class="space-y-3">
-              <div class="h-4 w-full animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
-              <div class="h-4 w-2/3 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
+              <div class="h-4 w-full animate-pulse rounded bg-gray-100 dark:bg-gray-900" />
+              <div class="h-4 w-2/3 animate-pulse rounded bg-gray-100 dark:bg-gray-900" />
             </div>
           </div>
         </div>
@@ -91,7 +91,7 @@
         <!-- Left column: main info -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Meeting Info Card -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Meeting Information</h2>
             </div>
@@ -211,7 +211,7 @@
           <!-- Customer Card (non-internal only) -->
           <div
             v-if="!booking.is_internal && (customer || booking.customer_email_at_booking)"
-            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
           >
             <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Customer</h2>
@@ -327,7 +327,7 @@
           <!-- Participants Card (internal meeting) -->
           <div
             v-if="booking.is_internal && internalParticipants.length"
-            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
           >
             <!-- Header with summary -->
             <div class="px-5 py-3" :class="showParticipantsList ? 'border-b border-gray-100 dark:border-gray-800' : ''">
@@ -470,7 +470,7 @@
           <!-- History/Timeline Card -->
           <div
             v-if="hasHistory"
-            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
           >
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
@@ -512,7 +512,7 @@
         <div class="space-y-6">
 
           <!-- ═══ Status Section ═══ -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <div class="flex items-center justify-between">
                 <h4 class="bd-label mb-0">Status</h4>
@@ -540,7 +540,7 @@
             <!-- Inline status change -->
             <transition enter-active-class="transition duration-150" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
               <div v-if="activePanel === 'status'" class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
-                <div class="space-y-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
+                <div class="space-y-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-950">
                   <div>
                     <label class="bd-label">New Status</label>
                     <div class="relative" ref="statusDropdownRef">
@@ -593,7 +593,7 @@
           </div>
 
           <!-- ═══ Schedule Section ═══ -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <div class="flex items-center justify-between">
                 <h4 class="bd-label mb-0">Schedule</h4>
@@ -625,9 +625,9 @@
             <!-- Inline reschedule form -->
             <transition enter-active-class="transition duration-150" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
               <div v-if="activePanel === 'reschedule'" class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
-                <div class="space-y-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
+                <div class="space-y-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-950">
                   <!-- Mini calendar -->
-                  <div class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
+                  <div class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">
                     <div class="mb-2 flex items-center justify-between">
                       <button @click="calChangeMonth(-1)" class="rounded p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -715,7 +715,7 @@
           </div>
 
           <!-- ═══ Service Section ═══ -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <div class="flex items-center justify-between">
                 <h4 class="bd-label mb-0">Service</h4>
@@ -733,7 +733,7 @@
             <!-- Inline service change -->
             <transition enter-active-class="transition duration-150" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
               <div v-if="activePanel === 'service'" class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
-                <div class="space-y-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
+                <div class="space-y-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-950">
                   <div class="space-y-1">
                     <button
                       v-for="svc in SERVICE_TYPES"
@@ -765,7 +765,7 @@
           </div>
 
           <!-- ═══ Hosts / Assigned To Section ═══ -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <div class="flex items-center justify-between">
                 <h4 class="bd-label mb-0">Assigned To</h4>
@@ -785,7 +785,7 @@
                     class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
                     :class="h.is_primary_host
                       ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400'
-                      : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'"
+                      : 'bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-400'"
                   >
                     {{ getInitials(h.full_name || h.user) }}
                   </div>
@@ -801,7 +801,7 @@
             <!-- Inline reassign -->
             <transition enter-active-class="transition duration-150" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
               <div v-if="activePanel === 'reassign'" class="border-t border-gray-100 px-5 py-3 dark:border-gray-800">
-                <div class="space-y-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
+                <div class="space-y-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-950">
                   <label class="bd-label">Assign to</label>
                   <div v-if="membersLoading" class="flex items-center gap-2 py-3 text-xs text-gray-400">
                     <div class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-400 border-t-transparent" />
@@ -848,7 +848,7 @@
           </div>
 
           <!-- ═══ Cancel Section ═══ -->
-          <div v-if="permissions.can_cancel && !isFinalized" class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div v-if="permissions.can_cancel && !isFinalized" class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="px-5 py-3">
               <button
                 @click="togglePanel('cancel')"
@@ -889,7 +889,7 @@
           </div>
 
           <!-- ═══ Send Reminder Section ═══ -->
-          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <div class="flex items-center justify-between">
                 <h4 class="bd-label mb-0">Reminders</h4>
@@ -920,22 +920,22 @@
             <!-- Inline reminder form -->
             <transition enter-active-class="transition duration-150" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
               <div v-if="activePanel === 'reminder'" class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
-                <div class="space-y-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
+                <div class="space-y-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-950">
                   <div>
                     <label class="bd-label">Send to</label>
                     <div class="space-y-2">
                       <label v-if="!booking.is_internal" class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                        <input type="checkbox" v-model="reminderForm.notifyCustomer" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800" />
+                        <input type="checkbox" v-model="reminderForm.notifyCustomer" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900" />
                         Customer
                         <span v-if="reminderCustomerEmail" class="text-xs text-gray-400">({{ reminderCustomerEmail }})</span>
                       </label>
                       <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                        <input type="checkbox" v-model="reminderForm.notifyHost" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800" />
+                        <input type="checkbox" v-model="reminderForm.notifyHost" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900" />
                         Host(s)
                         <span v-if="hosts.length" class="text-xs text-gray-400">({{ hosts.length }})</span>
                       </label>
                       <label v-if="booking.is_internal && internalParticipants.length" class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                        <input type="checkbox" v-model="reminderForm.notifyParticipants" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800" />
+                        <input type="checkbox" v-model="reminderForm.notifyParticipants" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900" />
                         Participants
                         <span class="text-xs text-gray-400">({{ internalParticipants.length }})</span>
                       </label>
@@ -968,7 +968,7 @@
           <!-- ═══ Customer Bookings Card ═══ -->
           <div
             v-if="!booking.is_internal && customerEmail"
-            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
           >
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
@@ -1012,7 +1012,7 @@
           <!-- ═══ Links Card ═══ -->
           <div
             v-if="booking.cancel_link || booking.reschedule_link"
-            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+            class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
           >
             <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Customer Links</h2>
@@ -1682,7 +1682,7 @@ function attendanceClass(status) {
     Declined: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
     Tentative: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
   }
-  return map[status] || 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+  return map[status] || 'bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-400'
 }
 
 function avatarRingClass(status) {
@@ -1822,7 +1822,7 @@ async function copyToClipboard(text, label) {
 
 <style scoped>
 .bd-field {
-  @apply w-full rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white;
+  @apply w-full rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white;
 }
 .bd-label {
   @apply mb-1 block text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500;
@@ -1834,18 +1834,18 @@ async function copyToClipboard(text, label) {
   @apply flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 dark:border-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors;
 }
 .bd-select {
-  @apply flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-left text-sm shadow-sm transition-colors hover:border-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:border-gray-500;
+  @apply flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-left text-sm shadow-sm transition-colors hover:border-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:hover:border-gray-500;
 }
 .bd-dropdown {
-  @apply absolute left-0 right-0 z-10 mt-1 max-h-52 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800;
+  @apply absolute left-0 right-0 z-10 mt-1 max-h-52 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900;
 }
 .bd-dropdown-item {
   @apply flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700;
 }
 .time-btn {
-  @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 active:bg-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200;
+  @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 active:bg-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200;
 }
 .time-input {
-  @apply w-full rounded-lg border border-gray-300 bg-white py-2 text-center text-sm font-semibold tabular-nums text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white;
+  @apply w-full rounded-lg border border-gray-300 bg-white py-2 text-center text-sm font-semibold tabular-nums text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white;
 }
 </style>
