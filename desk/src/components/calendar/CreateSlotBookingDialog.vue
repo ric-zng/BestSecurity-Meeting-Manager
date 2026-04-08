@@ -333,7 +333,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
-import { call } from 'frappe-ui'
+import { call, toast } from 'frappe-ui'
 import { Dialog as HDialog, DialogPanel, DialogTitle, TransitionRoot, TransitionChild } from '@headlessui/vue'
 import { useAuthStore } from '@/stores/auth'
 
@@ -530,7 +530,7 @@ async function handleSubmit() {
   submitting.value = true
   try {
     const dateStr = toDateStr(props.slotInfo?.start)
-    await call(`${API_BASE}.create_slot_booking`, {
+    const res = await call(`${API_BASE}.create_slot_booking`, {
       booking_data: {
         assigned_to: props.slotInfo?.resourceId,
         department: form.department, meeting_type: form.meetingType, service_type: form.serviceType,
@@ -542,8 +542,18 @@ async function handleSubmit() {
         send_notification: form.notifyCustomer ? 1 : 0,
       },
     })
+    if (res && res.success === false) {
+      errorMessage.value = res.message || 'Failed to create booking'
+      toast({ title: res.message || 'Failed to create booking', icon: 'x' })
+      return
+    }
+    toast({ title: 'Booking created successfully', icon: 'check' })
     emit('close'); emit('success')
-  } catch (err) { errorMessage.value = err.messages?.[0] || err.message || 'Failed to create booking' }
+  } catch (err) {
+    const msg = err.messages?.[0] || err.message || 'Failed to create booking'
+    errorMessage.value = msg
+    toast({ title: msg, icon: 'x' })
+  }
   finally { submitting.value = false }
 }
 </script>
