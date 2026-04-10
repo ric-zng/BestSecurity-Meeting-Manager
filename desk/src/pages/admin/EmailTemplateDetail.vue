@@ -336,7 +336,12 @@
               <span class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Subject:</span>
               <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ previewSubject }}</p>
             </div>
-            <div v-html="previewHtml" class="prose prose-sm max-w-none dark:prose-invert" />
+            <iframe
+              ref="previewFrame"
+              class="w-full border-0"
+              style="min-height: 600px;"
+              :srcdoc="previewHtml"
+            />
           </div>
         </div>
       </div>

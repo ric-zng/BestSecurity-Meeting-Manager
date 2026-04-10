@@ -8,6 +8,63 @@ from frappe import _
 from frappe.utils import get_datetime, format_datetime, format_time, get_url
 
 
+def get_email_wrapper(body_html: str, subject: str = "") -> str:
+	"""
+	Wrap email body content in a professional branded HTML layout.
+	Uses inline styles for maximum email client compatibility.
+	"""
+	site_url = get_url()
+	logo_url = f"{site_url}/assets/meeting_manager/images/bestsecurity-logo.png"
+
+	return f'''<div style="margin:0;padding:0;background-color:#f4f6f9;width:100%;">
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color:#f4f6f9;">
+<tr><td align="center" style="padding:24px 16px;">
+<table role="presentation" cellpadding="0" cellspacing="0" width="600" style="max-width:600px;width:100%;">
+
+<!-- Logo Header -->
+<tr><td align="center" style="padding:0 0 24px 0;">
+<a href="{site_url}" style="text-decoration:none;">
+<img src="{logo_url}" alt="BestSecurity" width="200" style="display:block;max-width:200px;height:auto;border:0;" />
+</a>
+</td></tr>
+
+<!-- Main Card -->
+<tr><td style="background-color:#ffffff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.08);overflow:hidden;">
+
+<!-- Accent Bar -->
+<div style="height:4px;background:linear-gradient(90deg,#e8a914,#d4941a,#c07f1f);"></div>
+
+<!-- Body Content -->
+<div style="padding:32px 36px;color:#1f2937;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:15px;line-height:1.7;">
+{body_html}
+</div>
+
+</td></tr>
+
+<!-- Footer -->
+<tr><td style="padding:24px 0 0 0;">
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+<tr><td align="center" style="padding:0 0 12px 0;">
+<div style="width:40px;height:2px;background-color:#e8a914;"></div>
+</td></tr>
+<tr><td align="center" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:12px;color:#9ca3af;line-height:1.6;">
+<strong style="color:#6b7280;">BestSecurity ApS</strong><br/>
+Christians Brygge 28, 1559 Copenhagen V &nbsp;&bull;&nbsp; Anelystparken 31, 8381 Tilst<br/>
+Phone: (+45) 82 82 82 35<br/>
+<span style="font-size:11px;color:#b0b7c3;">Mon&ndash;Thu 09:00&ndash;17:00 &nbsp;|&nbsp; Fri 09:00&ndash;16:30</span>
+</td></tr>
+<tr><td align="center" style="padding:16px 0 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:11px;color:#c9cdd3;">
+&copy; BestSecurity ApS &nbsp;&bull;&nbsp; This is an automated message
+</td></tr>
+</table>
+</td></tr>
+
+</table>
+</td></tr>
+</table>
+</div>'''
+
+
 def check_email_configured():
 	"""Check if outgoing email is configured in Frappe"""
 	try:
@@ -243,11 +300,14 @@ def send_notification(
 		subject = frappe.render_template(template.subject, context)
 		body = frappe.render_template(template.email_body, context)
 
+		# Wrap in branded email layout
+		wrapped_body = get_email_wrapper(body, subject)
+
 		# Send email
 		frappe.sendmail(
 			recipients=[recipient_email],
 			subject=subject,
-			message=body,
+			message=wrapped_body,
 			reference_doctype="MM Meeting Booking" if booking_id else None,
 			reference_name=booking_id,
 			now=True
@@ -962,9 +1022,12 @@ def preview_template(template_name: str, booking_id: str = None) -> dict:
 			"hosts": "Rasmus Berg, Lars Nielsen",
 		}
 
+	subject = frappe.render_template(template.subject, context)
+	body = frappe.render_template(template.email_body, context)
+
 	return {
-		"subject": frappe.render_template(template.subject, context),
-		"body": frappe.render_template(template.email_body, context),
+		"subject": subject,
+		"body": get_email_wrapper(body, subject),
 		"include_brochure": template.include_brochure
 	}
 
@@ -991,11 +1054,12 @@ def send_template_email(booking_id: str, template_name: str = None, email_type: 
 
 			subject = frappe.render_template(template.subject, context)
 			body = frappe.render_template(template.email_body, context)
+			wrapped_body = get_email_wrapper(body, subject)
 
 			frappe.sendmail(
 				recipients=[customer_email],
 				subject=subject,
-				message=body,
+				message=wrapped_body,
 				reference_doctype="MM Meeting Booking",
 				reference_name=booking_id,
 				now=True
