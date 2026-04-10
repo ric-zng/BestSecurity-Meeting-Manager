@@ -1033,6 +1033,64 @@ def preview_template(template_name: str, booking_id: str = None) -> dict:
 
 
 @frappe.whitelist()
+def send_test_email(template_name: str, recipient_email: str) -> dict:
+	"""Send a test email using sample data to the specified recipient."""
+	try:
+		if not recipient_email or "@" not in recipient_email:
+			return {"success": False, "message": "Please enter a valid email address"}
+
+		template = frappe.get_doc("MM Email Template", template_name)
+
+		context = {
+			"recipient_name": "John Doe",
+			"customer_name": "John Smith",
+			"customer_firstname": "John",
+			"company": "Acme Corporation",
+			"customer_email": "john@example.com",
+			"customer_phone": "+45 12 34 56 78",
+			"provider": "Rasmus Berg",
+			"event_date": "Monday, January 27, 2026",
+			"event_time": "14:30",
+			"end_time": "15:30",
+			"event_datetime": "Monday, January 27, 2026 at 14:30",
+			"duration": 60,
+			"booker": "Anna Jensen",
+			"booking_reference": "BK-2026-00123",
+			"service_type": "Business",
+			"meeting_title": "Security Review Meeting",
+			"meeting_description": "Review of IT security measures",
+			"cancel_link": "#",
+			"reschedule_link": "#",
+			"booking_url": "#",
+			"remote_support_link": template.remote_support_url or "https://rmmeu-bestsecurity.screenconnect.com/",
+			"old_datetime": "Friday, January 24, 2026 at 10:00",
+			"changed_by": "Anna Jensen",
+			"previous_host": "Lars Nielsen",
+			"old_duration": 30,
+			"hosts": "Rasmus Berg, Lars Nielsen",
+			"custom_message": "This is a test reminder message.",
+			"reminder_sent_by": "Anna Jensen",
+		}
+
+		subject = frappe.render_template(template.subject, context)
+		body = frappe.render_template(template.email_body, context)
+		wrapped_body = get_email_wrapper(body, subject)
+
+		frappe.sendmail(
+			recipients=[recipient_email],
+			subject=f"[TEST] {subject}",
+			message=wrapped_body,
+			now=True,
+		)
+
+		return {"success": True, "message": f"Test email sent to {recipient_email}"}
+
+	except Exception as e:
+		frappe.log_error(f"Error in send_test_email: {str(e)}\n{frappe.get_traceback()}")
+		return {"success": False, "message": str(e)}
+
+
+@frappe.whitelist()
 def send_template_email(booking_id: str, template_name: str = None, email_type: str = "Booking Confirmation") -> dict:
 	"""Send a specific template email to customer."""
 	try:

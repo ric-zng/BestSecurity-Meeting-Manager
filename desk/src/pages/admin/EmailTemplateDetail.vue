@@ -316,32 +316,101 @@
             </button>
           </div>
         </div>
+
+        <!-- Send Test Email Card -->
+        <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+          <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
+            <h2 class="flex items-center gap-1.5 text-sm font-semibold text-gray-900 dark:text-white">
+              <FeatherIcon name="send" class="h-3.5 w-3.5 text-blue-500" />
+              Send Test Email
+            </h2>
+          </div>
+          <div class="p-5">
+            <p class="mb-3 text-xs text-gray-500 dark:text-gray-400">Send this template with sample data to verify how it appears in a real email client.</p>
+            <div class="space-y-2">
+              <input
+                v-model="testEmailSidebar"
+                type="email"
+                placeholder="recipient@example.com"
+                class="etd-input"
+                @keydown.enter="sendTestFromSidebar"
+              />
+              <button
+                @click="sendTestFromSidebar"
+                :disabled="sendingTestSidebar || !testEmailSidebar"
+                class="flex w-full items-center justify-center gap-1.5 rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <FeatherIcon v-if="sendingTestSidebar" name="loader" class="h-3.5 w-3.5 animate-spin" />
+                <FeatherIcon v-else name="send" class="h-3.5 w-3.5" />
+                {{ sendingTestSidebar ? 'Sending...' : 'Send Test Email' }}
+              </button>
+              <p v-if="testResultSidebar" class="text-xs" :class="testResultSidebar.success ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+                {{ testResultSidebar.message }}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Preview Modal -->
     <teleport to="body">
       <div v-if="showPreview" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="showPreview = false">
-        <div class="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-900">
-          <div class="mb-4 flex items-center justify-between">
+        <div class="max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900">
+          <div class="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Template Preview</h2>
             <button @click="showPreview = false" class="rounded p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
               <FeatherIcon name="x" class="h-5 w-5" />
             </button>
           </div>
-          <div v-if="previewLoading" class="py-12"><LoadingSpinner /></div>
-          <div v-else-if="previewError" class="py-8 text-center text-sm text-red-500">{{ previewError }}</div>
-          <div v-else class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-950">
-            <div v-if="previewSubject" class="mb-3 border-b border-gray-200 pb-3 dark:border-gray-700">
-              <span class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Subject:</span>
-              <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ previewSubject }}</p>
+          <div class="p-6">
+            <div v-if="previewLoading" class="py-12"><LoadingSpinner /></div>
+            <div v-else-if="previewError" class="py-8 text-center text-sm text-red-500">{{ previewError }}</div>
+            <div v-else>
+              <!-- Subject -->
+              <div v-if="previewSubject" class="mb-4 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+                <span class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Subject:</span>
+                <p class="mt-1 text-sm font-medium text-gray-900 dark:text-white">{{ previewSubject }}</p>
+              </div>
+              <!-- Email body -->
+              <div class="rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-950">
+                <iframe
+                  ref="previewFrame"
+                  class="w-full border-0"
+                  style="min-height: 600px;"
+                  :srcdoc="previewHtml"
+                />
+              </div>
+              <!-- Send Test Email -->
+              <div class="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950">
+                <p class="mb-2 text-sm font-semibold text-blue-800 dark:text-blue-300">
+                  <FeatherIcon name="send" class="mr-1.5 inline h-3.5 w-3.5" />
+                  Send Test Email
+                </p>
+                <p class="mb-3 text-xs text-blue-600/70 dark:text-blue-400/70">Send this template with sample data to verify how it looks in a real inbox.</p>
+                <div class="flex gap-2">
+                  <input
+                    v-model="testEmail"
+                    type="email"
+                    placeholder="recipient@example.com"
+                    class="flex-1 rounded-md border border-blue-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500"
+                    @keydown.enter="sendTestFromPreview"
+                  />
+                  <button
+                    @click="sendTestFromPreview"
+                    :disabled="sendingTest || !testEmail"
+                    class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <FeatherIcon v-if="sendingTest" name="loader" class="h-3.5 w-3.5 animate-spin" />
+                    <FeatherIcon v-else name="send" class="h-3.5 w-3.5" />
+                    {{ sendingTest ? 'Sending...' : 'Send' }}
+                  </button>
+                </div>
+                <p v-if="testResult" class="mt-2 text-xs" :class="testResult.success ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+                  {{ testResult.message }}
+                </p>
+              </div>
             </div>
-            <iframe
-              ref="previewFrame"
-              class="w-full border-0"
-              style="min-height: 600px;"
-              :srcdoc="previewHtml"
-            />
           </div>
         </div>
       </div>
@@ -575,6 +644,48 @@ async function previewTemplate() {
     previewError.value = e.message || 'Failed to load preview'
   } finally {
     previewLoading.value = false
+  }
+}
+
+// --- Send Test Email ---
+const testEmail = ref('')
+const sendingTest = ref(false)
+const testResult = ref(null)
+const testEmailSidebar = ref('')
+const sendingTestSidebar = ref(false)
+const testResultSidebar = ref(null)
+
+async function sendTestFromPreview() {
+  if (!testEmail.value || sendingTest.value) return
+  sendingTest.value = true
+  testResult.value = null
+  try {
+    const res = await call('meeting_manager.meeting_manager.utils.email_notifications.send_test_email', {
+      template_name: currentId.value,
+      recipient_email: testEmail.value,
+    })
+    testResult.value = res
+  } catch (e) {
+    testResult.value = { success: false, message: e.message || 'Failed to send test email' }
+  } finally {
+    sendingTest.value = false
+  }
+}
+
+async function sendTestFromSidebar() {
+  if (!testEmailSidebar.value || sendingTestSidebar.value) return
+  sendingTestSidebar.value = true
+  testResultSidebar.value = null
+  try {
+    const res = await call('meeting_manager.meeting_manager.utils.email_notifications.send_test_email', {
+      template_name: currentId.value,
+      recipient_email: testEmailSidebar.value,
+    })
+    testResultSidebar.value = res
+  } catch (e) {
+    testResultSidebar.value = { success: false, message: e.message || 'Failed to send test email' }
+  } finally {
+    sendingTestSidebar.value = false
   }
 }
 
