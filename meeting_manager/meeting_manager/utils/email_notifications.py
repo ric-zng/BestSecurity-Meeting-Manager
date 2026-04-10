@@ -1032,6 +1032,37 @@ def preview_template(template_name: str, booking_id: str = None) -> dict:
 	}
 
 
+def _get_pdf_email_render(body_html: str, subject: str = "") -> str:
+	"""
+	Render email content for PDF export — uses div-based layout instead of
+	nested tables so wkhtmltopdf can flow content without blank page gaps.
+	"""
+	site_url = get_url()
+	logo_url = f"{site_url}/assets/meeting_manager/images/bestsecurity-logo.png"
+
+	return f'''<div style="background:#f4f6f9;padding:20px 16px;border-radius:6px;">
+<div style="max-width:540px;margin:0 auto;">
+<div style="text-align:center;padding-bottom:18px;">
+<img src="{logo_url}" alt="BestSecurity" width="160" style="max-width:160px;height:auto;" />
+</div>
+<div style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+<div style="height:4px;background:linear-gradient(90deg,#e8a914,#d4941a,#c07f1f);"></div>
+<div style="padding:24px 28px;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif;font-size:14px;line-height:1.6;color:#1f2937;">
+{body_html}
+</div>
+</div>
+<div style="text-align:center;padding-top:16px;">
+<div style="width:30px;height:2px;background:#e8a914;margin:0 auto 10px;"></div>
+<p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.5;">
+<strong style="color:#6b7280;">BestSecurity ApS</strong><br/>
+Christians Brygge 28, 1559 Copenhagen V &bull; Anelystparken 31, 8381 Tilst<br/>
+Phone: (+45) 82 82 82 35
+</p>
+</div>
+</div>
+</div>'''
+
+
 @frappe.whitelist()
 def export_all_templates_pdf():
 	"""Generate a PDF document showing all email templates with rendered previews."""
@@ -1074,7 +1105,7 @@ def export_all_templates_pdf():
 	}
 
 	pages_html = []
-	for t in templates:
+	for idx, t in enumerate(templates):
 		template = frappe.get_doc("MM Email Template", t.name)
 		context = dict(sample_context)
 		if template.include_remote_support_link and template.remote_support_url:
@@ -1082,23 +1113,23 @@ def export_all_templates_pdf():
 
 		subject = frappe.render_template(template.subject, context)
 		body = frappe.render_template(template.email_body, context)
-		wrapped = get_email_wrapper(body, subject)
+		rendered = _get_pdf_email_render(body, subject)
 
 		meta_badge = f'{t.email_type} &rarr; {t.recipient_type}'
 		if t.service_type:
 			meta_badge += f' &rarr; {t.service_type}'
 
-		page = f'''
-		<div style="page-break-after:always;padding:20px 0;">
-			<div style="margin-bottom:16px;padding:12px 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
-				<h2 style="margin:0 0 4px;font-size:16px;font-weight:700;color:#1e293b;">{template.template_name}</h2>
-				<p style="margin:0 0 6px;font-size:11px;color:#64748b;">{meta_badge}</p>
-				<p style="margin:0;font-size:12px;color:#334155;"><strong>Subject:</strong> {subject}</p>
-			</div>
-			<div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
-				{wrapped}
-			</div>
-		</div>'''
+		is_last = idx == len(templates) - 1
+		page_break = '' if is_last else 'page-break-after:always;'
+
+		page = f'''<div style="{page_break}">
+<div style="margin-bottom:12px;padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">
+<h2 style="margin:0 0 3px;font-size:15px;font-weight:700;color:#1e293b;">{template.template_name}</h2>
+<p style="margin:0 0 4px;font-size:10px;color:#64748b;">{meta_badge}</p>
+<p style="margin:0;font-size:11px;color:#334155;"><strong>Subject:</strong> {subject}</p>
+</div>
+{rendered}
+</div>'''
 		pages_html.append(page)
 
 	full_html = f'''<!DOCTYPE html>
@@ -1107,15 +1138,13 @@ def export_all_templates_pdf():
 <meta charset="utf-8">
 <title>BestSecurity Email Templates</title>
 <style>
-body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 20px; color: #1f2937; }}
-@page {{ size: A4; margin: 15mm; }}
+body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; color: #1f2937; }}
+* {{ box-sizing: border-box; }}
+table {{ border-collapse: collapse; }}
+img {{ max-width: 100%; height: auto; }}
 </style>
 </head>
 <body>
-<div style="text-align:center;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #e8a914;">
-<h1 style="margin:0 0 4px;font-size:22px;color:#1e293b;">BestSecurity Email Templates</h1>
-<p style="margin:0;font-size:13px;color:#64748b;">Generated {frappe.utils.now_datetime().strftime("%B %d, %Y at %H:%M")} &bull; {len(templates)} templates</p>
-</div>
 {"".join(pages_html)}
 </body>
 </html>'''
@@ -1123,10 +1152,10 @@ body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans
 	from frappe.utils.pdf import get_pdf
 	pdf_content = get_pdf(full_html, options={
 		"page-size": "A4",
-		"margin-top": "10mm",
-		"margin-bottom": "10mm",
-		"margin-left": "10mm",
-		"margin-right": "10mm",
+		"margin-top": "12mm",
+		"margin-bottom": "12mm",
+		"margin-left": "12mm",
+		"margin-right": "12mm",
 		"encoding": "UTF-8",
 		"print-media-type": "",
 		"no-outline": "",
