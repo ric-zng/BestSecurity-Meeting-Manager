@@ -8,26 +8,33 @@ from frappe import _
 from frappe.utils import get_datetime, format_datetime, format_time, get_url
 
 
-def get_email_wrapper(body_html: str, subject: str = "") -> str:
+def get_email_wrapper(body_html: str, subject: str = "", include_logo: bool = False) -> str:
 	"""
 	Wrap email body content in a professional branded HTML layout.
 	Uses inline styles for maximum email client compatibility.
+
+	Logo is excluded by default because Frappe's standard.html template
+	(overridden in this app) already adds the logo to all outgoing emails.
+	Pass include_logo=True for contexts that bypass sendmail (preview, PDF).
 	"""
 	site_url = get_url()
 	logo_url = f"{site_url}/assets/meeting_manager/images/bestsecurity-logo.png"
 
-	return f'''<div style="margin:0;padding:0;background-color:#f4f6f9;width:100%;">
-<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color:#f4f6f9;">
-<tr><td align="center" style="padding:24px 16px;">
-<table role="presentation" cellpadding="0" cellspacing="0" width="600" style="max-width:600px;width:100%;">
-
+	logo_row = ""
+	if include_logo:
+		logo_row = f'''
 <!-- Logo Header -->
 <tr><td align="center" style="padding:0 0 24px 0;">
 <a href="{site_url}" style="text-decoration:none;">
 <img src="{logo_url}" alt="BestSecurity" width="200" style="display:block;max-width:200px;height:auto;border:0;" />
 </a>
-</td></tr>
+</td></tr>'''
 
+	return f'''<div style="margin:0;padding:0;background-color:#f4f6f9;width:100%;">
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color:#f4f6f9;">
+<tr><td align="center" style="padding:24px 16px;">
+<table role="presentation" cellpadding="0" cellspacing="0" width="600" style="max-width:600px;width:100%;">
+{logo_row}
 <!-- Main Card -->
 <tr><td style="background-color:#ffffff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.08);overflow:hidden;">
 
@@ -1027,7 +1034,7 @@ def preview_template(template_name: str, booking_id: str = None) -> dict:
 
 	return {
 		"subject": subject,
-		"body": get_email_wrapper(body, subject),
+		"body": get_email_wrapper(body, subject, include_logo=True),
 		"include_brochure": template.include_brochure
 	}
 
