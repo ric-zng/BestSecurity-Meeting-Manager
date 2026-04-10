@@ -1145,6 +1145,10 @@ img {{ max-width: 100%; height: auto; }}
 </style>
 </head>
 <body>
+<div style="text-align:center;margin-bottom:24px;padding:16px 0 16px;border-bottom:3px solid #e8a914;">
+<h1 style="margin:0 0 4px;font-size:22px;font-weight:700;color:#1e293b;font-style:italic;">BestSecurity Email Templates</h1>
+<p style="margin:0;font-size:12px;color:#64748b;">Generated {frappe.utils.now_datetime().strftime("%B %d, %Y at %H:%M")} &bull; {len(templates)} templates</p>
+</div>
 {"".join(pages_html)}
 </body>
 </html>'''
