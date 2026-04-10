@@ -1033,6 +1033,111 @@ def preview_template(template_name: str, booking_id: str = None) -> dict:
 
 
 @frappe.whitelist()
+def export_all_templates_pdf():
+	"""Generate a PDF document showing all email templates with rendered previews."""
+	templates = frappe.get_all(
+		"MM Email Template",
+		filters={"is_active": 1},
+		fields=["name", "template_name", "email_type", "recipient_type", "service_type"],
+		order_by="email_type asc, recipient_type asc, priority desc",
+	)
+
+	sample_context = {
+		"recipient_name": "John Doe",
+		"customer_name": "John Smith",
+		"customer_firstname": "John",
+		"company": "Acme Corporation",
+		"customer_email": "john@example.com",
+		"customer_phone": "+45 12 34 56 78",
+		"provider": "Rasmus Berg",
+		"event_date": "Monday, January 27, 2026",
+		"event_time": "14:30",
+		"end_time": "15:30",
+		"event_datetime": "Monday, January 27, 2026 at 14:30",
+		"duration": 60,
+		"booker": "Anna Jensen",
+		"booking_reference": "BK-2026-00123",
+		"service_type": "Business",
+		"meeting_title": "Security Review Meeting",
+		"meeting_description": "Review of IT security measures",
+		"cancel_link": "#",
+		"reschedule_link": "#",
+		"booking_url": "#",
+		"remote_support_link": "https://rmmeu-bestsecurity.screenconnect.com/",
+		"old_datetime": "Friday, January 24, 2026 at 10:00",
+		"changed_by": "Anna Jensen",
+		"previous_host": "Lars Nielsen",
+		"old_duration": 30,
+		"hosts": "Rasmus Berg, Lars Nielsen",
+		"custom_message": "Please have your IT admin credentials ready for the security audit.",
+		"reminder_sent_by": "Anna Jensen",
+	}
+
+	pages_html = []
+	for t in templates:
+		template = frappe.get_doc("MM Email Template", t.name)
+		context = dict(sample_context)
+		if template.include_remote_support_link and template.remote_support_url:
+			context["remote_support_link"] = template.remote_support_url
+
+		subject = frappe.render_template(template.subject, context)
+		body = frappe.render_template(template.email_body, context)
+		wrapped = get_email_wrapper(body, subject)
+
+		meta_badge = f'{t.email_type} &rarr; {t.recipient_type}'
+		if t.service_type:
+			meta_badge += f' &rarr; {t.service_type}'
+
+		page = f'''
+		<div style="page-break-after:always;padding:20px 0;">
+			<div style="margin-bottom:16px;padding:12px 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
+				<h2 style="margin:0 0 4px;font-size:16px;font-weight:700;color:#1e293b;">{template.template_name}</h2>
+				<p style="margin:0 0 6px;font-size:11px;color:#64748b;">{meta_badge}</p>
+				<p style="margin:0;font-size:12px;color:#334155;"><strong>Subject:</strong> {subject}</p>
+			</div>
+			<div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+				{wrapped}
+			</div>
+		</div>'''
+		pages_html.append(page)
+
+	full_html = f'''<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>BestSecurity Email Templates</title>
+<style>
+body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 20px; color: #1f2937; }}
+@page {{ size: A4; margin: 15mm; }}
+</style>
+</head>
+<body>
+<div style="text-align:center;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #e8a914;">
+<h1 style="margin:0 0 4px;font-size:22px;color:#1e293b;">BestSecurity Email Templates</h1>
+<p style="margin:0;font-size:13px;color:#64748b;">Generated {frappe.utils.now_datetime().strftime("%B %d, %Y at %H:%M")} &bull; {len(templates)} templates</p>
+</div>
+{"".join(pages_html)}
+</body>
+</html>'''
+
+	from frappe.utils.pdf import get_pdf
+	pdf_content = get_pdf(full_html, options={
+		"page-size": "A4",
+		"margin-top": "10mm",
+		"margin-bottom": "10mm",
+		"margin-left": "10mm",
+		"margin-right": "10mm",
+		"encoding": "UTF-8",
+		"print-media-type": "",
+		"no-outline": "",
+	})
+
+	frappe.local.response.filename = "BestSecurity_Email_Templates.pdf"
+	frappe.local.response.filecontent = pdf_content
+	frappe.local.response.type = "download"
+
+
+@frappe.whitelist()
 def send_test_email(template_name: str, recipient_email: str) -> dict:
 	"""Send a test email using sample data to the specified recipient."""
 	try:
