@@ -174,6 +174,12 @@ def check_working_hours(member, scheduled_date, start_time, end_time):
 	Returns:
 		dict: {"available": bool, "reason": str}
 	"""
+	# Get day of week (0 = Monday, 6 = Sunday)
+	day_of_week = scheduled_date.weekday()
+	day_names = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+	day_name = day_names[day_of_week]
+	is_weekend = day_of_week >= 5  # Saturday (5) and Sunday (6)
+
 	# Get user settings
 	user_settings = frappe.get_value(
 		"MM User Settings",
@@ -183,19 +189,24 @@ def check_working_hours(member, scheduled_date, start_time, end_time):
 	)
 
 	if not user_settings or not user_settings.working_hours_json:
-		# No working hours defined - assume 24/7 availability
+		# No working hours configured - default to weekdays only (Mon-Fri)
+		if is_weekend:
+			return {
+				"available": False,
+				"reason": f"Member is not available on {day_name.capitalize()}s"
+			}
 		return {"available": True, "reason": None}
 
 	try:
 		working_hours = json.loads(user_settings.working_hours_json)
 	except (json.JSONDecodeError, TypeError):
-		# Invalid JSON - assume 24/7 availability
+		# Malformed config - fall back to weekdays only
+		if is_weekend:
+			return {
+				"available": False,
+				"reason": f"Member is not available on {day_name.capitalize()}s"
+			}
 		return {"available": True, "reason": None}
-
-	# Get day of week (0 = Monday, 6 = Sunday)
-	day_of_week = scheduled_date.weekday()
-	day_names = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
-	day_name = day_names[day_of_week]
 
 	day_config = working_hours.get(day_name, {})
 

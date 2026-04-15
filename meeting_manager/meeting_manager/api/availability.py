@@ -291,6 +291,12 @@ def has_member_availability_on_date(member, date, duration_minutes):
 	Returns:
 		bool: True if member has at least one available slot
 	"""
+	# Day of week (0=Monday, 6=Sunday)
+	day_of_week = date.weekday()
+	day_names = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+	day_name = day_names[day_of_week]
+	is_weekend = day_of_week >= 5  # Saturday (5) and Sunday (6)
+
 	# Get user's working hours for this day
 	user_settings = frappe.get_value(
 		"MM User Settings",
@@ -300,18 +306,16 @@ def has_member_availability_on_date(member, date, duration_minutes):
 	)
 
 	if not user_settings or not user_settings.working_hours_json:
-		# No working hours - assume available
+		# No working hours configured - default to weekdays only (Mon-Fri)
+		if is_weekend:
+			return False
 		return True
 
 	try:
 		working_hours = json.loads(user_settings.working_hours_json)
 	except (json.JSONDecodeError, TypeError):
-		return True
-
-	# Get day of week
-	day_of_week = date.weekday()
-	day_names = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
-	day_name = day_names[day_of_week]
+		# Malformed config - fall back to weekdays only
+		return not is_weekend
 
 	day_config = working_hours.get(day_name, {})
 
