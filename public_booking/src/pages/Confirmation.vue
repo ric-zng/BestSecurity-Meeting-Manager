@@ -159,10 +159,10 @@ function formatDate(dt) {
 
 function formatTime(dt) {
   if (!dt) return "";
-  return new Date(dt).toLocaleTimeString("en-US", {
-    hour: "numeric",
+  return new Date(dt).toLocaleTimeString("en-GB", {
+    hour: "2-digit",
     minute: "2-digit",
-    hour12: true,
+    hour12: false,
   });
 }
 

@@ -218,10 +218,10 @@ function formatTime(t) {
   const [h, m] = t.split(":");
   const d = new Date();
   d.setHours(Number(h), Number(m), 0, 0);
-  return d.toLocaleTimeString("en-US", {
-    hour: "numeric",
+  return d.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
     minute: "2-digit",
-    hour12: true,
+    hour12: false,
   });
 }
 
