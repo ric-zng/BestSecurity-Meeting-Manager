@@ -64,7 +64,7 @@ def get_departments():
 			}
 		)
 
-		dept["public_booking_url"] = f"/book/{dept.department_slug}"
+		dept["public_booking_url"] = f"/meeting-booking/{dept.department_slug}"
 
 	return {
 		"departments": departments
@@ -315,8 +315,8 @@ def create_customer_booking(booking_data):
 
 	# Build self-service URLs
 	site_url = frappe.utils.get_url()
-	cancel_link = f"{site_url}/book/cancel?token={cancel_token}"
-	reschedule_link = f"{site_url}/book/reschedule?token={reschedule_token}"
+	cancel_link = f"{site_url}/meeting-booking/cancel?token={cancel_token}"
+	reschedule_link = f"{site_url}/meeting-booking/reschedule?token={reschedule_token}"
 
 	# Create booking document
 	booking = frappe.get_doc({
@@ -674,10 +674,13 @@ def reschedule_booking(token, new_date, new_time):
 			"assigned_by": frappe.session.user
 		})
 
-	# Regenerate security tokens for new booking
+	# Regenerate security tokens + links for new booking
 	import secrets
+	site_url = frappe.utils.get_url()
 	booking.cancel_token = secrets.token_urlsafe(32)
 	booking.reschedule_token = secrets.token_urlsafe(32)
+	booking.cancel_link = f"{site_url}/meeting-booking/cancel?token={booking.cancel_token}"
+	booking.reschedule_link = f"{site_url}/meeting-booking/reschedule?token={booking.reschedule_token}"
 
 	# Add to booking history
 	booking.append("booking_history", {

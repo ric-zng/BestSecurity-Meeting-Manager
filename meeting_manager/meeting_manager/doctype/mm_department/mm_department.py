@@ -170,4 +170,4 @@ class MMDepartment(Document):
 	def set_public_booking_url(self):
 		"""Auto-generate public booking URL based on department slug"""
 		site_url = get_url()
-		self.public_booking_url = f"{site_url}/book/{self.department_slug}"
+		self.public_booking_url = f"{site_url}/meeting-booking/{self.department_slug}"

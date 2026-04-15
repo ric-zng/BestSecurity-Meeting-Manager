@@ -82,12 +82,10 @@ web_include_js = "/assets/meeting_manager/js/meeting_manager.js"
 # Website Route Rules
 # ----------------
 website_route_rules = [
+	# Public booking SPA — catches all client-side routes (/meeting-booking/*)
 	{"from_route": "/meeting-booking", "to_route": "meeting-booking"},
-	{"from_route": "/meeting-booking/<department_slug>", "to_route": "meeting-booking"},
-	{"from_route": "/meeting-booking/<department_slug>/<meeting_type_slug>", "to_route": "meeting-booking"},
-	{"from_route": "/meeting-booking/<department_slug>/<meeting_type_slug>/<date>", "to_route": "meeting-booking"},
-	{"from_route": "/meeting-booking/<department_slug>/<meeting_type_slug>/<date>/<time>", "to_route": "meeting-booking"},
-	# Vue SPA catch-all
+	{"from_route": "/meeting-booking/<path:app_path>", "to_route": "meeting-booking"},
+	# Internal Vue SPA catch-all
 	{"from_route": "/meeting-manager/<path:app_path>", "to_route": "meeting-manager"},
 ]
 

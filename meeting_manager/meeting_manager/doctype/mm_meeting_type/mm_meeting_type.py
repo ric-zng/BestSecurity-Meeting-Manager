@@ -143,4 +143,4 @@ class MMMeetingType(Document):
 			return
 
 		site_url = get_url()
-		self.public_booking_url = f"{site_url}/book/{department_slug}/{self.meeting_slug}"
+		self.public_booking_url = f"{site_url}/meeting-booking/{department_slug}/{self.meeting_slug}"
