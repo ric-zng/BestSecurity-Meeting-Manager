@@ -10,7 +10,7 @@ export default defineConfig({
   plugins: [
     frappeui({
       frappeProxy: true,
-      jinjaBootData: false,
+      jinjaBootData: true,
       buildConfig: {
         outDir: `../meeting_manager/public/book`,
         emptyOutDir: true,

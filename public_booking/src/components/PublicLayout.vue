@@ -42,10 +42,10 @@
     <footer class="border-t border-brand-100 bg-white">
       <div class="mx-auto max-w-5xl px-4 py-6 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
         <p class="text-xs text-slate-500">
-          &copy; {{ year }} Your Company. All rights reserved.
+          &copy; {{ year }} Best Security. All rights reserved.
         </p>
         <p class="text-xs text-slate-400">
-          Powered by Meeting Manager
+          Powered by ZNG
         </p>
       </div>
     </footer>
